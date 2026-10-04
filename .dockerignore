@@ -9,11 +9,14 @@ __pycache__
 venv
 tests
 tests/**
-instance
-data
-logs
-backups
-certbot
+# ⚠️ 下面这些是"运行时目录"，必须加 "/" 前缀锚定到根目录。
+#    裸写 "data" 会匹配任意层级，把源码资源 app/data/（words.json 词库）
+#    一起排挤出构建上下文，导致 Dockerfile 的 "COPY app/data/" 失败。
+/instance
+/data
+/logs
+/backups
+/certbot
 .env
 *.db
 *.db-journal

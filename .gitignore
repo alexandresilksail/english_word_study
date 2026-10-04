@@ -9,12 +9,14 @@ venv/
 .env
 
 # 数据库与运行时数据
+# ⚠️ 必须加 "/" 前缀锚定到项目根目录：不带前缀的 "data/" 会匹配任意层级，
+#    从而误伤源码资源 app/data/（2000 词库 words.json），导致部署后词表为空。
 instance/*.db
 instance/*.db-journal
-data/
-logs/
-backups/
-certbot/
+/data/
+/logs/
+/backups/
+/certbot/
 nginx/conf.d/app.conf
 
 # 测试
