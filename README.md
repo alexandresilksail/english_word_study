@@ -568,6 +568,10 @@ ADMIN_EMAIL=me@demo.com ADMIN_PASSWORD=Study123456 docker compose exec -T web fl
 
 ## 十三、交付清单
 
+> ⚠️ 下面分两层：**13 个核心交付物**（部署/运维/验收必看）+ **完整仓库结构**（全部 2064 个文件，含应用源码与 2000 个离线音频）。本仓库已整体推送到 Git（含全部文件），并非只有下表这些。
+
+### 13.1 核心交付物（部署与验收必看）
+
 | 文件 | 作用 |
 |---|---|
 | `Dockerfile` | 两阶段构建 Python 3.12 + 依赖 + 应用 + 2000 音频 |
@@ -583,6 +587,39 @@ ADMIN_EMAIL=me@demo.com ADMIN_PASSWORD=Study123456 docker compose exec -T web fl
 | `tests/test_flow.py` | 93 项端到端测试 |
 | `.env.example` | 环境变量模板 |
 | `README.md` | 本文件 |
+
+### 13.2 完整仓库结构（2064 个文件总览）
+
+```
+english-word-study-saas/
+├─ 部署编排（核心交付物）
+│  ├─ Dockerfile / docker-compose.yml / gunicorn.conf.py
+│  ├─ deploy.sh / update.sh / backup.sh
+│  ├─ nginx/conf.d/app.conf.template / nginx/http-only.conf.template
+│  ├─ nginx/init-letsencrypt.sh
+│  └─ .env.example / .gitignore / .dockerignore / requirements.txt
+├─ 应用源码
+│  ├─ app.py              # Flask 应用工厂 create_app
+│  ├─ wsgi.py             # Gunicorn 入口
+│  ├─ config.py / extensions.py
+│  ├─ models.py           # 7 张表
+│  ├─ forms.py / services.py / auth.py
+│  ├─ routes/             # main / words / quiz / admin 蓝图（5 文件）
+│  ├─ utils/ratelimit.py  # 登录失败限流
+│  └─ app/
+│     ├─ templates/       # 20 个 HTML（首页/学习/测试/收藏/错题/进度/后台/错误页）
+│     ├─ static/
+│     │  ├─ css/          # 2 个样式表
+│     │  ├─ js/           # 1 个前端脚本
+│     │  ├─ img/          # 9 张自绘 SVG 插画
+│     │  └─ audio/        # ★ 2000 个离线英式发音 MP3（约 18MB）
+│     └─ data/words.json  # ★ 2000 词 A-Z 词库（520KB）
+├─ seeds/seed_words.py    # 词库初始化（幂等）
+├─ tests/test_flow.py     # 93 项端到端测试
+└─ README.md
+```
+
+> 注：`instance/`（运行时 SQLite）、`data/`（用户上传）、`logs/`、`backups/`、`certbot/` 为**运行时生成目录**，不纳入 Git；`.env` 含密钥也不纳入。这些会在 `./deploy.sh` 首次运行时自动创建。
 
 ---
 
