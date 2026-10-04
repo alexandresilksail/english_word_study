@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}429 · 操作太频繁{% endblock %}
+{% block content %}
+<div class="empty">
+  <em>🐢</em>
+  <b>操作太频繁了（429）</b>
+  <p>请求次数超过限制，请稍等一会儿再试。</p>
+  <a class="btn btn-primary" href="{{ url_for('main.index') }}">返回首页</a>
+</div>
+{% endblock %}

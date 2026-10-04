@@ -1,0 +1,75 @@
+{% macro word_card(w, form=None) %}
+<article class="word-card" data-status="{{ w.status }}" data-word="{{ w.word }}">
+  <div class="word-top">
+    <h4><a href="{{ url_for('words.detail', word_id=w.id) }}">{{ w.word }}</a></h4>
+    <button class="speak sm" data-play="{{ w.audio }}" title="播放英式发音">🔊</button>
+  </div>
+  <div class="mean-row">
+    <div class="ipa">{{ w.phonetic_uk }}</div>
+    {% if w.pos %}<span class="tag">{{ w.pos|pos_text }}</span>{% endif %}
+  </div>
+  <p class="cn">{{ w.meaning_cn }}</p>
+  <div class="tags">
+    <span class="tag {{ 'green' if w.status=='mastered' else ('amber' if w.status=='learning' else '') }}">{{ w.status_label }}</span>
+    {% if w.fav %}<span class="tag amber">★ 已收藏</span>{% endif %}
+    {% if w.in_wrong %}<span class="tag red">错 {{ w.wrong_count }} 次</span>{% endif %}
+    {% if w.correct or w.wrong %}<span class="tag">✓{{ w.correct }} ✗{{ w.wrong }}</span>{% endif %}
+  </div>
+  <div class="card-actions">
+    {% if form %}
+      <form method="post" action="{{ url_for('words.toggle_favorite', word_id=w.id) }}">
+        {{ form.hidden_tag() }}
+        <input type="hidden" name="word_id" value="{{ w.id }}">
+        <button class="icon-btn {{ 'on' if w.fav }}" title="{{ '取消收藏' if w.fav else '收藏' }}">{{ '★' if w.fav else '☆' }}</button>
+      </form>
+      <form method="post" action="{{ url_for('words.set_status', word_id=w.id) }}">
+        {{ form.hidden_tag() }}
+        <input type="hidden" name="word_id" value="{{ w.id }}">
+        <input type="hidden" name="status" value="{{ 'new' if w.status=='mastered' else 'mastered' }}">
+        <button class="icon-btn" title="标记为已掌握 / 重置">{{ '↩' if w.status=='mastered' else '✓' }}</button>
+      </form>
+      {% if w.in_wrong %}
+        <form method="post" action="{{ url_for('words.remove_wrong', word_id=w.id) }}">
+          {{ form.hidden_tag() }}
+          <input type="hidden" name="word_id" value="{{ w.id }}">
+          <button class="icon-btn" title="移出错题本">🧹</button>
+        </form>
+      {% endif %}
+    {% endif %}
+    <a class="btn btn-sm btn-ghost" style="margin-left:auto" href="{{ url_for('words.detail', word_id=w.id) }}">详情 →</a>
+  </div>
+</article>
+{% endmacro %}
+
+{% macro pager(page, pages, endpoint, params={}, extra=None) %}
+{% if pages > 1 %}
+  <div class="pager">
+    <a href="{{ url_for(endpoint, page=1, **params) }}" class="{{ 'info' if page==1 else '' }}">« 首页</a>
+    {% set start = [1, page-2]|max %}
+    {% set end = [pages, page+2]|min %}
+    {% for p in range(start, end+1) %}
+      {% if p == page %}<span class="cur">{{ p }}</span>
+      {% else %}<a href="{{ url_for(endpoint, page=p, **params) }}">{{ p }}</a>{% endif %}
+    {% endfor %}
+    <a href="{{ url_for(endpoint, page=pages, **params) }}">末页 »</a>
+    <span class="info">第 {{ page }}/{{ pages }} 页</span>
+  </div>
+{% endif %}
+{% endmacro %}
+
+{% macro empty_box(icon, title, text, url=None, btn=None) %}
+<div class="empty">
+  {% if icon.endswith('.svg') %}<img src="{{ url_for('static', filename='img/' ~ icon) }}" alt="">
+  {% else %}<em>{{ icon }}</em>{% endif %}
+  <b>{{ title }}</b>
+  <p>{{ text }}</p>
+  {% if url %}<a class="btn btn-primary" href="{{ url }}">{{ btn or '去看看' }}</a>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro progress_bar(percent, cls='', label=None) %}
+<div style="display:flex;align-items:center;gap:10px">
+  <div class="bar-wrap" style="flex:1"><i class="bar {{ cls }}" style="width:{{ percent }}%"></i></div>
+  <b style="min-width:44px;text-align:right">{{ percent }}%</b>
+</div>
+{% endmacro %}

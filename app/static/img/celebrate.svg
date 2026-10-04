@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 200" width="260" height="200" role="img" aria-label="庆祝">
+  <defs>
+    <linearGradient id="clA" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8c63ff"/><stop offset="1" stop-color="#4d7bef"/>
+    </linearGradient>
+    <linearGradient id="clB" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffa8c5"/><stop offset="1" stop-color="#ff6f9c"/>
+    </linearGradient>
+    <linearGradient id="clC" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffd166"/><stop offset="1" stop-color="#ff9f43"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="130" cy="184" rx="78" ry="11" fill="#2c4a9c" opacity=".08"/>
+  <!-- 拉炮 -->
+  <g transform="rotate(-24 96 120)">
+    <path d="M64 92l56 56-30 14-40-40z" fill="url(#clA)"/>
+    <path d="M64 92l26 26-14 30-12-12z" fill="#ffffff" opacity=".28"/>
+  </g>
+  <!-- 彩带 -->
+  <path d="M118 84c16-16 22-34 18-52" stroke="#ff6f9c" stroke-width="8" stroke-linecap="round" fill="none"/>
+  <path d="M136 96c22-8 36-24 40-44" stroke="#ffd166" stroke-width="8" stroke-linecap="round" fill="none"/>
+  <path d="M104 74c-4-18 2-34 14-46" stroke="#7de2c3" stroke-width="8" stroke-linecap="round" fill="none"/>
+  <!-- 纸屑 -->
+  <rect x="164" y="42" width="14" height="14" rx="3" fill="url(#clB)" transform="rotate(24 171 49)"/>
+  <rect x="196" y="86" width="13" height="13" rx="3" fill="url(#clC)" transform="rotate(-18 202 92)"/>
+  <rect x="76" y="30" width="12" height="12" rx="3" fill="url(#clC)" transform="rotate(36 82 36)"/>
+  <circle cx="206" cy="42" r="7" fill="#8c63ff" opacity=".85"/>
+  <circle cx="60" cy="60" r="6" fill="#ff9f43" opacity=".9"/>
+  <circle cx="182" cy="132" r="6" fill="#22b07d" opacity=".85"/>
+  <circle cx="150" cy="30" r="5" fill="#4d7bef" opacity=".8"/>
+</svg>

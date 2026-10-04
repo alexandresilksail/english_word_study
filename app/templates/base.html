@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="在线英语单词学习：2000 常用词、英式发音、四种测试模式、个人学习进度追踪。">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}{{ app_title }} · 在线学英语{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/saas.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="{{ url_for('main.index') }}" title="{{ app_title }}">
+      <span class="logo">E</span>
+      <span>英语单词学习<small>ENGLISH WORD STUDY</small></span>
+    </a>
+
+    <nav class="nav">
+      {% if current_user.is_authenticated %}
+        <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('main.dashboard') }}" href="{{ url_for('main.dashboard') }}">🏠 学习主页</a>
+        <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('words.learn') }}" href="{{ url_for('words.learn') }}">📖 今日学习</a>
+        <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('words.browse') }}" href="{{ url_for('words.browse') }}">🔤 单词本</a>
+        <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('quiz.') and request.endpoint != 'quiz.quiz_finish' }}" href="{{ url_for('quiz.test_page') }}">🎯 测试</a>
+        <span class="nav-sep"></span>
+        <a href="{{ url_for('words.wrong') }}">📕 错题<b>{{ nav_stats.wrong or 0 }}</b></a>
+        <a href="{{ url_for('words.favorites') }}">⭐ 收藏<b>{{ nav_stats.favorites or 0 }}</b></a>
+        <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('words.progress') }}" href="{{ url_for('words.progress') }}">📊 进度</a>
+        {% if current_user.is_admin %}
+          <span class="nav-sep"></span>
+          <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('admin.') }}" href="{{ url_for('admin.console') }}">🛠 管理后台</a>
+        {% endif %}
+      {% else %}
+        <a href="{{ url_for('main.index') }}">🏠 首页</a>
+        <a href="{{ url_for('words.browse') }}">🔤 单词本</a>
+        <a href="{{ url_for('quiz.test_page') }}">🎯 测试</a>
+      {% endif %}
+    </nav>
+
+    <div class="topbar-right">
+      {% if current_user.is_authenticated %}
+        <span class="pill user-pill" title="当前登录账号">
+          <i class="avatar">{{ current_user.username[:1] }}</i>{{ current_user.username }}
+        </span>
+        <span class="pill progress-pill" title="学习进度：已学 {{ nav_stats.learned or 0 }} / {{ nav_stats.total_words or 0 }} 词">
+          📈 {{ nav_stats.progress_percent or 0 }}%
+        </span>
+        <a class="btn btn-outline btn-sm" href="{{ url_for('main.profile') }}">个人资料</a>
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('auth.logout') }}">退出登录</a>
+      {% else %}
+        <a class="btn btn-outline btn-sm" href="{{ url_for('auth.login') }}">登录</a>
+        <a class="btn btn-primary btn-sm" href="{{ url_for('auth.register') }}">免费注册</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flashes">
+        {% for cat, msg in messages %}
+          <div class="flash {{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+
+  <footer class="footer">
+    <p>© {{ 2026 }} {{ app_title }} · 数据保存在你自己的账号里，每个用户相互隔离</p>
+    <p>共 <b>{{ nav_stats.total_words if nav_stats else 2000 }}</b> 个单词 · 英式发音全部离线提供 · Made with <span class="heart">♥</span></p>
+  </footer>
+</main>
+
+<script src="{{ url_for('static', filename='js/saas.js') }}"></script>
+{% block scripts %}{% endblock %}
+<div class="toast" id="toast"></div>
+</body>
+</html>

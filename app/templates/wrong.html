@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% import "_macros.html" as mm %}
+{% block title %}错题本 · {{ app_title }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h2><span class="ico">📕</span>错题本</h2>
+    <p>答错自动收录，答对会自动移出 —— 这里是提分最快的地方</p>
+  </div>
+  <span class="tag red">共 {{ words|length }} 个</span>
+</div>
+
+{% if words %}
+  <div class="word-grid stagger">
+    {% for w in words %}{{ mm.word_card(w, form) }}{% endfor %}
+  </div>
+  <div style="margin-top:18px;display:flex;gap:10px">
+    <a class="btn btn-primary" href="{{ url_for('quiz.test_page', scope='wrong') }}">🎯 专项练习错题</a>
+    <a class="btn btn-outline" href="{{ url_for('words.learn', scope='wrong') }}">📖 逐个复习</a>
+  </div>
+{% else %}
+  {{ mm.empty_box('trophy.svg', '错题本是空的', '很棒！继续保持。答错的单词会自动出现在这里', url_for('quiz.test_page'), '去做一组测试') }}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}{{ w.word }} · 单词详情 · {{ app_title }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h2><span class="ico">📘</span>单词详情</h2>
+    <p>英式音标 · 中英双语例句 · 本地英式发音</p>
+  </div>
+  <a class="btn btn-ghost btn-sm" href="{{ request.referrer or url_for('words.browse') }}">← 返回</a>
+</div>
+
+<section class="card">
+  <div class="detail-head">
+    <div>
+      <h1 class="detail-word">
+        {{ w.word }}
+        <span class="detail-ipa">{{ w.phonetic_uk }}</span>
+      </h1>
+      <div class="tags" style="margin-top:10px">
+        {% if w.pos %}<span class="tag blue">{{ w.pos|pos_text }}</span>{% endif %}
+        <span class="tag {{ 'green' if w.status=='mastered' else ('amber' if w.status=='learning' else '') }}">{{ w.status_label }}</span>
+        {% if w.fav %}<span class="tag amber">★ 已收藏</span>{% endif %}
+        {% if w.in_wrong %}<span class="tag red">错题本 · {{ w.wrong_count }} 次</span>{% endif %}
+        {% if w.level %}<span class="tag">{{ w.level.replace('|', ' / ') }}</span>{% endif %}
+        <span class="tag">答对 {{ w.correct }} · 答错 {{ w.wrong }}</span>
+        {% if w.last_studied %}<span class="tag">最近学习 {{ w.last_studied }}</span>{% endif %}
+      </div>
+    </div>
+    <button class="speak big" data-play="{{ w.audio }}" title="播放英式发音">🔊</button>
+  </div>
+
+  <div class="detail-grid">
+    <div class="example">
+      <b style="font-size:11.5px;letter-spacing:1.4px;color:var(--ink-3)">中文释义</b>
+      <p style="margin:8px 0 0;font-size:17px;font-weight:600">{{ w.meaning_cn }}</p>
+    </div>
+    <div class="example">
+      <b style="font-size:11.5px;letter-spacing:1.4px;color:var(--ink-3)">例句 ENGLISH</b>
+      <p class="en" style="margin:8px 0 0">{{ w.example_en }}</p>
+      <p class="zh" style="margin:6px 0 0">{{ w.example_cn }}</p>
+    </div>
+  </div>
+
+  <div class="detail-nav">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <form method="post" action="{{ url_for('words.toggle_favorite', word_id=w.id) }}">
+        {{ form.hidden_tag() }}
+        <input type="hidden" name="word_id" value="{{ w.id }}">
+        <button class="btn {{ 'btn-outline' if not w.fav else 'btn-primary' }}">{{ '★ 已收藏，点击取消' if w.fav else '☆ 加入收藏' }}</button>
+      </form>
+      <form method="post" action="{{ url_for('words.set_status', word_id=w.id) }}">
+        {{ form.hidden_tag() }}
+        <input type="hidden" name="word_id" value="{{ w.id }}">
+        <input type="hidden" name="status" value="mastered">
+        <button class="btn btn-outline">✓ 标记为已掌握</button>
+      </form>
+      <form method="post" action="{{ url_for('words.set_status', word_id=w.id) }}">
+        {{ form.hidden_tag() }}
+        <input type="hidden" name="word_id" value="{{ w.id }}">
+        <input type="hidden" name="status" value="new">
+        <button class="btn btn-ghost">↩ 重置为未学习</button>
+      </form>
+    </div>
+    <div style="display:flex;gap:8px">
+      <a class="btn btn-primary" href="{{ url_for('quiz.test_page', mode='spell', scope='favorites') }}">⌨️ 用这个词测试</a>
+    </div>
+  </div>
+</section>
+
+<section class="grid" style="grid-template-columns:repeat(4,1fr);margin-top:14px">
+  <a class="feature" href="{{ url_for('quiz.test_page', mode='choice') }}"><em>🇬🇧</em><h4>英译中练习</h4><p>看英文选中文</p></a>
+  <a class="feature" href="{{ url_for('quiz.test_page', mode='zh_en') }}"><em>🇨🇳</em><h4>中译英练习</h4><p>看中文选英文</p></a>
+  <a class="feature" href="{{ url_for('quiz.test_page', mode='listen') }}"><em>🎧</em><h4>听音练习</h4><p>听发音选单词</p></a>
+  <a class="feature" href="{{ url_for('quiz.test_page', mode='spell') }}"><em>⌨️</em><h4>拼写练习</h4><p>手动拼出单词</p></a>
+</section>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{{ app_title }} · 在线背单词{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-blob b1"></div>
+  <div class="hero-blob b2"></div>
+  <div class="hero-blob b3"></div>
+
+  <div>
+    <span class="eyebrow">🦉 EWS · 在线英语单词学习</span>
+    <h1>2000 个常用词，<br><em>配上真正的英式发音</em>，随时开背</h1>
+    <p>注册一个账号，系统会记住你的每一次学习：进度、错题、收藏、正确率，全部属于你一个人。四种测试模式轮换练习，记得更牢。</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary btn-lg" href="{{ url_for('auth.register') }}">🎉 免费注册，马上开始</a>
+      <a class="btn btn-outline btn-lg" href="{{ url_for('auth.login') }}">已有账号，登录</a>
+      <a class="btn btn-ghost btn-lg" href="{{ url_for('auth.register') }}">了解更多功能 →</a>
+    </div>
+    <div class="hero-chips">
+      <span class="chip">📚 {{ total_words or 2000 }} 个常用单词</span>
+      <span class="chip">🔊 英式发音全部离线</span>
+      <span class="chip">🎯 4 种测试模式</span>
+      <span class="chip">🔒 数据相互隔离</span>
+    </div>
+  </div>
+
+  <div class="hero-side">
+    <img class="hero-art" src="{{ url_for('static', filename='img/hero-study.svg') }}" alt="学习插画">
+    <div class="hero-ring" style="--deg:{{ 360 }}deg">
+      <div><b>{{ total_words or 2000 }}</b><span>单词总量</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="grid feature-grid stagger">
+  <a class="feature" href="{{ url_for('words.learn') }}"><em>📖</em><h4>今日学习</h4><p>按状态筛选未学 / 学习中 / 已掌握，边看例句边听发音。</p></a>
+  <a class="feature" href="{{ url_for('quiz.test_page', mode='listen') }}"><em>🎧</em><h4>听音测试</h4><p>播放本地英式发音，从四个选项中挑出你听到的单词。</p></a>
+  <a class="feature" href="{{ url_for('quiz.test_page', mode='spell') }}"><em>⌨️</em><h4>拼写测试</h4><p>给出中文释义与首字母，亲手拼出完整单词。</p></a>
+  <a class="feature" href="{{ url_for('words.progress') }}"><em>📊</em><h4>学习进度</h4><p>掌握度、正确率、连续学习天数与成就徽章一目了然。</p></a>
+</section>
+
+<section class="card" style="margin-top:18px">
+  <div class="section-title"><h3>🔤 词库按首字母分布</h3><span class="muted small">A-Z 全覆盖</span></div>
+  <div class="letter-row">
+    {% for c in "abcdefghijklmnopqrstuvwxyz" %}
+      <span class="letter" title="注册后即可浏览 {{ c|upper }} 开头的单词">{{ c|upper }}</span>
+    {% endfor %}
+  </div>
+  <p class="muted small" style="margin:10px 0 0">
+    每个单词都包含：英文拼写、英式 IPA 音标、词性、中文释义、英文例句、中文例句与本地英式发音音频。
+  </p>
+</section>
+{% endblock %}

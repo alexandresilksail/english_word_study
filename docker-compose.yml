@@ -1,0 +1,69 @@
+# ==========================================================================
+# 英语单词学习 —— 生产编排
+# 服务器只需要：Docker + Docker Compose（不需要安装 Python / Nginx / Gunicorn）
+#
+# 三个容器：
+#   web     : Flask + Gunicorn（内含词库与 2000 个离线发音）
+#   nginx   : 反向代理，80 → 443，提供 HTTPS
+#   certbot : 自动续签 Let's Encrypt 证书
+# ==========================================================================
+
+services:
+  web:
+    build: .
+    image: english-word-study:latest
+    container_name: ews_web
+    restart: always
+    env_file:
+      - .env
+    # 只在容器网络内部暴露，外部统一走 Nginx
+    expose:
+      - "8000"
+    volumes:
+      # 数据库持久化到宿主机 ./data，容器删除/更新后数据仍在
+      - ./data:/app/instance
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0) if urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=4).status == 200 else sys.exit(1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      - ews_net
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: ews_nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      # certbot www 目录不能用 ro，签发时需要写入校验文件
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - web
+    networks:
+      - ews_net
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: ews_certbot
+    restart: unless-stopped
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    # 每 12 小时检查一次证书是否需要续签
+    entrypoint: >
+      /bin/sh -c "trap exit TERM;
+      while :; do certbot renew --webroot -w /var/www/certbot --quiet;
+      sleep 12h & wait $${!}; done;"
+    networks:
+      - ews_net
+
+networks:
+  ews_net:
+    driver: bridge

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 200" width="220" height="200" role="img" aria-label="奖杯">
+  <defs>
+    <linearGradient id="trA" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd166"/><stop offset="1" stop-color="#ff9f43"/>
+    </linearGradient>
+    <linearGradient id="trB" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffe29a"/><stop offset="1" stop-color="#ffb648"/>
+    </linearGradient>
+    <filter id="trS" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#c77700" flood-opacity=".22"/>
+    </filter>
+  </defs>
+  <ellipse cx="110" cy="182" rx="70" ry="11" fill="#2c4a9c" opacity=".09"/>
+  <g filter="url(#trS)">
+    <path d="M62 30h96v46c0 30-21 52-48 52s-48-22-48-52z" fill="url(#trA)"/>
+    <path d="M62 30h20v46c0 30-7 45-20 52-8-6-12-16-12-30z" fill="#ffffff" opacity=".22"/>
+    <path d="M62 40H42c-9 0-16 8-16 18s7 20 18 24c4 2 9 3 13 4" fill="none" stroke="url(#trB)"
+          stroke-width="10" stroke-linecap="round"/>
+    <path d="M158 40h20c9 0 16 8 16 18s-7 20-18 24c-4 2-9 3-13 4" fill="none" stroke="url(#trB)"
+          stroke-width="10" stroke-linecap="round"/>
+    <rect x="96" y="126" width="28" height="26" fill="#e8912f"/>
+    <rect x="72" y="150" width="76" height="18" rx="7" fill="url(#trB)"/>
+    <path d="M110 52l8 18 19 2-14 13 4 19-17-10-17 10 4-19-14-13 19-2z" fill="#fff6dd"/>
+  </g>
+</svg>

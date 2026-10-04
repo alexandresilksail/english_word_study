@@ -1,0 +1,20 @@
+# 构建上下文瘦身（COPY 已在 Dockerfile 中精确指定目录，这里做二次保险）
+.git
+.github
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.venv
+venv
+tests
+tests/**
+instance
+data
+logs
+backups
+certbot
+.env
+*.db
+*.db-journal
+*.md

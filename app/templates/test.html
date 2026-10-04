@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}测试中心 · {{ app_title }}{% endblock %}
+
+{% block content %}
+<div class="quiz-wrap">
+  <div class="page-head">
+    <div>
+      <h2><span class="ico">🎯</span>测试中心</h2>
+      <p>四种模式轮换练习：英译中、中译英、听音辨词、拼写填空</p>
+    </div>
+  </div>
+  <div id="quiz-root" data-mode="{{ preset_mode or 'choice' }}"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  // 把 URL 预选参数透传给主脚本（mode / scope）
+  var root = document.getElementById('quiz-root');
+  if (root && "{{ preset_scope }}") {
+    var s = "{{ preset_scope }}";
+    // 简单方案：写入 hidden 数据，saas.js 读取时可以复用
+    root.setAttribute('data-scope', s);
+  }
+})();
+</script>
+{% endblock %}

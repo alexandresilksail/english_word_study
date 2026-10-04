@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}注册账号 · {{ app_title }}{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <h2>🎉 创建你的学习账号</h2>
+    <p>30 秒完成注册，注册后自动登录，立刻开始背单词。</p>
+
+    <form method="post" action="{{ url_for('auth.register') }}" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="form-row">
+        <label for="email">邮箱（登录账号）</label>
+        {{ form.email(class="input", id="email", placeholder="you@example.com", autofocus=true) }}
+        <div class="errs">{% for e in form.email.errors %}<div>{{ e }}</div>{% endfor %}</div>
+      </div>
+      <div class="form-row">
+        <label for="username">用户名（显示在页面顶部）</label>
+        {{ form.username(class="input", id="username", placeholder="例如：小明") }}
+        <div class="errs">{% for e in form.username.errors %}<div>{{ e }}</div>{% endfor %}</div>
+      </div>
+      <div class="form-row">
+        <label for="password">密码</label>
+        {{ form.password(class="input", id="password", placeholder="至少 8 位，需含字母和数字") }}
+        <div class="hint">密码长度不少于 8 位，且必须同时包含字母和数字。</div>
+        <div class="errs">{% for e in form.password.errors %}<div>{{ e }}</div>{% endfor %}</div>
+      </div>
+      <div class="form-row">
+        <label for="confirm">确认密码</label>
+        {{ form.confirm(class="input", id="confirm", placeholder="再输入一次密码") }}
+        <div class="errs">{% for e in form.confirm.errors %}<div>{{ e }}</div>{% endfor %}</div>
+      </div>
+      {{ form.submit(class="btn btn-primary", value="注册并开始学习") }}
+    </form>
+
+    <div class="auth-alt">已有账号？<a href="{{ url_for('auth.login') }}">直接登录 →</a></div>
+    <div class="secure-note">🔒 密码仅以哈希形式保存；你的学习数据只有你自己能看到。</div>
+  </div>
+
+  <aside class="auth-side">
+    <img src="{{ url_for('static', filename='img/hero-study.svg') }}" alt="" style="max-width:100%;border-radius:16px">
+    <div class="perk"><em>⚡</em><div><b>无需安装</b><span>打开浏览器就能学，手机电脑都能用</span></div></div>
+    <div class="perk"><em>🔊</em><div><b>离线英式发音</b><span>2000 个单词音频本地播放，不依赖在线 TTS</span></div></div>
+    <div class="perk"><em>📕</em><div><b>错题自动收集</b><span>答错自动进错题本，答对自动移出</span></div></div>
+    <div class="perk"><em>⭐</em><div><b>收藏夹</b><span>重点单词一键收藏，随时复习</span></div></div>
+  </aside>
+</div>
+{% endblock %}

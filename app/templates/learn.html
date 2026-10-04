@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% import "_macros.html" as mm %}
+{% block title %}今日学习 · {{ app_title }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h2><span class="ico">📖</span>今日学习</h2>
+    <p>每张卡片都带英式发音，点 🔊 即可听；浏览过的单词会自动计入学习记录</p>
+  </div>
+  <div class="tags">
+    <span class="tag blue">范围：{{ scopes.get(scope, '全部') }}</span>
+    <span class="tag">共 {{ total }} 个单词</span>
+  </div>
+</div>
+
+<div class="toolbar">
+  <form method="get" action="{{ url_for('words.learn') }}" class="field">
+    <select name="scope" class="input" onchange="this.form.submit()">
+      {% for k, v in scopes.items() %}
+        <option value="{{ k }}" {{ 'selected' if k == scope }}>{{ v }}</option>
+      {% endfor %}
+    </select>
+    {% if letter %}<input type="hidden" name="letter" value="{{ letter }}">{% endif %}
+  </form>
+  <div style="width:100%"></div>
+</div>
+
+<div class="letter-row">
+  <a class="letter all {{ 'on' if not letter }}" href="{{ url_for('words.learn', scope=scope) }}">全部</a>
+  {% for L in letters %}
+    <a class="letter {{ 'on' if letter == L|lower }}" href="{{ url_for('words.learn', letter=L|lower, scope=scope) }}">{{ L }}</a>
+  {% endfor %}
+</div>
+
+{% if words %}
+  <div class="word-grid stagger">
+    {% for w in words %}{{ mm.word_card(w, form) }}{% endfor %}
+  </div>
+  {{ mm.pager(page, pages, 'words.learn', {'scope': scope, 'letter': letter}) }}
+{% else %}
+  {{ mm.empty_box('empty-book.svg', '这个范围暂时没有单词', '换一个筛选条件试试，或者从全部单词开始', url_for('words.learn'), '回到全部单词') }}
+{% endif %}
+{% endblock %}

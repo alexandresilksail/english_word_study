@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% import "_macros.html" as mm %}
+{% block title %}我的收藏 · {{ app_title }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h2><span class="ico">⭐</span>我的收藏</h2>
+    <p>重点单词放在这里，随时回来复习</p>
+  </div>
+  <span class="tag amber">共 {{ words|length }} 个</span>
+</div>
+
+{% if words %}
+  <div class="word-grid stagger">
+    {% for w in words %}{{ mm.word_card(w, form) }}{% endfor %}
+  </div>
+  <div style="margin-top:18px;display:flex;gap:10px">
+    <a class="btn btn-primary" href="{{ url_for('quiz.test_page', scope='favorites') }}">🎯 用收藏单词测试</a>
+    <a class="btn btn-outline" href="{{ url_for('words.browse') }}">去单词本继续收藏</a>
+  </div>
+{% else %}
+  {{ mm.empty_box('empty-star.svg', '收藏夹还是空的', '在单词卡片上点一下 ☆ 就能收藏啦', url_for('words.browse'), '去挑几个单词') }}
+{% endif %}
+{% endblock %}

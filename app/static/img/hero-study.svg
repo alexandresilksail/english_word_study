@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 420" width="560" height="420" role="img" aria-label="学习插画">
+  <defs>
+    <linearGradient id="hBlue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8fb4ff"/><stop offset="1" stop-color="#4d7bef"/>
+    </linearGradient>
+    <linearGradient id="hPink" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffa8c5"/><stop offset="1" stop-color="#ff6f9c"/>
+    </linearGradient>
+    <linearGradient id="hAmber" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffd166"/><stop offset="1" stop-color="#ff9f43"/>
+    </linearGradient>
+    <linearGradient id="hMint" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7de2c3"/><stop offset="1" stop-color="#22b07d"/>
+    </linearGradient>
+    <linearGradient id="hPurple" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#c4a8ff"/><stop offset="1" stop-color="#8c63ff"/>
+    </linearGradient>
+    <filter id="hShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#2c4a9c" flood-opacity=".16"/>
+    </filter>
+  </defs>
+
+  <ellipse cx="280" cy="372" rx="186" ry="20" fill="#2c4a9c" opacity=".08"/>
+
+  <!-- 放射光 -->
+  <g opacity=".5">
+    <path d="M280 40v34" stroke="#cfdcff" stroke-width="7" stroke-linecap="round"/>
+    <path d="M120 90l22 24" stroke="#cfdcff" stroke-width="7" stroke-linecap="round"/>
+    <path d="M440 90l-22 24" stroke="#cfdcff" stroke-width="7" stroke-linecap="round"/>
+    <path d="M60 210h30" stroke="#ffd9e6" stroke-width="7" stroke-linecap="round"/>
+    <path d="M470 210h30" stroke="#ffd9e6" stroke-width="7" stroke-linecap="round"/>
+  </g>
+
+  <!-- 书本堆 -->
+  <g filter="url(#hShadow)">
+    <rect x="150" y="300" width="260" height="42" rx="10" fill="url(#hPurple)"/>
+    <rect x="164" y="266" width="232" height="42" rx="10" fill="url(#hMint)"/>
+    <rect x="178" y="232" width="204" height="42" rx="10" fill="url(#hAmber)"/>
+    <rect x="150" y="304" width="260" height="12" rx="6" fill="#ffffff" opacity=".30"/>
+    <rect x="164" y="270" width="232" height="12" rx="6" fill="#ffffff" opacity=".30"/>
+    <rect x="178" y="236" width="204" height="12" rx="6" fill="#ffffff" opacity=".30"/>
+  </g>
+
+  <!-- 打开的书 -->
+  <g filter="url(#hShadow)" transform="translate(280 150)">
+    <path d="M-108 22c26-16 62-16 88 0 4 3 4 8 0 11-26 16-62 16-88 0-4-3-4-8 0-11z" fill="#ffffff"/>
+    <path d="M108 22c-26-16-62-16-88 0-4 3-4 8 0 11 26 16 62 16 88 0 4-3 4-8 0-11z" fill="#f2f6ff"/>
+    <path d="M0 22v11" stroke="#dbe4f7" stroke-width="3"/>
+    <path d="M-84 12c18-8 40-8 58-2M-84 22c18-8 40-8 58-2M-84 32c18-8 40-8 58-2"
+          stroke="#cfdcff" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <path d="M84 12c-18-8-40-8-58-2M84 22c-18-8-40-8-58-2M84 32c-18-8-40-8-58-2"
+          stroke="#cfdcff" stroke-width="4" stroke-linecap="round" fill="none"/>
+  </g>
+
+  <!-- A 气泡 -->
+  <g filter="url(#hShadow)">
+    <circle cx="120" cy="120" r="40" fill="url(#hBlue)"/>
+    <text x="120" y="136" font-family="Segoe UI, Arial, sans-serif" font-size="42" font-weight="800"
+          fill="#ffffff" text-anchor="middle">A</text>
+  </g>
+  <!-- 拼音气泡 -->
+  <g filter="url(#hShadow)">
+    <circle cx="446" cy="140" r="34" fill="url(#hPink)"/>
+    <text x="446" y="152" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="800"
+          fill="#ffffff" text-anchor="middle">🔊</text>
+  </g>
+  <!-- 星星 -->
+  <g>
+    <path d="M436 250l7 16 17 2-12 12 3 17-15-9-15 9 3-17-12-12 17-2z" fill="url(#hAmber)"/>
+    <path d="M92 250l5 12 13 2-9 9 2 13-11-7-11 7 2-13-9-9 13-2z" fill="url(#hMint)" opacity=".9"/>
+  </g>
+</svg>

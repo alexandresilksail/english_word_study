@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% import "_macros.html" as mm %}
+{% block title %}学习进度 · {{ app_title }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h2><span class="ico">📊</span>学习进度</h2>
+    <p>掌握度、正确率、测试历史与成就，全部属于 {{ current_user.username }}</p>
+  </div>
+  <span class="tag blue">总进度 {{ stats.progress_percent }}%</span>
+</div>
+
+<section class="stat-grid stagger">
+  <div class="stat s-learning"><div class="ico">📘</div><b>{{ stats.learned }}</b><span>已学习单词</span></div>
+  <div class="stat s-mastered"><div class="ico">✅</div><b>{{ stats.mastered }}</b><span>已掌握单词</span></div>
+  <div class="stat s-acc"><div class="ico">🎯</div><b>{{ stats.accuracy }}%</b><span>答题正确率</span></div>
+  <div class="stat"><div class="ico">✍️</div><b>{{ stats.total_answers }}</b><span>累计答题</span></div>
+  <div class="stat"><div class="ico">🏆</div><b>{{ stats.tests }}</b><span>完成测试</span></div>
+</section>
+
+<div class="grid" style="grid-template-columns:1.2fr .8fr">
+  <div class="card">
+    <div class="section-title"><h3>📈 近 7 天答题趋势</h3><span class="muted small">柱高为当天答题数</span></div>
+    <div class="chart">
+      {% set maxv = trend|map(attribute='total')|max or 1 %}
+      {% for d in trend %}
+        <div class="col" title="{{ d.day }}：答对 {{ d.correct }}/{{ d.total }}">
+          <div class="bar2" style="height:{{ (d.total / maxv * 78)|round|int }}px"></div>
+          <small>{{ d.label }}</small>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="section-title" style="margin-top:22px"><h3>🎯 掌握度分布</h3></div>
+    <div class="grid" style="gap:12px">
+      {% set total_labeled = by_status.get('mastered',0) + by_status.get('learning',0) + by_status.get('new',0) %}
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+          <span>✅ 已掌握</span><b>{{ by_status.get('mastered', 0) }}</b>
+        </div>
+        {{ mm.progress_bar(((by_status.get('mastered',0) / (total_labeled or 1)) * 100)|round|int, 'green') }}
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+          <span>📘 学习中</span><b>{{ by_status.get('learning', 0) }}</b>
+        </div>
+        {{ mm.progress_bar(((by_status.get('learning',0) / (total_labeled or 1)) * 100)|round|int, 'shine') }}
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+          <span>🆕 未学习</span><b>{{ stats.new_words }}</b>
+        </div>
+        {{ mm.progress_bar(stats.progress_percent, 'shine') }}
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="streak-card" style="margin-bottom:14px">
+      <span class="flame">🔥</span>
+      <div><b>连续学习 {{ stats.streak }} 天</b><span>保持每天答几题，记录会持续累积</span></div>
+    </div>
+    <div class="card">
+      <div class="section-title"><h3>🏅 成就徽章</h3></div>
+      <div class="badge-row">
+        {% for b in badges %}
+          <div class="badge {{ 'got' if b.unlocked }}"><em>{{ b.icon }}</em><div><b>{{ b.name }}</b><span>{{ b.desc }}</span></div></div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="card" style="margin-top:16px">
+  <div class="section-title"><h3>🕘 测试历史</h3><span class="muted small">最近 {{ history|length }} 条</span></div>
+  {% if history %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>时间</th><th>模式</th><th>得分</th><th>正确率</th><th>用时</th></tr></thead>
+        <tbody>
+        {% for t in history %}
+          <tr>
+            <td>{{ t.created_at|dt }}</td>
+            <td><span class="tag blue">{{ mode_labels.get(t.mode, t.mode) }}</span></td>
+            <td><b>{{ t.score }}/{{ t.total }}</b></td>
+            <td><span class="score-pill {{ 'hi' if t.percent>=80 else ('mid' if t.percent>=50 else 'lo') }}">{{ t.percent }}%</span></td>
+            <td class="small muted">{{ t.duration_sec }} 秒</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    {{ mm.empty_box('🎯', '还没有测试记录', '完成第一组测试后，这里会显示你的成绩曲线', url_for('quiz.test_page'), '开始测试') }}
+  {% endif %}
+</section>
+{% endblock %}

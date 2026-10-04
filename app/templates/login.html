@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}用户登录 · {{ app_title }}{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <h2>👋 欢迎回来</h2>
+    <p>登录后继续你的学习计划，进度和错题都在等你。</p>
+
+    <form method="post" action="{{ url_for('auth.login', next=request.args.get('next')) }}" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="form-row">
+        <label for="email">邮箱</label>
+        {{ form.email(class="input", id="email", placeholder="you@example.com", autofocus=true) }}
+        <div class="errs">{% for e in form.email.errors %}<div>{{ e }}</div>{% endfor %}</div>
+      </div>
+      <div class="form-row">
+        <label for="password">密码</label>
+        {{ form.password(class="input", id="password", placeholder="请输入密码") }}
+        <div class="errs">{% for e in form.password.errors %}<div>{{ e }}</div>{% endfor %}</div>
+      </div>
+      <div class="agree-row">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          {{ form.remember(id="remember") }} 记住我（14 天内免登录）
+        </label>
+      </div>
+      {{ form.submit(class="btn btn-primary", value="登录") }}
+      {% for e in form.errors.get('csrf_token', []) %}<div class="errs" style="margin-top:8px"><div>{{ e }}</div></div>{% endfor %}
+    </form>
+
+    <div class="auth-alt">还没有账号？<a href="{{ url_for('auth.register') }}">免费注册一个 →</a></div>
+    <div class="secure-note">🔒 密码采用 pbkdf2-sha256 加盐哈希保存，即使数据库泄露也无法还原明文。</div>
+  </div>
+
+  <aside class="auth-side">
+    <img src="{{ url_for('static', filename='img/mascot-owl.svg') }}" alt="" style="height:120px;margin:0 auto">
+    <div class="perk"><em>📖</em><div><b>2000 常用单词</b><span>带英式音标、双语例句与本地发音</span></div></div>
+    <div class="perk"><em>🎯</em><div><b>四种测试模式</b><span>中英互译、听音辨词、拼写填空</span></div></div>
+    <div class="perk"><em>📊</em><div><b>个人数据看板</b><span>掌握度、正确率、连续学习天数</span></div></div>
+    <div class="perk"><em>🔐</em><div><b>数据隔离</b><span>每个账号只能看到自己的学习记录</span></div></div>
+  </aside>
+</div>
+{% endblock %}

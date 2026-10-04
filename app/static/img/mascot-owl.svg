@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240" role="img" aria-label="猫头鹰吉祥物">
+  <defs>
+    <linearGradient id="owlBody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7aa2ff"/>
+      <stop offset="1" stop-color="#4d7bef"/>
+    </linearGradient>
+    <linearGradient id="owlBelly" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#eaf0ff"/>
+    </linearGradient>
+    <linearGradient id="owlCap" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffb648"/>
+      <stop offset="1" stop-color="#ff8a3d"/>
+    </linearGradient>
+    <filter id="owlSoft" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="6" stdDeviation="9" flood-color="#2c4a9c" flood-opacity=".18"/>
+    </filter>
+  </defs>
+
+  <ellipse cx="120" cy="216" rx="66" ry="11" fill="#2c4a9c" opacity=".10"/>
+
+  <g filter="url(#owlSoft)">
+    <!-- 耳羽 -->
+    <path d="M52 66c-6-22-4-40 2-46 8 8 18 20 24 32z" fill="#4d7bef"/>
+    <path d="M188 66c6-22 4-40-2-46-8 8-18 20-24 32z" fill="#4d7bef"/>
+    <!-- 身体 -->
+    <path d="M120 32c46 0 74 40 74 88 0 44-30 74-74 74s-74-30-74-74c0-48 28-88 74-88z" fill="url(#owlBody)"/>
+    <!-- 肚子 -->
+    <path d="M120 96c30 0 48 26 48 56 0 30-20 46-48 46s-48-16-48-46c0-30 18-56 48-56z" fill="url(#owlBelly)"/>
+    <!-- 眼窝 -->
+    <circle cx="90" cy="100" r="30" fill="#ffffff"/>
+    <circle cx="150" cy="100" r="30" fill="#ffffff"/>
+    <circle cx="90" cy="102" r="14" fill="#20304f"/>
+    <circle cx="150" cy="102" r="14" fill="#20304f"/>
+    <circle cx="95" cy="96" r="5" fill="#ffffff"/>
+    <circle cx="155" cy="96" r="5" fill="#ffffff"/>
+    <!-- 嘴 -->
+    <path d="M120 118l10 14-10 8-10-8z" fill="#ffa02e"/>
+    <!-- 腮红 -->
+    <ellipse cx="70" cy="132" rx="11" ry="7" fill="#ff8fa3" opacity=".5"/>
+    <ellipse cx="170" cy="132" rx="11" ry="7" fill="#ff8fa3" opacity=".5"/>
+    <!-- 翅 -->
+    <path d="M48 108c-8 16-8 40 2 56 6-18 8-38 6-56z" fill="#3f6adc" opacity=".85"/>
+    <path d="M192 108c8 16 8 40-2 56-6-18-8-38-6-56z" fill="#3f6adc" opacity=".85"/>
+    <!-- 学士帽 -->
+    <path d="M120 6l70 26-70 26-70-26z" fill="url(#owlCap)"/>
+    <path d="M78 44v22c0 12 19 20 42 20s42-8 42-20V44l-42 16z" fill="#ff9f43"/>
+    <path d="M186 36v34" stroke="#ffd36b" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="186" cy="76" r="7" fill="#ffd36b"/>
+  </g>
+</svg>

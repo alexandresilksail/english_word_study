@@ -1,0 +1,107 @@
+/* ==========================================================================
+   SaaS 版补充样式：登录注册、表单、闪现消息、徽章表格、管理员后台
+   在桌面版 app.css 基础上叠加，不改动原有类
+   ========================================================================== */
+
+/* ---------- 闪现消息 ---------- */
+.flashes{margin-bottom:14px;display:grid;gap:8px}
+.flash{
+  padding:11px 15px;border-radius:13px;font-size:13.5px;font-weight:600;
+  border:1px solid transparent;animation:fadeUp .35s var(--ease);
+  display:flex;align-items:flex-start;gap:9px;
+}
+.flash.success{background:var(--green-bg);color:var(--green);border-color:#b9e8ce}
+.flash.error,
+.flash.danger{background:var(--red-bg);color:var(--red);border-color:#f6caca}
+.flash.info{background:var(--brand-2);color:var(--brand-dark);border-color:#d9e3ff}
+.flash.warning{background:var(--amber-bg);color:var(--amber);border-color:#fbe0b5}
+
+/* ---------- 顶部用户区 ---------- */
+.user-pill::before{content:"";display:none}
+.user-pill{
+  background:linear-gradient(135deg,#eaf0ff,#f3ecff);border:1px solid #e0e6fb;
+  padding:5px 13px 5px 5px;
+}
+.avatar{
+  width:26px;height:26px;border-radius:9px;font-style:normal;font-weight:800;font-size:12.5px;
+  background:linear-gradient(135deg,var(--brand),var(--violet));color:#fff;
+  display:inline-flex;align-items:center;justify-content:center;flex:none;
+}
+.progress-pill::before{content:"";display:none}
+.progress-pill{background:linear-gradient(135deg,#e3f8f0,#eaf7ff);border:1px solid #d5efe4;color:#0f8a5f}
+
+/* ---------- 登录 / 注册 ---------- */
+.auth-wrap{max-width:1000px;margin:26px auto;display:grid;grid-template-columns:1.05fr .95fr;gap:22px;align-items:start}
+.auth-card{
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius-xl);
+  padding:30px 32px;box-shadow:0 18px 44px rgba(74,108,247,.10);
+}
+.auth-card h2{margin:0 0 6px;font-size:24px;letter-spacing:-.4px}
+.auth-card > p{margin:0 0 20px;color:var(--ink-2);font-size:13.5px}
+.form-row{margin-bottom:15px}
+.form-row label{display:block;font-size:12.5px;font-weight:700;color:var(--ink-2);margin-bottom:6px}
+.form-row .input,.form-row input[type=password],.form-row input[type=text],.form-row input[type=email]{
+  width:100%;min-width:0;
+}
+.form-row .hint{font-size:11.5px;color:var(--ink-3);margin-top:5px}
+.form-row .errs{margin-top:6px}
+.form-row .errs div{font-size:12px;color:var(--red);font-weight:600}
+.agree-row{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2);margin:4px 0 18px}
+.auth-card .btn-primary{width:100%;justify-content:center;padding:12px 18px;font-size:14.5px}
+.auth-alt{text-align:center;margin-top:14px;font-size:13px;color:var(--ink-2)}
+.auth-alt a{color:var(--brand);font-weight:700}
+.auth-side{display:grid;gap:12px}
+.perk{
+  display:flex;gap:11px;align-items:flex-start;background:#fff;border:1px solid var(--line);
+  border-radius:16px;padding:13px 15px;box-shadow:var(--shadow-sm);
+}
+.perk em{font-style:normal;font-size:19px;line-height:1}
+.perk b{display:block;font-size:13.5px;margin-bottom:2px}
+.perk span{font-size:12.5px;color:var(--ink-2)}
+@media(max-width:900px){.auth-wrap{grid-template-columns:1fr}.auth-side{display:none}}
+
+/* ---------- 账号安全提示条 ---------- */
+.secure-note{
+  display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-2);
+  background:#f7f9ff;border:1px dashed #dfe6fb;border-radius:12px;padding:9px 12px;margin-top:14px;
+}
+
+/* ---------- 管理员后台 ---------- */
+.admin-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:16px}
+@media(max-width:900px){.admin-grid{grid-template-columns:repeat(2,1fr)}}
+.admin-stat{
+  background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px 16px;
+  box-shadow:var(--shadow-sm);position:relative;overflow:hidden;
+}
+.admin-stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--violet)}
+.admin-stat b{display:block;font-size:25px;letter-spacing:-.6px;line-height:1.2;font-variant-numeric:tabular-nums}
+.admin-stat span{font-size:12.5px;color:var(--ink-2)}
+.admin-stat em{font-style:normal;font-size:17px;float:right;opacity:.9}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:var(--shadow-sm)}
+.table-wrap table{margin:0}
+.table-wrap th{background:#fafbff;white-space:nowrap}
+.tbl-badge{font-size:11px;padding:2px 8px;border-radius:7px;background:var(--slate-bg);color:var(--ink-2);font-weight:700}
+.tbl-badge.admin{background:var(--violet-2);color:#6d3ff5}
+.mini-chart{display:flex;align-items:flex-end;gap:6px;height:74px;padding-top:8px}
+.mini-chart .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+.mini-chart .bar2{width:100%;max-width:30px;border-radius:7px 7px 0 0;min-height:4px;background:linear-gradient(180deg,#8c63ff,#d9c9ff)}
+.mini-chart small{font-size:10px;color:var(--ink-3)}
+
+/* ---------- 单词卡操作行 ---------- */
+.card-actions{display:flex;gap:6px;align-items:center;margin-top:auto;padding-top:4px;flex-wrap:wrap}
+.card-actions form{margin:0}
+.card-actions .icon-btn{
+  width:30px;height:30px;border-radius:10px;border:1px solid var(--line);background:#fff;
+  display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;
+  transition:.16s var(--ease);
+}
+.card-actions .icon-btn:hover{border-color:var(--brand);transform:translateY(-2px)}
+.card-actions .icon-btn.on{background:var(--amber-bg);border-color:#fbe0b5}
+.word-card .mean-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+
+/* ---------- 听力/测试内的护眼卡片 ---------- */
+.mode-badge .ico{font-size:14px}
+
+/* ---------- 空操作提示 ---------- */
+.inline-form{display:inline}
+.inline-form button{border:0;background:none;padding:0;color:var(--brand);font-weight:700;cursor:pointer;font-size:12.5px}

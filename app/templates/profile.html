@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% import "_macros.html" as mm %}
+{% block title %}个人资料 · {{ app_title }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h2><span class="ico">👤</span>个人资料</h2>
+    <p>管理你的账号信息与登录密码</p>
+  </div>
+  <span class="tag blue">注册第 {{ joined_days }} 天</span>
+</div>
+
+<div class="grid" style="grid-template-columns:.95fr 1.05fr">
+  <div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="section-title"><h3>👋 基本信息</h3></div>
+      <div class="kv" style="display:grid;gap:12px">
+        <div><b>用户名</b><p>{{ current_user.username }}</p></div>
+        <div><b>邮箱（登录账号）</b><p class="mono">{{ current_user.email }}</p></div>
+        <div><b>账号类型</b><p>{{ '🛠 管理员' if current_user.is_admin else '🎓 普通用户' }}</p></div>
+        <div><b>注册时间</b><p>{{ current_user.created_at|dt('%Y-%m-%d %H:%M') }}</p></div>
+        <div><b>最近登录</b><p>{{ (current_user.last_login_at|dt) or '首次登录' }}</p></div>
+        <div><b>登录次数</b><p>{{ current_user.login_count or 0 }} 次</p></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><h3>📊 我的数据</h3></div>
+      <div class="stat-grid" style="grid-template-columns:repeat(2,1fr);gap:10px;margin:0">
+        <div class="stat"><div class="ico">📘</div><b>{{ stats.learned }}</b><span>已学习</span></div>
+        <div class="stat s-mastered"><div class="ico">✅</div><b>{{ stats.mastered }}</b><span>已掌握</span></div>
+        <div class="stat s-acc"><div class="ico">🎯</div><b>{{ stats.accuracy }}%</b><span>正确率</span></div>
+        <div class="stat"><div class="ico">🔥</div><b>{{ stats.streak }}</b><span>连续天数</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="section-title"><h3>✏️ 修改用户名</h3></div>
+      <form method="post" action="{{ url_for('main.profile') }}" novalidate>
+        {{ form.hidden_tag() }}
+        <input type="hidden" name="form_kind" value="profile">
+        <div class="form-row">
+          <label for="username">新的用户名</label>
+          {{ form.username(class="input", id="username") }}
+          <div class="errs">{% for e in form.username.errors %}<div>{{ e }}</div>{% endfor %}</div>
+        </div>
+        {{ form.submit(class="btn btn-primary") }}
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><h3>🔐 修改密码</h3></div>
+      <form method="post" action="{{ url_for('main.profile') }}" novalidate>
+        {{ pwd_form.hidden_tag() }}
+        <input type="hidden" name="form_kind" value="password">
+        <div class="form-row">
+          <label for="current_password">当前密码</label>
+          {{ pwd_form.current_password(class="input", id="current_password") }}
+          <div class="errs">{% for e in pwd_form.current_password.errors %}<div>{{ e }}</div>{% endfor %}</div>
+        </div>
+        <div class="form-row">
+          <label for="new_password">新密码</label>
+          {{ pwd_form.new_password(class="input", id="new_password") }}
+          <div class="errs">{% for e in pwd_form.new_password.errors %}<div>{{ e }}</div>{% endfor %}</div>
+        </div>
+        <div class="form-row">
+          <label for="confirm2">确认新密码</label>
+          {{ pwd_form.confirm(class="input", id="confirm2") }}
+          <div class="errs">{% for e in pwd_form.confirm.errors %}<div>{{ e }}</div>{% endfor %}</div>
+        </div>
+        {{ pwd_form.submit(class="btn btn-primary") }}
+      </form>
+      <div class="secure-note">🔒 修改成功后，下次登录请使用新密码。</div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="section-title"><h3>🕘 最近作答</h3></div>
+      {% if recent %}
+        <div class="tags" style="flex-direction:column;align-items:stretch;gap:7px">
+          {% for r in recent %}
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+              <span class="small">{% if r.word %}{{ r.word.word }}{% else %}(已删除){% endif %}</span>
+              <span class="tag {{ 'green' if r.is_correct else 'red' }}">{{ '✓ 正确' if r.is_correct else '✗ 错误' }}</span>
+              <span class="small muted">{{ r.created_at|dt('%m-%d %H:%M') }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="muted small" style="margin:0">还没有作答记录，去 <a href="{{ url_for('quiz.test_page') }}" style="color:var(--brand);font-weight:700">做一组测试</a> 吧。</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

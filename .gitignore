@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 环境与密钥（切勿提交）
+.env
+
+# 数据库与运行时数据
+instance/*.db
+instance/*.db-journal
+data/
+logs/
+backups/
+certbot/
+nginx/conf.d/app.conf
+
+# 测试
+.pytest_cache/
+.coverage
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
