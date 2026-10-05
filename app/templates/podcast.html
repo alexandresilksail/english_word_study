@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}播客与音频学习 · Podcast{% endblock %}
+{% block content %}
+<div class="v3-hero">
+  <div class="v3-hero-deco"><span class="v3-deco-orb">{{ icon('headphones') }}</span></div>
+  <h1>播客与音频学习 <span class="bi"><span class="bi-en">Podcast</span></span></h1>
+  <p>把一段音频变成一套学习材料：文稿 → 生词 → 语法 → 精听 → 测验。架构已就绪，内容库即将上线。</p>
+</div>
+
+<div class="sec-head">
+  <div>
+    <h2 class="sec-title">一条音频的转化链路 Pipeline</h2>
+    <p class="sec-sub">未来任意播客都能自动生成下方全套练习</p>
+  </div>
+</div>
+<div class="skill-grid">
+  {% for key, en, zh, desc, ico in pipeline %}
+  <div class="skill-card c-{{ loop.cycle('violet','sky','amber','emerald','rose','indigo') }}">
+    <div class="skill-ico">{{ icon(ico) }}</div>
+    <div class="skill-body">
+      <div class="skill-name">{{ zh }} <span class="bi"><span class="bi-en">{{ en }}</span></span></div>
+      <div class="skill-desc">{{ desc }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card" style="padding:22px;margin-top:20px">
+  <h3 style="margin-top:0">音频存储架构 Storage</h3>
+  <p class="muted">音频文件不进代码仓库、不进镜像，统一走对象存储 + CDN：</p>
+  <div class="skill-grid">
+    <div class="stat-card c-sky"><div class="stat-ico">{{ icon('cloud') }}</div><div class="stat-val">对象存储</div><div class="stat-label">Object Storage</div></div>
+    <div class="stat-card c-violet"><div class="stat-ico">{{ icon('globe') }}</div><div class="stat-val">CDN</div><div class="stat-label">全球加速</div></div>
+    <div class="stat-card c-emerald"><div class="stat-ico">{{ icon('check') }}</div><div class="stat-val">{{ storage.provider or '未配置' }}</div><div class="stat-label">当前 Provider</div></div>
+  </div>
+  <p class="muted" style="margin-top:10px">基地址：{{ storage.base }}</p>
+</div>
+
+{% if episodes %}
+<div class="sec-head"><h2 class="sec-title">可听内容 Episodes</h2></div>
+<div class="card" style="padding:6px 18px">
+  {% for e in episodes %}
+  <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--v3-line)">
+    <span style="flex:1"><b>{{ e.title }}</b>{% if e.channel %} <span class="muted">· {{ e.channel }}</span>{% endif %}</span>
+    <span class="muted">{{ e.level or '' }}</span>
+    {% if e.audio_url %}<a class="btn btn-secondary btn-sm" href="{{ e.audio_url }}">{{ icon('play') }} 播放</a>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card" style="padding:30px;text-align:center;margin-top:18px">
+  <div style="font-size:40px">🎧</div>
+  <h3 style="margin:8px 0">还没有可听内容 Not yet</h3>
+  <p class="muted">内容库上线后，这里会列出可听的播客单集。</p>
+</div>
+{% endif %}
+{% endblock %}

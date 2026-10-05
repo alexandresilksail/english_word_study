@@ -57,7 +57,9 @@ def create_app(config_object=None):
 
     # 双语（中文 + English）文案层：模板中可直接用 bi() / t() / bi_plain()
     from i18n import bi, bi_plain, t
-    app.jinja_env.globals.update(bi=bi, t=t, bi_plain=bi_plain)
+    from media_service import audio_url, cover_url
+    app.jinja_env.globals.update(bi=bi, t=t, bi_plain=bi_plain,
+                                 audio_url=audio_url, cover_url=cover_url)
 
     # 生产环境必须有 SECRET_KEY
     if not app.config.get("SECRET_KEY"):
@@ -110,7 +112,11 @@ def create_app(config_object=None):
 def _register_blueprints(app: Flask) -> None:
     from auth import auth_bp
     from routes.admin import admin_bp
+    from routes.api import api_bp
+    from routes.games import games_bp
+    from routes.learn import learn_bp
     from routes.main import main_bp
+    from routes.podcast import podcast_bp
     from routes.quiz import quiz_bp
     from routes.words import words_bp
 
@@ -118,6 +124,10 @@ def _register_blueprints(app: Flask) -> None:
     app.register_blueprint(main_bp)
     app.register_blueprint(words_bp)
     app.register_blueprint(quiz_bp)
+    app.register_blueprint(learn_bp)
+    app.register_blueprint(games_bp)
+    app.register_blueprint(podcast_bp)
+    app.register_blueprint(api_bp)      # REST API v1（未来多端共用）
     app.register_blueprint(admin_bp)
 
 
@@ -249,16 +259,33 @@ def _register_template_globals(app: Flask) -> None:
     def inject_globals():
         from models import TEST_MODE_LABELS
         from services import dashboard_stats
+        from flask import url_for
+        from models import SKILLS
         stats = None
+        gam = None
+        skills = []
         if current_user and current_user.is_authenticated:
             try:
                 stats = dashboard_stats(current_user.id)
+                from gamification import overview
+                gam = overview(current_user.id)
             except Exception:
                 stats = None
+                gam = None
+            # 顶部 Learn 下拉：六项技能（数据来自 models.SKILLS，单一来源）
+            for s in SKILLS:
+                item = dict(s)
+                item["url"] = (url_for("words.learn") if s["key"] == "vocabulary"
+                               else url_for("learn.skill", key=s["key"]))
+                skills.append(item)
         return dict(app_title=app.config.get("APP_TITLE_CN", "英语单词学习"),
+                    app_title_en=app.config.get("APP_TITLE_EN", "English Learning Platform"),
+                    app_version=app.config.get("APP_VERSION", "3.0.0"),
                     domain=app.config.get("DOMAIN", ""),
                     mode_labels=TEST_MODE_LABELS,
-                    nav_stats=stats)
+                    nav_stats=stats,
+                    nav_gam=gam,
+                    nav_skills=skills)
 
 
 def _register_filters(app: Flask) -> None:

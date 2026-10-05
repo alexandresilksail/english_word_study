@@ -1,69 +1,92 @@
 {% from "_macros.html" import icon %}
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-lang="both">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="英语单词学习 · English Word Study：2000 常用词、英式发音、四种测试模式、个人学习进度追踪。">
+  <meta name="description" content="English Learning Platform · 英语学习平台：2000 常用词、英式发音、四种测试、四款小游戏、XP 与连续学习激励。">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <meta name="theme-color" content="#1d4ed8">
-  <title>{% block title %}{{ app_title }} · {{ t('brand.tagline', 'en') }}{% endblock %}</title>
+  <meta name="theme-color" content="#6d5efc">
+  <title>{% block title %}{{ app_title }} · {{ app_title_en }}{% endblock %}</title>
   <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/saas.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/design.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/v3.css') }}">
 </head>
 <body>
 
 <header class="topbar">
   <div class="topbar-inner">
-    <a class="brand" href="{{ url_for('main.dashboard') if current_user.is_authenticated else url_for('main.index') }}"
-       title="{{ bi_plain('brand.name') }}">
-      <span class="brand-mark">EW</span>
+    <a class="brand" href="{{ url_for('main.dashboard') if current_user.is_authenticated else url_for('main.index') }}">
+      <span class="brand-mark">EL</span>
       <span class="brand-text">
-        <b>{{ t('brand.name') }}</b>
-        <small>English Word Study</small>
+        <b>{{ app_title }}</b>
+        <small>{{ app_title_en }}</small>
       </span>
     </a>
 
-    {# 桌面端主导航（≤768px 时隐藏，改由底部标签栏承担） #}
+    {# 桌面端主导航（≤768px 隐藏，改由底部标签栏承担） #}
     <nav class="ds-nav" aria-label="main">
       {% if current_user.is_authenticated %}
         <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('main.dashboard') }}"
            href="{{ url_for('main.dashboard') }}">{{ icon('dashboard') }}{{ bi('nav.dashboard') }}</a>
-        <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('words.learn') }}"
-           href="{{ url_for('words.learn') }}">{{ icon('book') }}{{ bi('nav.learn') }}</a>
-        <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('words.browse') }}"
-           href="{{ url_for('words.browse') }}">{{ icon('list') }}{{ bi('nav.browse') }}</a>
+
+        {# Learn：六项技能下拉 #}
+        <div class="nav-drop">
+          <a class="nav-drop-toggle {{ 'active' if request.endpoint and (request.endpoint.startswith('learn.') or request.endpoint.startswith('words.')) }}"
+             href="{{ url_for('learn.hub') }}">{{ icon('book') }}{{ bi('nav.learn') }}{{ icon('chevron-right') }}</a>
+          <div class="nav-drop-menu">
+            {% for s in nav_skills %}
+              <a href="{{ s.url }}">
+                <span class="nd-ico c-{{ s.color }}">{{ icon(s.icon) }}</span>
+                <span><b>{{ bi_plain('skill.' ~ s.key) }}</b>
+                  <small>{{ 'Ready' if s.ready else 'Coming soon' }}</small></span>
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+
         <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('quiz.') }}"
            href="{{ url_for('quiz.test_page') }}">{{ icon('quiz') }}{{ bi('nav.quiz') }}</a>
-        <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('words.wrong') }}"
-           href="{{ url_for('words.wrong') }}">{{ icon('review') }}{{ bi('nav.wrong') }}
-           {% if nav_stats.wrong %}<span class="nav-count">{{ nav_stats.wrong }}</span>{% endif %}</a>
-        <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('words.favorites') }}"
-           href="{{ url_for('words.favorites') }}">{{ icon('star') }}{{ bi('nav.favorites') }}
-           {% if nav_stats.favorites %}<span class="nav-count">{{ nav_stats.favorites }}</span>{% endif %}</a>
+        <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('games.') }}"
+           href="{{ url_for('games.index') }}">{{ icon('gamepad') }}{{ bi('nav.games') }}</a>
+        <a class="{{ 'active' if request.endpoint and request.endpoint == 'main.ai_tutor' }}"
+           href="{{ url_for('main.ai_tutor') }}">{{ icon('sparkles') }}{{ bi('nav.ai_tutor') }}</a>
         <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('words.progress') }}"
            href="{{ url_for('words.progress') }}">{{ icon('chart') }}{{ bi('nav.progress') }}</a>
+        <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('podcast.') }}"
+           href="{{ url_for('podcast.index') }}">{{ icon('headphones') }}{{ bi('nav.podcast') }}</a>
+
+        {# 收藏与错题做成图标快捷入口，节省横向空间 #}
+        <a class="nav-icon-link" href="{{ url_for('words.favorites') }}"
+           title="{{ bi_plain('nav.favorites') }}">{{ icon('star') }}
+           {% if nav_stats.favorites %}<span class="nav-count">{{ nav_stats.favorites }}</span>{% endif %}</a>
+        <a class="nav-icon-link" href="{{ url_for('words.wrong') }}"
+           title="{{ bi_plain('nav.wrong') }}">{{ icon('review') }}
+           {% if nav_stats.wrong %}<span class="nav-count">{{ nav_stats.wrong }}</span>{% endif %}</a>
+
         {% if current_user.is_admin %}
-          <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('admin.') }}"
-             href="{{ url_for('admin.console') }}">{{ icon('shield') }}{{ bi('nav.admin') }}</a>
+          <a href="{{ url_for('admin.console') }}" title="{{ bi_plain('nav.admin') }}">{{ icon('shield') }}</a>
         {% endif %}
       {% else %}
         <a href="{{ url_for('main.index') }}">{{ icon('home') }}{{ bi('nav.home') }}</a>
         <a href="{{ url_for('words.browse') }}">{{ icon('list') }}{{ bi('nav.browse') }}</a>
         <a href="{{ url_for('quiz.test_page') }}">{{ icon('quiz') }}{{ bi('nav.quiz') }}</a>
+        <a href="{{ url_for('games.index') }}">{{ icon('gamepad') }}{{ bi('nav.games') }}</a>
+        <a href="{{ url_for('podcast.index') }}">{{ icon('headphones') }}{{ bi('nav.podcast') }}</a>
       {% endif %}
     </nav>
 
     <div class="topbar-right">
       {% if current_user.is_authenticated %}
         <a class="user-chip" href="{{ url_for('main.profile') }}" title="{{ bi_plain('nav.profile') }}">
-          <i class="avatar">{{ current_user.username[:1] }}</i><b>{{ current_user.username }}</b>
+          <i class="avatar">{{ current_user.username[:1] }}</i>
+          <b>{{ current_user.username }}</b>
+          {% if nav_gam %}<span class="chip-lv">Lv {{ nav_gam.level }}</span>{% endif %}
         </a>
       {% endif %}
 
-      {# 语言切换：双语（默认）/ 仅中文 / 仅 English #}
       <button type="button" class="icon-btn" id="lang-toggle"
               title="{{ bi_plain('lang.switch') }}" aria-label="{{ bi_plain('lang.switch') }}">
         {{ icon('globe') }}
@@ -95,7 +118,7 @@
   {% block content %}{% endblock %}
 
   <footer class="footer">
-    <p><b>{{ bi('brand.name') }}</b> · {{ bi('brand.tagline') }}</p>
+    <p><b>{{ app_title }}</b> · {{ app_title_en }} <span class="muted">v{{ app_version }}</span></p>
     <p class="muted">{{ t('footer.wordbank') }} {{ nav_stats.total_words if nav_stats else 2000 }} {{ t('learn.words_unit') }} · {{ t('footer.offline') }}</p>
     <p class="muted">{{ t('footer.privacy') }}</p>
   </footer>
@@ -105,22 +128,22 @@
 {% if current_user.is_authenticated %}
 <nav class="tabbar" aria-label="mobile">
   <div class="tabbar-inner">
-    <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('words.learn') }}"
-       href="{{ url_for('words.learn') }}">{{ icon('book') }}<span>{{ bi('nav.learn') }}</span></a>
+    <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('main.dashboard') }}"
+       href="{{ url_for('main.dashboard') }}">{{ icon('dashboard') }}<span>{{ bi('nav.dashboard') }}</span></a>
+    <a class="{{ 'active' if request.endpoint and (request.endpoint.startswith('learn.') or request.endpoint.startswith('words.learn')) }}"
+       href="{{ url_for('learn.hub') }}">{{ icon('book') }}<span>{{ bi('nav.learn') }}</span></a>
     <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('quiz.') }}"
        href="{{ url_for('quiz.test_page') }}">{{ icon('quiz') }}<span>{{ bi('nav.quiz') }}</span></a>
-    <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('words.wrong') }}"
-       href="{{ url_for('words.wrong') }}">{{ icon('review') }}<span>{{ bi('nav.wrong') }}</span>
-       {% if nav_stats.wrong %}<i class="tab-badge">{{ nav_stats.wrong }}</i>{% endif %}</a>
-    <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('words.favorites') }}"
-       href="{{ url_for('words.favorites') }}">{{ icon('star') }}<span>{{ bi('nav.favorites') }}</span></a>
-    <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('words.progress') }}"
-       href="{{ url_for('words.progress') }}">{{ icon('chart') }}<span>{{ bi('nav.progress') }}</span></a>
+    <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('games.') }}"
+       href="{{ url_for('games.index') }}">{{ icon('gamepad') }}<span>{{ bi('nav.games') }}</span></a>
+    <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('main.profile') }}"
+       href="{{ url_for('main.profile') }}">{{ icon('user') }}<span>{{ bi('nav.profile') }}</span></a>
   </div>
 </nav>
 {% endif %}
 
 <script src="{{ url_for('static', filename='js/saas.js') }}"></script>
+<script src="{{ url_for('static', filename='js/v3.js') }}"></script>
 {% block scripts %}{% endblock %}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </body>

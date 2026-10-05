@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ text.zh or meta.zh }} · 小游戏{% endblock %}
+{% block content %}
+<script>window.GAME_KEY = "{{ key }}";</script>
+
+<div class="v3-hero" style="display:flex;align-items:center;justify-content:space-between;gap:20px">
+  <div>
+    <div class="v3-hero-deco" style="position:static;margin-bottom:14px">
+      <span class="v3-deco-orb">{{ icon('gamepad') }}</span>
+    </div>
+    <h1>{{ text.zh or meta.zh }}
+      <span class="bi"><span class="bi-en">{{ text.en or meta.en }}</span></span>
+    </h1>
+    <p>{{ text.desc_zh }} · {{ text.desc_en }}</p>
+  </div>
+</div>
+
+<div class="game-hud" id="game-hud"></div>
+<div class="game-stage" id="game-stage"></div>
+
+<div class="card" style="margin-top:18px;padding:22px">
+  <h3 style="margin:0 0 6px;font-size:17px">{{ icon('info') }} 怎么玩 How to play</h3>
+  <p class="muted" style="margin:0">{{ text.how_zh }} {{ text.how_en }}</p>
+  <p class="muted" style="margin:8px 0 0;font-size:13px">
+    所有计分与判分都在服务器完成，结果公平可靠；每天玩一小会儿就能累积 XP 与连续学习天数。
+  </p>
+</div>
+{% endblock %}

@@ -38,6 +38,9 @@ STRINGS: dict[str, tuple[str, str]] = {
     "nav.login": ("登录", "Login"),
     "nav.register": ("注册", "Register"),
     "nav.logout": ("退出登录", "Logout"),
+    "nav.games": ("游戏", "Games"),
+    "nav.ai_tutor": ("AI 导师", "AI Tutor"),
+    "nav.podcast": ("播客", "Podcast"),
 
     # ---------------------------------------------------------------- 通用动作
     "act.start": ("开始学习", "Start Learning"),
@@ -276,6 +279,18 @@ STRINGS: dict[str, tuple[str, str]] = {
     "lang.zh": ("中文", "Chinese"),
     "lang.en": ("English", "English"),
     "lang.both": ("双语", "Bilingual"),
+
+    # ----------------------------------------------------- 技能 / 游戏（模板备用；主来源是路由传入的 zh/en）
+    "skill.vocabulary": ("词汇", "Vocabulary"),
+    "skill.listening": ("听力", "Listening"),
+    "skill.reading": ("阅读", "Reading"),
+    "skill.grammar": ("语法", "Grammar"),
+    "skill.speaking": ("口语", "Speaking"),
+    "skill.writing": ("写作", "Writing"),
+    "game.word_match": ("单词配对", "Word Match"),
+    "game.speed_quiz": ("限时抢答", "Speed Quiz"),
+    "game.listening_challenge": ("听音挑战", "Listening Challenge"),
+    "game.word_builder": ("字母拼词", "Word Builder"),
 }
 
 

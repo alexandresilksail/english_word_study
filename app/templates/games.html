@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}小游戏 · Mini Games{% endblock %}
+{% block content %}
+<div class="v3-hero">
+  <div class="v3-hero-deco">
+    <span class="v3-deco-orb">{{ icon('gamepad') }}</span>
+    <span class="v3-deco-orb">{{ icon('bolt') }}</span>
+    <span class="v3-deco-orb">{{ icon('trophy') }}</span>
+  </div>
+  <h1>小游戏 <span class="bi"><span class="bi-en">Mini Games</span></span></h1>
+  <p>边玩边记：四款小游戏覆盖听、选、拼，玩得越久 XP 越多，连续学习天数也不会掉。</p>
+</div>
+
+<div class="sec-head">
+  <div>
+    <h2 class="sec-title">全部游戏 All games</h2>
+    <p class="sec-sub">选择一款开始，成绩会自动记录到你的账号</p>
+  </div>
+</div>
+
+<div class="game-grid">
+  {% for g in games %}
+  <a class="game-card c-{{ g.color or 'violet' }}" href="{{ g.url }}">
+    <div class="game-ico">{{ icon(g.icon or 'gamepad') }}</div>
+    <div class="game-body">
+      <div class="game-name">{{ g.zh }} <span class="bi"><span class="bi-en">{{ g.en }}</span></span></div>
+      <div class="game-desc">{{ g.desc_zh }}</div>
+      <div class="game-meta">
+        <span class="pill">最高 {{ g.best or 0 }}</span>
+        <span class="pill">玩过 {{ g.plays or 0 }} 次</span>
+        <span class="pill">正确率 {{ g.accuracy or 0 }}%</span>
+      </div>
+    </div>
+    <div class="game-go">{{ icon('chevron-right') }}</div>
+  </a>
+  {% endfor %}
+</div>
+
+{% set gnames = {
+  'word_match':'单词配对','speed_quiz':'限时抢答',
+  'listening_challenge':'听音挑战','word_builder':'字母拼词'} %}
+{% if recent %}
+<div class="sec-head"><h2 class="sec-title">最近成绩 Recent</h2></div>
+<div class="card" style="padding:6px 18px">
+  {% for r in recent %}
+  <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--v3-line)">
+    <span style="flex:1;font-weight:700">{{ gnames.get(r.game_key, r.game_key) }}</span>
+    <span style="color:var(--v3-brand);font-weight:800">{{ r.score }} 分</span>
+    <span class="muted" style="min-width:70px;text-align:right">{{ r.correct }}/{{ r.total }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

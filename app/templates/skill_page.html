@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ skill.zh }} · Skill{% endblock %}
+{% block content %}
+<div class="v3-hero">
+  <div class="v3-hero-deco"><span class="v3-deco-orb">{{ icon(skill.icon) }}</span></div>
+  <h1>{{ skill.zh }} <span class="bi"><span class="bi-en">{{ skill.en }}</span></span></h1>
+  <p>{{ skill.desc_zh }} · {{ skill.desc_en }}</p>
+</div>
+
+<div class="card" style="padding:22px;margin-top:-10px">
+  <div class="sec-head">
+    <h2 class="sec-title">即将上线 Coming soon</h2>
+  </div>
+  <p class="muted">该技能的内容正在制作中。下方是规划中的练习模块，上线后会自动出现，无需改代码。</p>
+  <div class="skill-grid">
+    {% for zh, en, desc in plan %}
+    <div class="skill-card c-{{ skill.color or 'indigo' }}">
+      <div class="skill-ico">{{ icon('rocket') }}</div>
+      <div class="skill-body">
+        <div class="skill-name">{{ zh }} <span class="bi"><span class="bi-en">{{ en }}</span></span></div>
+        <div class="skill-desc">{{ desc }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% if stat %}
+  <p class="muted" style="margin-top:14px">你在本技能已预留进度位：<b>{{ stat.xp or 0 }} XP</b>，上线即生效。</p>
+  {% endif %}
+</div>
+
+<div style="text-align:center;margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+  <a class="btn btn-secondary" href="{{ url_for('learn.hub') }}">{{ icon('chevron-right') }} 返回学习中心</a>
+  <a class="btn btn-primary" href="{{ url_for('words.learn') }}">先去背单词 Start with Vocabulary</a>
+</div>
+{% endblock %}

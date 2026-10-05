@@ -84,6 +84,17 @@ class Config:
     ADMIN_BOOTSTRAP_EMAIL = (os.environ.get("ADMIN_EMAIL") or "").strip().lower()
     ADMIN_BOOTSTRAP_PASSWORD = os.environ.get("ADMIN_PASSWORD") or ""
 
+    # ---------------- 媒体（音频 / 图片） ----------------
+    # 音频文件不进 GitHub、不进镜像、不进数据库：业务表只存逻辑标识，
+    # 真实地址由 media_service 解析。留空 = 用站内 /static（当前生产行为不变）；
+    # 将来接对象存储 + CDN 时只需设置这两个变量，无需改任何业务代码。
+    MEDIA_PROVIDER = (os.environ.get("MEDIA_PROVIDER") or "local").strip().lower()
+    MEDIA_BASE_URL = (os.environ.get("MEDIA_BASE_URL") or "").strip()
+
+    # ---------------- 产品版本（UI / API 展示用） ----------------
+    APP_VERSION = os.environ.get("APP_VERSION") or "3.0.0"
+    APP_TITLE_EN = os.environ.get("APP_TITLE_EN") or "English Learning Platform"
+
 
 class DevelopmentConfig(Config):
     DEBUG = True

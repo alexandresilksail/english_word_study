@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}词汇 · Vocabulary{% endblock %}
+{% block content %}
+<div class="v3-hero">
+  <div class="v3-hero-deco"><span class="v3-deco-orb">{{ icon('book') }}</span></div>
+  <h1>词汇 Vocabulary</h1>
+  <p>2000 个高频词，英式发音、例句、释义一应俱全。从下面的入口开始吧。</p>
+</div>
+
+<div class="sec-head">
+  <div>
+    <h2 class="sec-title">词汇模块 Modules</h2>
+    <p class="sec-sub">听、读、测、复习，一条龙</p>
+  </div>
+</div>
+<div class="skill-grid">
+  {% for m in modules %}
+  <a class="skill-card c-{{ m.color or 'violet' }}" href="{{ m.url }}">
+    <div class="skill-ico">{{ icon(m.icon) }}</div>
+    <div class="skill-body">
+      <div class="skill-name">{{ m.zh }} <span class="bi"><span class="bi-en">{{ m.en }}</span></span></div>
+      <div class="skill-desc">{{ m.desc_zh }}</div>
+    </div>
+    <div class="game-go">{{ icon('chevron-right') }}</div>
+  </a>
+  {% endfor %}
+</div>
+
+<div style="text-align:center;margin-top:20px">
+  <a class="btn btn-primary" href="{{ url_for('quiz.test_page') }}">做一组测试 Take a Quiz {{ icon('quiz') }}</a>
+</div>
+{% endblock %}
