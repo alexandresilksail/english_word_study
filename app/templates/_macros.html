@@ -1,75 +1,162 @@
+{# ==========================================================================
+   可复用 UI 组件库（Design System）
+   - icon()     自制内联 SVG 线性图标（无第三方图标库、无版权风险）
+   - word_card() 单词卡：严格按 Word → Pronunciation → Meaning → Example → Action
+   - pager() / empty_box() / progress_bar()
+   ========================================================================== #}
+
+{# ---------------------------------------------------------- 自制 SVG 图标 #}
+{% macro icon(name, cls='icon') %}
+{% set paths = {
+  'home':    'M3 10.5 12 3.2l9 7.3M5.5 9.4V20.8h13V9.4',
+  'dashboard':'M4 4h6.5v6.5H4zM13.5 4H20v6.5h-6.5zM4 13.5h6.5V20H4zM13.5 13.5H20V20h-6.5z',
+  'book':    'M12 7.2C10.6 5.7 7.2 5.2 4 5.7V18c3.2-.5 6.6.1 8 1.5 1.4-1.4 4.8-2 8-1.5V5.7c-3.2-.5-6.6 0-8 1.5zM12 7.2V19.5',
+  'list':    'M8.5 6H20M8.5 12H20M8.5 18H20M4 6h.01M4 12h.01M4 18h.01',
+  'quiz':    'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9zM12 13.2a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4z',
+  'review':  'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7.8v4.8M12 16.4v.01',
+  'star':    'M12 3.6l2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.9-5.4 2.9 1-6L3.3 10l6-.9z',
+  'chart':   'M3.5 20.5h17M7 20.5v-6.2M12 20.5V7M17 20.5v-9.5',
+  'user':    'M12 12.2a4.2 4.2 0 1 0 0-8.4 4.2 4.2 0 0 0 0 8.4zM4.8 20.4a7.2 7.2 0 0 1 14.4 0',
+  'shield':  'M12 3.2l7.5 2.8v5.6c0 4.4-3.1 7.7-7.5 8.8-4.4-1.1-7.5-4.4-7.5-8.8V6z',
+  'login':   'M14.5 3.2H19a1.8 1.8 0 0 1 1.8 1.8v14a1.8 1.8 0 0 1-1.8 1.8h-4.5M10 16.8l4.8-4.8L10 7.2M14.8 12H3.5',
+  'logout':  'M9.5 20.8H5a1.8 1.8 0 0 1-1.8-1.8V5a1.8 1.8 0 0 1 1.8-1.8h4.5M16 16.8l4.8-4.8L16 7.2M20.8 12H9.5',
+  'speaker': 'M4 9.2v5.6h3.6L12.4 19V5L7.6 9.2H4zM16 9.4a3.8 3.8 0 0 1 0 5.2M18.6 6.8a7.4 7.4 0 0 1 0 10.4',
+  'mail':    'M3.5 6.5h17v11h-17zM3.5 7l8.5 6 8.5-6',
+  'lock':    'M6.2 10.5h11.6v9.3H6.2zM8.6 10.5V7.8a3.4 3.4 0 0 1 6.8 0v2.7',
+  'check':   'M4.5 12.5l4.8 4.8L19.5 7',
+  'check-circle':'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8 12.3l2.8 2.8L16.3 9.6',
+  'search':  'M10.8 18a7.2 7.2 0 1 0 0-14.4 7.2 7.2 0 0 0 0 14.4zM16.2 16.2 20.5 20.5',
+  'chevron-right':'M9.5 5.5 16 12l-6.5 6.5',
+  'rotate':  'M20 12a8 8 0 1 1-2.6-5.9M20 4.5V10h-5.5',
+  'trash':   'M4.8 6.8h14.4M9.5 6.8V4.5h5v2.3M6.6 6.8l1 12.2h8.8l1-12.2',
+  'clock':   'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7.2V12l3.4 2.2',
+  'edit':    'M4.5 19.5h3.2L19 8.2a2.3 2.3 0 0 0-3.2-3.2L4.5 16.3z',
+  'globe':   'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3.2 12h17.6M12 3c2.4 2.4 3.6 5.4 3.6 9s-1.2 6.6-3.6 9c-2.4-2.4-3.6-5.4-3.6-9S9.6 5.4 12 3z',
+  'info':    'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v5M12 7.8v.01',
+  'plus':    'M12 5.5v13M5.5 12h13',
+  'x':       'M6 6l12 12M18 6 6 18',
+  'trophy':  'M8 4h8v5a4 4 0 0 1-8 0zM8 5.5H5.5A2.5 2.5 0 0 0 8 10M16 5.5h2.5A2.5 2.5 0 0 1 16 10M9.5 13h5l-.5 3h-4zM10.5 16h3v3.5h-3z',
+  'flame':   'M12 21c3.3 0 5.5-2.2 5.5-5 0-4.5-5.5-8-5.5-13 0 0-5.5 3.5-5.5 8 0 2.8 2.2 5 5.5 5z'
+} %}
+<svg class="{{ cls }}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="{{ paths.get(name, '') }}"/></svg>
+{% endmacro %}
+
+{# ---------------------------------------------------------- 单词卡
+   结构：Word → Pronunciation → Meaning → Example → Learning Action
+   （学习模式与业务逻辑完全不变，仅重排视觉与信息层级）            #}
 {% macro word_card(w, form=None) %}
-<article class="word-card" data-status="{{ w.status }}" data-word="{{ w.word }}">
-  <div class="word-top">
-    <h4><a href="{{ url_for('words.detail', word_id=w.id) }}">{{ w.word }}</a></h4>
-    <button class="speak sm" data-play="{{ w.audio }}" title="播放英式发音">🔊</button>
+<article class="wordcard" data-status="{{ w.status }}" data-word="{{ w.word }}">
+
+  {# 1) Word #}
+  <div class="wc-word-row">
+    <h3 class="wc-word"><a href="{{ url_for('words.detail', word_id=w.id) }}">{{ w.word }}</a></h3>
+    <button type="button" class="speak" data-play="{{ w.audio }}"
+            title="{{ bi_plain('act.play') }}" aria-label="{{ bi_plain('act.play') }}">
+      {{ icon('speaker') }}
+    </button>
   </div>
-  <div class="mean-row">
-    <div class="ipa">{{ w.phonetic_uk }}</div>
-    {% if w.pos %}<span class="tag">{{ w.pos|pos_text }}</span>{% endif %}
+
+  {# 2) Pronunciation #}
+  <div class="wc-pron">
+    <span class="wc-ipa">{{ w.phonetic_uk }}</span>
+    {% if w.pos %}<span class="wc-pos">{{ w.pos|pos_text }}</span>{% endif %}
   </div>
-  <p class="cn">{{ w.meaning_cn }}</p>
-  <div class="tags">
+
+  {# 3) Meaning #}
+  <p class="wc-meaning">{{ w.meaning_cn }}</p>
+
+  {# 4) Example #}
+  {% if w.example_en %}
+    <div class="wc-example">
+      <p class="en">{{ w.example_en }}</p>
+      {% if w.example_cn %}<p class="zh">{{ w.example_cn }}</p>{% endif %}
+    </div>
+  {% endif %}
+
+  {# 状态标记 #}
+  <div class="wc-status">
     <span class="tag {{ 'green' if w.status=='mastered' else ('amber' if w.status=='learning' else '') }}">{{ w.status_label }}</span>
-    {% if w.fav %}<span class="tag amber">★ 已收藏</span>{% endif %}
-    {% if w.in_wrong %}<span class="tag red">错 {{ w.wrong_count }} 次</span>{% endif %}
-    {% if w.correct or w.wrong %}<span class="tag">✓{{ w.correct }} ✗{{ w.wrong }}</span>{% endif %}
+    {% if w.fav %}<span class="tag amber">{{ bi('act.favorite') }}</span>{% endif %}
+    {% if w.in_wrong %}<span class="tag red">{{ bi('wrong.title') }} {{ w.wrong_count }}</span>{% endif %}
   </div>
-  <div class="card-actions">
+
+  {# 5) Learning Action #}
+  <div class="wc-actions">
     {% if form %}
       <form method="post" action="{{ url_for('words.toggle_favorite', word_id=w.id) }}">
         {{ form.hidden_tag() }}
         <input type="hidden" name="word_id" value="{{ w.id }}">
-        <button class="icon-btn {{ 'on' if w.fav }}" title="{{ '取消收藏' if w.fav else '收藏' }}">{{ '★' if w.fav else '☆' }}</button>
+        <button type="submit" class="icon-btn {{ 'on' if w.fav }}"
+                title="{{ bi_plain('act.unfavorite') if w.fav else bi_plain('act.favorite') }}">
+          {{ icon('star') }}<span class="bi"><span class="bi-en">{{ 'Saved' if w.fav else 'Save' }}</span><span class="bi-zh">{{ '已收藏' if w.fav else '收藏' }}</span></span>
+        </button>
       </form>
       <form method="post" action="{{ url_for('words.set_status', word_id=w.id) }}">
         {{ form.hidden_tag() }}
         <input type="hidden" name="word_id" value="{{ w.id }}">
         <input type="hidden" name="status" value="{{ 'new' if w.status=='mastered' else 'mastered' }}">
-        <button class="icon-btn" title="标记为已掌握 / 重置">{{ '↩' if w.status=='mastered' else '✓' }}</button>
+        <button type="submit" class="icon-btn {{ 'on' if w.status=='mastered' }}"
+                title="{{ bi_plain('act.unmastered') if w.status=='mastered' else bi_plain('act.mastered') }}">
+          {{ icon('check') }}<span class="bi"><span class="bi-en">{{ 'Learned' if w.status=='mastered' else 'Mark' }}</span><span class="bi-zh">{{ '已掌握' if w.status=='mastered' else '标记' }}</span></span>
+        </button>
       </form>
       {% if w.in_wrong %}
         <form method="post" action="{{ url_for('words.remove_wrong', word_id=w.id) }}">
           {{ form.hidden_tag() }}
           <input type="hidden" name="word_id" value="{{ w.id }}">
-          <button class="icon-btn" title="移出错题本">🧹</button>
+          <button type="submit" class="icon-btn" title="{{ bi_plain('act.remove_wrong') }}">
+            {{ icon('trash') }}<span class="bi"><span class="bi-en">Remove</span><span class="bi-zh">移除</span></span>
+          </button>
         </form>
       {% endif %}
     {% endif %}
-    <a class="btn btn-sm btn-ghost" style="margin-left:auto" href="{{ url_for('words.detail', word_id=w.id) }}">详情 →</a>
+    <a class="btn btn-secondary btn-sm" style="margin-left:auto" href="{{ url_for('words.detail', word_id=w.id) }}">
+      {{ bi('act.view_detail') }}{{ icon('chevron-right') }}
+    </a>
   </div>
 </article>
 {% endmacro %}
 
-{% macro pager(page, pages, endpoint, params={}, extra=None) %}
+{# ---------------------------------------------------------- 分页 #}
+{% macro pager(page, pages, endpoint, params={}) %}
 {% if pages > 1 %}
-  <div class="pager">
-    <a href="{{ url_for(endpoint, page=1, **params) }}" class="{{ 'info' if page==1 else '' }}">« 首页</a>
+  <nav class="row" style="justify-content:center;margin-top:var(--ds-sp-6);gap:6px" aria-label="pagination">
+    <a class="btn btn-secondary btn-sm" href="{{ url_for(endpoint, page=1, **params) }}">{{ icon('chevron-right') }}</a>
     {% set start = [1, page-2]|max %}
     {% set end = [pages, page+2]|min %}
     {% for p in range(start, end+1) %}
-      {% if p == page %}<span class="cur">{{ p }}</span>
-      {% else %}<a href="{{ url_for(endpoint, page=p, **params) }}">{{ p }}</a>{% endif %}
+      {% if p == page %}
+        <span class="btn btn-primary btn-sm">{{ p }}</span>
+      {% else %}
+        <a class="btn btn-secondary btn-sm" href="{{ url_for(endpoint, page=p, **params) }}">{{ p }}</a>
+      {% endif %}
     {% endfor %}
-    <a href="{{ url_for(endpoint, page=pages, **params) }}">末页 »</a>
-    <span class="info">第 {{ page }}/{{ pages }} 页</span>
-  </div>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for(endpoint, page=pages, **params) }}">{{ icon('chevron-right') }}</a>
+    <span class="small muted" style="margin-left:8px">{{ page }} / {{ pages }}</span>
+  </nav>
 {% endif %}
 {% endmacro %}
 
-{% macro empty_box(icon, title, text, url=None, btn=None) %}
+{# ---------------------------------------------------------- 空状态 #}
+{% macro empty_box(icon_name, title, text, url=None, btn=None) %}
 <div class="empty">
-  {% if icon.endswith('.svg') %}<img src="{{ url_for('static', filename='img/' ~ icon) }}" alt="">
-  {% else %}<em>{{ icon }}</em>{% endif %}
+  {% if icon_name %}
+    {% if icon_name.endswith('.svg') %}
+      <img src="{{ url_for('static', filename='img/' ~ icon_name) }}" alt="">
+    {% else %}
+      {{ icon(icon_name, cls='icon') }}
+    {% endif %}
+  {% endif %}
   <b>{{ title }}</b>
   <p>{{ text }}</p>
-  {% if url %}<a class="btn btn-primary" href="{{ url }}">{{ btn or '去看看' }}</a>{% endif %}
+  {% if url %}<a class="btn btn-primary" href="{{ url }}">{{ btn or bi('act.continue') }}</a>{% endif %}
 </div>
 {% endmacro %}
 
+{# ---------------------------------------------------------- 进度条 #}
 {% macro progress_bar(percent, cls='', label=None) %}
-<div style="display:flex;align-items:center;gap:10px">
-  <div class="bar-wrap" style="flex:1"><i class="bar {{ cls }}" style="width:{{ percent }}%"></i></div>
-  <b style="min-width:44px;text-align:right">{{ percent }}%</b>
+<div class="row" style="gap:10px">
+  <div class="bar-wrap" style="flex:1 1 auto"><i class="bar {{ cls }}" style="width:{{ percent }}%"></i></div>
+  <b style="min-width:44px;text-align:right;font-size:13px">{{ percent }}%</b>
 </div>
 {% endmacro %}

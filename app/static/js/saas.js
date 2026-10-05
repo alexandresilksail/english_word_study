@@ -1,6 +1,7 @@
 /* ==========================================================================
    英语单词学习 SaaS 版 —— 前端交互
-   纯原生 JS：发音播放（本地 MP3）、收藏、测试四种模式、彩带与吐司
+   纯原生 JS（无框架）：离线发音播放、收藏、四种测试模式、双语 UI、语言切换
+   说明：本轮仅调整界面呈现与文案，所有接口、判分逻辑与数据流保持不变。
    ========================================================================== */
 (function () {
   'use strict';
@@ -31,31 +32,29 @@
     clearTimeout(window.__toastTimer);
     window.__toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2200);
   }
-  function confetti() {
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    var wrap = document.createElement('div');
-    wrap.className = 'confetti';
-    var colors = ['#4a6cf7', '#8c63ff', '#ff6f9c', '#22b07d', '#ffb648', '#38bdf8'];
-    for (var i = 0; i < 70; i++) {
-      var b = document.createElement('i');
-      var dur = 2 + Math.random() * 1.6;
-      b.style.left = (Math.random() * 100) + '%';
-      b.style.background = colors[i % colors.length];
-      b.style.animationDuration = dur + 's';
-      b.style.animationDelay = (Math.random() * 0.7) + 's';
-      b.style.setProperty('--dx', (Math.random() * 220 - 110) + 'px');
-      b.style.setProperty('--rot', (Math.random() * 720 - 360) + 'deg');
-      if (Math.random() < 0.3) b.style.borderRadius = '50%';
-      wrap.appendChild(b);
-    }
-    document.body.appendChild(wrap);
-    setTimeout(function () { wrap.remove(); }, 4200);
+
+  /* ---------------------------------------------------------- 自制内联 SVG 图标
+     与 _macros.html 的 icon() 保持一致（自制线性图标，无第三方依赖与版权风险） */
+  var PATHS = {
+    speaker: 'M4 9.2v5.6h3.6L12.4 19V5L7.6 9.2H4zM16 9.4a3.8 3.8 0 0 1 0 5.2M18.6 6.8a7.4 7.4 0 0 1 0 10.4',
+    check: 'M4.5 12.5l4.8 4.8L19.5 7',
+    x: 'M6 6l12 12M18 6 6 18',
+    book: 'M12 7.2C10.6 5.7 7.2 5.2 4 5.7V18c3.2-.5 6.6.1 8 1.5 1.4-1.4 4.8-2 8-1.5V5.7c-3.2-.5-6.6 0-8 1.5zM12 7.2V19.5',
+    list: 'M8.5 6H20M8.5 12H20M8.5 18H20M4 6h.01M4 12h.01M4 18h.01',
+    edit: 'M4.5 19.5h3.2L19 8.2a2.3 2.3 0 0 0-3.2-3.2L4.5 16.3z',
+    quiz: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9zM12 13.2a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4z',
+    rotate: 'M20 12a8 8 0 1 1-2.6-5.9M20 4.5V10h-5.5'
+  };
+  function svg(name, cls) {
+    var d = PATHS[name] || '';
+    return '<svg class="' + (cls || 'icon') + '" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+      '<path d="' + d + '"/></svg>';
   }
 
   /* ---------------------------------------------------------- 离线发音 */
   var currentAudio = null;
   window.playWord = function (file, btn) {
-    if (!file) { toast('该单词暂无音频'); return; }
+    if (!file) { toast('该单词暂无音频 / No audio'); return; }
     if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
     var a = new Audio('/static/audio/' + encodeURIComponent(file));
     currentAudio = a;
@@ -64,12 +63,34 @@
       btn.classList.add('playing');
       a.onended = a.onerror = function () { btn.classList.remove('playing'); };
     }
-    a.play().catch(function () { toast('浏览器阻止了自动播放，请再点一次 🔊'); });
+    a.play().catch(function () { toast('浏览器阻止了自动播放，请再点一次 / Tap again'); });
   };
 
   qsa('.speak[data-play]').forEach(function (btn) {
     btn.addEventListener('click', function () { window.playWord(btn.getAttribute('data-play'), btn); });
   });
+
+  /* ---------------------------------------------------------- 语言切换（双语 / 中文 / English） */
+  (function language() {
+    var KEY = 'ews_lang';
+    var order = ['both', 'zh', 'en'];
+    function apply(lang) {
+      if (lang === 'both') document.documentElement.removeAttribute('data-lang');
+      else document.documentElement.setAttribute('data-lang', lang);
+      try { localStorage.setItem(KEY, lang); } catch (e) { /* 忽略隐私模式 */ }
+    }
+    var saved = null;
+    try { saved = localStorage.getItem(KEY); } catch (e) { saved = null; }
+    if (saved && order.indexOf(saved) >= 0) apply(saved);
+
+    var btn = qs('#lang-toggle');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        var cur = document.documentElement.getAttribute('data-lang') || 'both';
+        apply(order[(order.indexOf(cur) + 1) % order.length]);
+      });
+    }
+  })();
 
   /* ---------------------------------------------------------- 测试 */
   var quizRoot = qs('#quiz-root');
@@ -80,48 +101,67 @@
       total: 0, idx: 0, score: 0, locked: false, startedAt: 0, answers: []
     };
 
+    // 双语模式元信息（英文在前，中文在后）
     function modeMeta(m) {
       return {
-        choice: { icon: '🇬🇧', name: '英文 → 中文', desc: '看英文单词选出中文释义' },
-        zh_en: { icon: '🇨🇳', name: '中文 → 英文', desc: '看中文释义选出英文单词' },
-        listen: { icon: '🎧', name: '听音测试', desc: '听英式发音选出正确单词' },
-        spell: { icon: '⌨️', name: '拼写测试', desc: '根据中文释义拼出英文单词' }
-      }[m] || { icon: '🎯', name: m, desc: '' };
+        choice: { icon: 'book', en: 'English → Chinese', zh: '英文 → 中文', desc: '看英文单词选出中文释义' },
+        zh_en: { icon: 'list', en: 'Chinese → English', zh: '中文 → 英文', desc: '看中文释义选出英文单词' },
+        listen: { icon: 'speaker', en: 'Listening', zh: '听音测试', desc: '听英式发音选出正确单词' },
+        spell: { icon: 'edit', en: 'Spelling', zh: '拼写测试', desc: '根据中文释义拼出英文单词' }
+      }[m] || { icon: 'quiz', en: m, zh: m, desc: '' };
+    }
+    function modeLabel(m) {
+      var meta = modeMeta(m);
+      return '<span class="bi"><span class="bi-en">' + meta.en + '</span>' +
+        '<span class="bi-zh">' + meta.zh + '</span></span>';
+    }
+
+    var SCOPES = [
+      ['all', '全部单词', 'All Words'],
+      ['new', '未学习', 'New'],
+      ['learning', '学习中', 'Learning'],
+      ['mastered', '已掌握', 'Learned'],
+      ['favorites', '我的收藏', 'Favorites'],
+      ['wrong', '错题本', 'Mistakes']
+    ];
+    function biHTML(zh, en) {
+      return '<span class="bi"><span class="bi-en">' + en + '</span><span class="bi-zh">' + zh + '</span></span>';
     }
 
     function renderSetup() {
       var modes = ['choice', 'zh_en', 'listen', 'spell'];
-      var scopes = [['all', '全部单词'], ['new', '未学习'], ['learning', '学习中'],
-                    ['mastered', '已掌握'], ['favorites', '我的收藏'], ['wrong', '错题本']];
 
-      var html = '<div class="card" style="padding:26px">';
-      html += '<div class="section-title"><h3>🎯 选择测试模式</h3><span class="muted small">共四种，覆盖听说读写</span></div>';
-      html += '<div class="setup-grid" style="grid-template-columns:repeat(4,1fr)">';
+      var html = '<div class="card">';
+      html += '<div class="section-title"><h3>' + biHTML('选择测试模式', 'Choose a Mode') + '</h3>' +
+        '<span class="muted small">' + biHTML('共四种，覆盖听说读写', 'Four modes') + '</span></div>';
+      html += '<div class="setup-grid">';
       modes.forEach(function (m) {
         var meta = modeMeta(m);
         html += '<div class="opt-card' + (m === state.mode ? ' on' : '') + '" data-group="mode" data-value="' + m + '">'
-          + '<b>' + meta.icon + ' ' + meta.name + '</b><span>' + meta.desc + '</span></div>';
+          + '<b>' + svg(meta.icon) + ' ' + biHTML(meta.zh, meta.en) + '</b><span>' + meta.desc + '</span></div>';
       });
       html += '</div>';
 
-      html += '<div class="section-title" style="margin-top:20px"><h3>📚 选择出题范围</h3></div><div class="setup-grid" style="grid-template-columns:repeat(3,1fr)">';
-      scopes.forEach(function (s) {
+      html += '<div class="section-title" style="margin-top:var(--ds-sp-5)"><h3>' +
+        biHTML('选择出题范围', 'Choose a Range') + '</h3></div><div class="setup-grid">';
+      SCOPES.forEach(function (s) {
         html += '<div class="opt-card' + (s[0] === state.scope ? ' on' : '') + '" data-group="scope" data-value="' + s[0] + '">'
-          + '<b>' + s[1] + '</b><span>从该范围随机抽题</span></div>';
+          + '<b>' + biHTML(s[1], s[2]) + '</b><span>' + biHTML('从该范围随机抽题', 'Random questions from this range') + '</span></div>';
       });
       html += '</div>';
 
-      html += '<div class="section-title" style="margin-top:20px"><h3>🔢 题目数量</h3></div><div class="setup-grid">';
+      html += '<div class="section-title" style="margin-top:var(--ds-sp-5)"><h3>' +
+        biHTML('题目数量', 'Number of Questions') + '</h3></div><div class="setup-grid">';
       [10, 20, 30].forEach(function (n) {
         html += '<div class="opt-card' + (n === state.size ? ' on' : '') + '" data-group="size" data-value="' + n + '">'
-          + '<b>' + n + ' 题</b><span>预计 ' + Math.ceil(n * 0.6) + ' 分钟内完成</span></div>';
+          + '<b>' + biHTML(n + ' 题', n + ' questions') + '</b><span>' +
+          biHTML('约 ' + Math.ceil(n * 0.6) + ' 分钟', 'About ' + Math.ceil(n * 0.6) + ' min') + '</span></div>';
       });
       html += '</div>';
 
-      html += '<div style="margin-top:22px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">'
-        + '<button class="btn btn-primary btn-lg" id="start-quiz">🚀 开始测试</button>'
-        + '<img src="/static/img/mascot-owl.svg" alt="" style="height:56px;opacity:.9">'
-        + '</div></div>';
+      html += '<div class="row" style="margin-top:var(--ds-sp-5)">'
+        + '<button class="btn btn-primary btn-lg" id="start-quiz">' + svg('quiz') +
+        biHTML('开始测试', 'Start Quiz') + '</button></div></div>';
 
       quizRoot.innerHTML = html;
 
@@ -139,7 +179,7 @@
 
     function start() {
       post('/api/quiz/start', { mode: state.mode, scope: state.scope, size: state.size }).then(function (r) {
-        if (!r.ok) { toast(r.error || '无法开始测试'); return; }
+        if (!r.ok) { toast(r.error || '无法开始测试 / Cannot start'); return; }
         state.total = r.total; state.idx = 0; state.score = 0;
         state.startedAt = Date.now(); state.answers = [];
         renderQuestion();
@@ -148,33 +188,38 @@
 
     function renderQuestion() {
       get('/api/quiz/item?i=' + state.idx + '&_=' + Date.now()).then(function (r) {
-        if (!r.ok) { toast(r.error || '获取题目失败'); return; }
+        if (!r.ok) { toast(r.error || '获取题目失败 / Load failed'); return; }
         var q = r.q;
         var meta = modeMeta(q.mode);
         var pct = Math.round(state.idx * 100 / state.total);
 
         var html = '<div class="quiz-card">';
-        html += '<div class="quiz-top"><span class="mode-badge">' + meta.icon + ' ' + meta.name + '</span>'
+        html += '<div class="quiz-top"><span class="mode-badge">' + svg(meta.icon) + ' ' + modeLabel(q.mode) + '</span>'
           + '<div class="progress-line"><i style="width:' + pct + '%"></i></div>'
           + '<span class="quiz-count">' + (state.idx + 1) + '/' + state.total + '</span></div>';
 
         if (q.mode === 'choice') {
           html += '<div class="quiz-prompt"><h2 class="quiz-word">' + q.stem + '</h2>'
             + '<div class="quiz-ipa">' + (q.stem_sub || '') + '</div>'
-            + '<div style="margin-top:12px"><button class="speak big" data-file="' + '' + '">🔊</button></div></div>';
+            + '<div style="margin-top:var(--ds-sp-4)"><button class="speak big" id="choice-play">' + svg('speaker') + '</button></div></div>';
         } else if (q.mode === 'zh_en') {
           html += '<div class="quiz-prompt"><p class="quiz-cn">' + q.stem + '</p>'
-            + '<div class="quiz-sub">选出对应的英文单词 · ' + (q.stem_sub || '') + '</div></div>';
+            + '<div class="quiz-sub">' + biHTML('选出对应的英文单词', 'Choose the English word') +
+            ' · ' + (q.stem_sub || '') + '</div></div>';
         } else if (q.mode === 'listen') {
           html += '<div class="quiz-prompt">'
-            + '<button class="speak big" id="listen-play" data-file="' + (q.audio || '') + '">🔊</button>'
-            + '<div class="quiz-sub" style="margin-top:14px">点击播放英式发音，选出你听到的单词<br>'
-            + '<span class="small muted">没听清？可以再点一次</span></div></div>';
+            + '<button class="speak big" id="listen-play" data-file="' + (q.audio || '') + '">' + svg('speaker') + '</button>'
+            + '<div class="quiz-sub" style="margin-top:var(--ds-sp-4)">' +
+            biHTML('点击播放英式发音，选出你听到的单词', 'Tap to play the UK pronunciation, then choose the word') +
+            '<br><span class="small muted">' + biHTML('没听清？可以再点一次', 'Tap again to replay') + '</span></div></div>';
         } else {
           html += '<div class="quiz-prompt"><p class="quiz-cn">' + q.stem + '</p>'
-            + '<div class="quiz-sub">首字母 <b>' + (q.first || '') + '</b> · 共 <b>' + (q.length || 0) + '</b> 个字母 · ' + (q.stem_sub || '') + '</div>'
-            + '<input class="spell-input" id="spell-box" placeholder="在这里输入英文单词" autocomplete="off" autocapitalize="off" spellcheck="false">'
-            + '<div style="margin-top:12px"><button class="btn btn-primary" id="spell-submit">提交答案</button></div></div>';
+            + '<div class="quiz-sub">' + biHTML('首字母', 'First letter') + ' <b>' + (q.first || '') + '</b> · ' +
+            biHTML('共', 'Total') + ' <b>' + (q.length || 0) + '</b> ' + biHTML('个字母', 'letters') +
+            ' · ' + (q.stem_sub || '') + '</div>'
+            + '<input class="spell-input" id="spell-box" placeholder="Type the English word / 在这里输入英文单词" autocomplete="off" autocapitalize="off" spellcheck="false">'
+            + '<div style="margin-top:var(--ds-sp-3)"><button class="btn btn-primary" id="spell-submit">' +
+            biHTML('提交答案', 'Submit') + '</button></div></div>';
         }
 
         if (q.mode !== 'spell') {
@@ -185,9 +230,9 @@
           html += '</div>';
         }
         html += '<div class="feedback" id="fb"></div>';
-        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:10px">'
-          + '<span class="small muted">答对进入下一题，答错会自动加入错题本</span>'
-          + '<button class="btn btn-primary" id="next-btn" style="display:none">下一题 →</button></div>';
+        html += '<div class="row-between" style="margin-top:var(--ds-sp-5)">'
+          + '<span class="small muted">' + biHTML('答对进入下一题，答错会自动加入错题本', 'Correct moves on; mistakes are saved to your review list') + '</span>'
+          + '<button class="btn btn-primary" id="next-btn" style="display:none"></button></div>';
         html += '</div>';
 
         quizRoot.innerHTML = html;
@@ -200,7 +245,7 @@
           }
         }
         if (q.mode === 'choice') {
-          var speakBtn = qs('.speak.big', quizRoot);
+          var speakBtn = qs('#choice-play', quizRoot);
           if (speakBtn) speakBtn.addEventListener('click', function () {
             get('/api/audio/' + q.word_id).then(function (r) {
               if (r.ok) window.playWord(r.audio, speakBtn);
@@ -227,7 +272,7 @@
       if (state.locked) return;
       state.locked = true;
       post('/api/quiz/answer', { i: state.idx, answer: answer }).then(function (r) {
-        if (!r.ok) { toast(r.error || '提交失败'); state.locked = false; return; }
+        if (!r.ok) { toast(r.error || '提交失败 / Submit failed'); state.locked = false; return; }
         state.answers.push({ correct: r.correct, expected: r.expected });
         if (r.correct) state.score += 1;
 
@@ -246,10 +291,11 @@
 
         var fb = qs('#fb', quizRoot);
         fb.className = 'feedback show ' + (r.correct ? 'ok' : 'no');
-        fb.innerHTML = '<h4>' + (r.correct ? '✅ 回答正确' : '❌ 回答错误')
-          + '　<b>' + r.word + '</b> <span class="small muted">' + (r.phonetic || '') + '</span>'
-          + ' <button class="speak sm" data-file="' + (r.audio || '') + '">🔊</button></h4>'
-          + '<p class="en">' + (r.correct ? '' : '正确答案：<b>' + r.expected + '</b>　') + r.meaning + '</p>'
+        fb.innerHTML = '<h4>' + (r.correct ? svg('check') : svg('x')) +
+          (r.correct ? biHTML('回答正确', 'Correct') : biHTML('回答错误', 'Incorrect')) +
+          '　<b>' + r.word + '</b> <span class="small muted">' + (r.phonetic || '') + '</span>' +
+          ' <button class="speak sm" data-file="' + (r.audio || '') + '">' + svg('speaker') + '</button></h4>'
+          + '<p class="en">' + (r.correct ? '' : biHTML('正确答案', 'Correct answer') + '：<b>' + r.expected + '</b>　') + r.meaning + '</p>'
           + '<p class="en">' + (r.example_en || '') + '</p>'
           + '<p class="zh">' + (r.example_cn || '') + '</p>';
         var sp = qs('.speak', fb);
@@ -257,16 +303,16 @@
 
         var next = qs('#next-btn', quizRoot);
         next.style.display = '';
-        next.textContent = (state.idx + 1 >= state.total) ? '查看成绩 →' : '下一题 →';
+        next.innerHTML = (state.idx + 1 >= state.total)
+          ? biHTML('查看成绩', 'See Results')
+          : biHTML('下一题', 'Next');
         next.addEventListener('click', function () {
           state.locked = false;
           if (state.idx + 1 >= state.total) { finish(); return; }
           state.idx += 1;
           renderQuestion();
         });
-        if (r.correct) {
-          setTimeout(function () { }, 0);
-        } else {
+        if (!r.correct) {
           window.playWord(r.audio, null);
         }
       });
@@ -274,28 +320,27 @@
 
     function finish() {
       post('/api/quiz/finish', {}).then(function (r) {
-        if (!r.ok) { toast(r.error || '提交失败'); return; }
+        if (!r.ok) { toast(r.error || '提交失败 / Submit failed'); return; }
         var sec = Math.max(1, Math.round((Date.now() - state.startedAt) / 1000));
         var verdicts = {
-          outstanding: ['great', '🏆 太强了！几乎全对'],
-          good: ['good', '👍 状态不错，继续保持'],
-          pass: ['soso', '🙂 及格线上，再练几组'],
-          retry: ['bad', '💪 别灰心，错题本是你的宝库']
+          outstanding: ['great', '太强了，几乎全对', 'Outstanding — almost perfect'],
+          good: ['good', '状态不错，继续保持', 'Good work — keep it up'],
+          pass: ['soso', '及格线上，再练几组', 'Just passed — practise more'],
+          retry: ['bad', '别灰心，错题本是你的宝库', 'Keep going — your review list helps']
         };
         var v = verdicts[r.comment] || verdicts.pass;
-        if (r.percent >= 85) confetti();
 
-        quizRoot.innerHTML = '<div class="card" style="padding:30px;text-align:center">'
+        quizRoot.innerHTML = '<div class="card" style="text-align:center">'
           + '<div class="result-ring" style="--deg:' + (r.percent * 3.6) + 'deg">'
-          + '<div><b>' + r.score + '/' + r.total + '</b><span>答对题数</span></div></div>'
-          + '<div style="margin-top:16px"><span class="verdict ' + v[0] + '">' + v[1] + '</span></div>'
-          + '<h2 style="margin:16px 0 4px">本次得分 ' + r.percent + '%</h2>'
-          + '<p class="muted">' + modeMeta(r.mode).name + ' · 用时 ' + sec + ' 秒 · 正确率已写入你的学习档案</p>'
-          + '<img class="result-art" src="/static/img/' + (r.percent >= 85 ? 'celebrate.svg' : 'mascot-owl.svg') + '" alt="">'
-          + '<div style="display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap">'
-          + '<button class="btn btn-primary" id="again-btn">再来一组</button>'
-          + '<a class="btn btn-outline" href="/wrong">查看错题本</a>'
-          + '<a class="btn btn-ghost" href="/dashboard">返回学习主页</a></div></div>';
+          + '<div><b>' + r.score + '/' + r.total + '</b><span>' + biHTML('答对题数', 'Correct') + '</span></div></div>'
+          + '<div style="margin-top:var(--ds-sp-4)"><span class="verdict ' + v[0] + '">' + biHTML(v[1], v[2]) + '</span></div>'
+          + '<h2 style="margin:var(--ds-sp-4) 0 4px">' + biHTML('本次得分', 'Your Score') + ' ' + r.percent + '%</h2>'
+          + '<p class="muted">' + modeLabel(r.mode) + ' · ' + biHTML('用时', 'Time') + ' ' + sec + ' ' +
+          biHTML('秒', 'sec') + ' · ' + biHTML('正确率已写入你的学习档案', 'Saved to your profile') + '</p>'
+          + '<div class="row" style="justify-content:center;margin-top:var(--ds-sp-5)">'
+          + '<button class="btn btn-primary" id="again-btn">' + svg('rotate') + biHTML('再来一组', 'Try Again') + '</button>'
+          + '<a class="btn btn-secondary" href="/wrong">' + biHTML('查看错题本', 'Review Mistakes') + '</a>'
+          + '<a class="btn btn-ghost" href="/dashboard">' + biHTML('返回学习中心', 'Back to Dashboard') + '</a></div></div>';
         qs('#again-btn', quizRoot).addEventListener('click', function () {
           state.locked = false;
           renderSetup();
@@ -307,7 +352,7 @@
     (function preset() {
       var p = new URLSearchParams(location.search);
       var m = p.get('mode');
-      var s = p.get('scope');
+      var s = p.get('scope') || quizRoot.getAttribute('data-scope');
       if (m && ['choice', 'zh_en', 'listen', 'spell'].indexOf(m) >= 0) state.mode = m;
       if (s) state.scope = s;
     })();
@@ -316,7 +361,7 @@
   }
 
   /* ---------------------------------------------------------- 收藏等按钮反馈 */
-  qsa('.card-actions form').forEach(function (f) {
+  qsa('.wc-actions form').forEach(function (f) {
     f.addEventListener('submit', function (e) {
       e.preventDefault();
       var body = new FormData(f);

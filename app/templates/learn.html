@@ -1,44 +1,59 @@
 {% extends "base.html" %}
 {% import "_macros.html" as mm %}
-{% block title %}今日学习 · {{ app_title }}{% endblock %}
+{% from "_macros.html" import icon %}
+{% block title %}{{ bi_plain('learn.title') }} · {{ app_title }}{% endblock %}
 
 {% block content %}
+
 <div class="page-head">
   <div>
-    <h2><span class="ico">📖</span>今日学习</h2>
-    <p>每张卡片都带英式发音，点 🔊 即可听；浏览过的单词会自动计入学习记录</p>
+    <span class="eyebrow">{{ t('nav.learn') }} / Learn</span>
+    <h2>{{ bi('learn.title') }}</h2>
+    <p>{{ t('learn.sub') }}</p>
   </div>
-  <div class="tags">
-    <span class="tag blue">范围：{{ scopes.get(scope, '全部') }}</span>
-    <span class="tag">共 {{ total }} 个单词</span>
+  <div class="row" style="gap:6px">
+    <span class="tag blue">{{ t('learn.scope') }}: {{ scopes.get(scope, t('quiz.scope.all')) }}</span>
+    <span class="tag">{{ t('learn.total') }} {{ total }} {{ t('learn.words_unit') }}</span>
   </div>
 </div>
 
-<div class="toolbar">
-  <form method="get" action="{{ url_for('words.learn') }}" class="field">
-    <select name="scope" class="input" onchange="this.form.submit()">
-      {% for k, v in scopes.items() %}
-        <option value="{{ k }}" {{ 'selected' if k == scope }}>{{ v }}</option>
-      {% endfor %}
-    </select>
-    {% if letter %}<input type="hidden" name="letter" value="{{ letter }}">{% endif %}
-  </form>
-  <div style="width:100%"></div>
+{# ---------------------------------------------------------- 筛选工具栏 #}
+<div class="card" style="margin-bottom:var(--ds-sp-5)">
+  <div class="row" style="gap:var(--ds-sp-4);align-items:flex-end">
+    <form method="get" action="{{ url_for('words.learn') }}" class="field" style="margin:0;min-width:190px">
+      <label for="scope">{{ bi('learn.scope') }}</label>
+      <select name="scope" id="scope" class="input" onchange="this.form.submit()">
+        {% for k, v in scopes.items() %}
+          <option value="{{ k }}" {{ 'selected' if k == scope }}>{{ v }}</option>
+        {% endfor %}
+      </select>
+      {% if letter %}<input type="hidden" name="letter" value="{{ letter }}">{% endif %}
+    </form>
+
+    <div style="flex:1 1 auto;min-width:200px">
+      <label class="small muted" style="display:block;margin-bottom:6px">{{ t('nav.browse') }} / A–Z</label>
+      <div class="row" style="gap:4px">
+        <a class="icon-btn {{ 'on' if not letter }}" href="{{ url_for('words.learn', scope=scope) }}"
+           style="min-width:auto;padding:0 10px">{{ t('act.all') }}</a>
+        {% for L in letters %}
+          <a class="icon-btn {{ 'on' if letter == L|lower }}" href="{{ url_for('words.learn', letter=L|lower, scope=scope) }}"
+             style="min-width:34px;padding:0">{{ L }}</a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="letter-row">
-  <a class="letter all {{ 'on' if not letter }}" href="{{ url_for('words.learn', scope=scope) }}">全部</a>
-  {% for L in letters %}
-    <a class="letter {{ 'on' if letter == L|lower }}" href="{{ url_for('words.learn', letter=L|lower, scope=scope) }}">{{ L }}</a>
-  {% endfor %}
-</div>
-
+{# ---------------------------------------------------------- 单词卡列表 #}
 {% if words %}
-  <div class="word-grid stagger">
+  <div class="word-grid">
     {% for w in words %}{{ mm.word_card(w, form) }}{% endfor %}
   </div>
   {{ mm.pager(page, pages, 'words.learn', {'scope': scope, 'letter': letter}) }}
 {% else %}
-  {{ mm.empty_box('empty-book.svg', '这个范围暂时没有单词', '换一个筛选条件试试，或者从全部单词开始', url_for('words.learn'), '回到全部单词') }}
+  <div class="card">
+    {{ mm.empty_box('book', t('common.empty'), t('learn.sub'), url_for('words.learn'), bi('act.all')) }}
+  </div>
 {% endif %}
+
 {% endblock %}

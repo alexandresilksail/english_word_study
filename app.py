@@ -55,6 +55,10 @@ def create_app(config_object=None):
     app.jinja_env.trim_blocks = True
     app.jinja_env.lstrip_blocks = True
 
+    # 双语（中文 + English）文案层：模板中可直接用 bi() / t() / bi_plain()
+    from i18n import bi, bi_plain, t
+    app.jinja_env.globals.update(bi=bi, t=t, bi_plain=bi_plain)
+
     # 生产环境必须有 SECRET_KEY
     if not app.config.get("SECRET_KEY"):
         if os.environ.get("FLASK_ENV", "").lower() == "production":
@@ -68,6 +72,10 @@ def create_app(config_object=None):
     db.init_app(app)
     csrf.init_app(app)
     login_manager.init_app(app)
+
+    # 为既有数据库补齐本轮新增列（幂等增量，不改动既有数据）
+    from schema_compat import ensure_user_columns
+    ensure_user_columns(app)
 
     from models import User
 

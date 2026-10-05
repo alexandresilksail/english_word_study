@@ -87,6 +87,29 @@ class ChangePasswordForm(FlaskForm):
     submit = SubmitField("修改密码")
 
 
+class ForgotPasswordForm(FlaskForm):
+    """忘记密码：提交注册邮箱以接收重置链接。"""
+
+    email = StringField(
+        "邮箱",
+        validators=[InputRequired("请输入邮箱"), Email(message="邮箱格式不正确"), Length(max=255)],
+    )
+    submit = SubmitField("发送重置链接")
+
+
+class ResetPasswordForm(FlaskForm):
+    """通过重置链接设置新密码（链接内已含 token，表单只收密码）。"""
+
+    password = PasswordField(
+        "新密码", validators=[InputRequired("请输入新密码"), Length(max=128), password_strength_check]
+    )
+    confirm = PasswordField(
+        "确认新密码",
+        validators=[InputRequired("请再次输入新密码"), EqualTo("password", message="两次输入的密码不一致")],
+    )
+    submit = SubmitField("设置新密码")
+
+
 class EmptyForm(FlaskForm):
     """仅用于 CSRF 保护（收藏 / 取消收藏等按钮）。"""
 

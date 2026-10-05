@@ -1,16 +1,24 @@
 {% extends "base.html" %}
-{% block title %}测试中心 · {{ app_title }}{% endblock %}
+{% from "_macros.html" import icon %}
+{% block title %}{{ bi_plain('quiz.title') }} · {{ app_title }}{% endblock %}
 
 {% block content %}
-<div class="quiz-wrap">
-  <div class="page-head">
-    <div>
-      <h2><span class="ico">🎯</span>测试中心</h2>
-      <p>四种模式轮换练习：英译中、中译英、听音辨词、拼写填空</p>
-    </div>
+
+<div class="page-head">
+  <div>
+    <span class="eyebrow">{{ t('nav.quiz') }} / Quiz</span>
+    <h2>{{ bi('quiz.title') }}</h2>
+    <p>{{ t('quiz.sub') }}</p>
   </div>
-  <div id="quiz-root" data-mode="{{ preset_mode or 'choice' }}"></div>
+  <div class="row" style="gap:6px">
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('words.wrong') }}">{{ icon('review') }}{{ bi('nav.wrong') }}</a>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('words.favorites') }}">{{ icon('star') }}{{ bi('nav.favorites') }}</a>
+  </div>
 </div>
+
+{# Quiz 由 saas.js 动态渲染，容器保持不变以保证 API 与交互逻辑不受影响 #}
+<div id="quiz-root" data-mode="{{ preset_mode or 'choice' }}"></div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -19,9 +27,7 @@
   // 把 URL 预选参数透传给主脚本（mode / scope）
   var root = document.getElementById('quiz-root');
   if (root && "{{ preset_scope }}") {
-    var s = "{{ preset_scope }}";
-    // 简单方案：写入 hidden 数据，saas.js 读取时可以复用
-    root.setAttribute('data-scope', s);
+    root.setAttribute('data-scope', "{{ preset_scope }}");
   }
 })();
 </script>

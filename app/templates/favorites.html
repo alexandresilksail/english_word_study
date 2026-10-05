@@ -1,25 +1,32 @@
 {% extends "base.html" %}
 {% import "_macros.html" as mm %}
-{% block title %}我的收藏 · {{ app_title }}{% endblock %}
+{% from "_macros.html" import icon %}
+{% block title %}{{ bi_plain('fav.title') }} · {{ app_title }}{% endblock %}
 
 {% block content %}
+
 <div class="page-head">
   <div>
-    <h2><span class="ico">⭐</span>我的收藏</h2>
-    <p>重点单词放在这里，随时回来复习</p>
+    <span class="eyebrow">{{ t('nav.favorites') }} / Favorites</span>
+    <h2>{{ bi('fav.title') }}</h2>
+    <p>{{ t('fav.sub') }}</p>
   </div>
-  <span class="tag amber">共 {{ words|length }} 个</span>
+  <span class="tag amber">{{ t('learn.total') }} {{ words|length }} {{ t('learn.words_unit') }}</span>
 </div>
 
 {% if words %}
-  <div class="word-grid stagger">
+  <div class="row" style="margin-bottom:var(--ds-sp-5);gap:8px">
+    <a class="btn btn-primary" href="{{ url_for('quiz.test_page', scope='favorites') }}">{{ icon('quiz') }}{{ bi('fav.practice') }}</a>
+    <a class="btn btn-secondary" href="{{ url_for('words.browse') }}">{{ icon('list') }}{{ bi('fav.browse') }}</a>
+  </div>
+
+  <div class="word-grid">
     {% for w in words %}{{ mm.word_card(w, form) }}{% endfor %}
   </div>
-  <div style="margin-top:18px;display:flex;gap:10px">
-    <a class="btn btn-primary" href="{{ url_for('quiz.test_page', scope='favorites') }}">🎯 用收藏单词测试</a>
-    <a class="btn btn-outline" href="{{ url_for('words.browse') }}">去单词本继续收藏</a>
-  </div>
 {% else %}
-  {{ mm.empty_box('empty-star.svg', '收藏夹还是空的', '在单词卡片上点一下 ☆ 就能收藏啦', url_for('words.browse'), '去挑几个单词') }}
+  <div class="card">
+    {{ mm.empty_box('star', t('fav.empty'), t('fav.empty_desc'), url_for('words.browse'), bi('nav.browse')) }}
+  </div>
 {% endif %}
+
 {% endblock %}

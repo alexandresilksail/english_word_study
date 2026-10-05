@@ -41,6 +41,12 @@ class User(UserMixin, db.Model):
     failed_logins = db.Column(Integer, nullable=False, default=0, server_default="0")
     locked_until = db.Column(DateTime, nullable=True)
 
+    # 邮箱验证 / 密码重置（增量字段，均为可空，不影响既有用户数据）
+    email_verified = db.Column(Boolean, nullable=False, default=False, server_default="0")
+    verify_token = db.Column(String(64), nullable=True, index=True)
+    reset_token = db.Column(String(64), nullable=True, index=True)
+    reset_token_exp = db.Column(DateTime, nullable=True)
+
     # 关系
     favorites = relationship("Favorite", back_populates="user", cascade="all, delete-orphan", lazy="dynamic")
     wrong_answers = relationship("WrongAnswer", back_populates="user", cascade="all, delete-orphan", lazy="dynamic")

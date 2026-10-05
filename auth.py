@@ -7,6 +7,7 @@
 """
 from __future__ import annotations
 
+import secrets
 from datetime import timedelta
 from functools import wraps
 
@@ -15,9 +16,14 @@ from flask import (Blueprint, abort, flash, redirect, render_template, request,
 from flask_login import current_user, login_required, login_user, logout_user
 
 from extensions import db
-from forms import LoginForm, RegistrationForm
+from forms import (ForgotPasswordForm, LoginForm, RegistrationForm,
+                   ResetPasswordForm)
+from mailer import send_email
 from models import User, utcnow
 from utils.ratelimit import clear_login_failures, register_login_failure
+
+# 重置链接有效期
+RESET_TOKEN_TTL_MINUTES = 60
 
 auth_bp = Blueprint("auth", __name__, url_prefix="")
 
@@ -48,11 +54,25 @@ def register():
 
         user = User(email=email, username=(form.username.data or "").strip())
         user.set_password(form.password.data)
+        user.verify_token = secrets.token_urlsafe(32)
         db.session.add(user)
         db.session.commit()
 
         _ = session.get("_flashes")  # touch session ensure cookie exists
-        flash("注册成功！已自动登录，开始背单词吧 🎉", "success")
+        flash("注册成功！已自动登录，开始背单词吧", "success")
+
+        # 发送验证邮件；未配置 SMTP 时把链接直接给到页面（便于本地验证流程）
+        verify_url = url_for("auth.verify_email", token=user.verify_token, _external=True)
+        if send_email(
+            user.email,
+            "请验证你的邮箱 · English Word Study",
+            f"你好 {user.username}，\n\n请点击下面的链接完成邮箱验证：\n{verify_url}\n\n"
+            "如果不是你本人操作，请忽略本邮件。",
+        ):
+            flash("验证邮件已发送，请查收邮箱。", "info")
+        else:
+            flash(f"（邮件未配置 SMTP）邮箱验证链接：{verify_url}", "info")
+
         _login_now(user, remember=True)
         return redirect(url_for("main.dashboard"))
 
@@ -104,6 +124,104 @@ def logout():
     session.clear()
     flash(f"已安全退出，期待你再来，{username}！", "info")
     return redirect(url_for("main.index"))
+
+
+@auth_bp.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    """忘记密码：提交邮箱后发送重置链接。
+
+    安全：无论邮箱是否注册，都返回同样的提示，避免账号枚举。
+    """
+    if current_user.is_authenticated:
+        return redirect(url_for("main.dashboard"))
+
+    form = ForgotPasswordForm()
+    if form.validate_on_submit():
+        email = (form.email.data or "").strip().lower()
+        user = User.query.filter_by(email=email).first()
+        if user:
+            token = secrets.token_urlsafe(32)
+            user.reset_token = token
+            user.reset_token_exp = utcnow() + timedelta(minutes=RESET_TOKEN_TTL_MINUTES)
+            db.session.commit()
+
+            reset_url = url_for("auth.reset_password", token=token, _external=True)
+            if not send_email(
+                user.email,
+                "重置你的密码 · English Word Study",
+                f"你好 {user.username}，\n\n请点击下面的链接重置密码（{RESET_TOKEN_TTL_MINUTES} 分钟内有效）：\n"
+                f"{reset_url}\n\n如果不是你本人操作，请忽略本邮件，你的密码不会改变。",
+            ):
+                # 未配置 SMTP：直接在页面给出链接，保证流程可走通
+                flash(f"（邮件未配置 SMTP）密码重置链接：{reset_url}", "info")
+        flash("如果该邮箱已注册，重置链接已发送，请注意查收。", "info")
+        return redirect(url_for("auth.login"))
+
+    return render_template("forgot_password.html", form=form)
+
+
+@auth_bp.route("/reset-password/<token>", methods=["GET", "POST"])
+def reset_password(token: str):
+    """通过邮件中的 token 设置新密码。"""
+    if current_user.is_authenticated:
+        return redirect(url_for("main.dashboard"))
+
+    user = User.query.filter_by(reset_token=token).first()
+    if not user or not user.reset_token_exp or user.reset_token_exp < utcnow():
+        flash("重置链接无效或已过期，请重新申请。", "error")
+        return redirect(url_for("auth.forgot_password"))
+
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        user.set_password(form.password.data)
+        user.reset_token = None
+        user.reset_token_exp = None
+        db.session.commit()
+        flash("密码已重置，请使用新密码登录。", "success")
+        return redirect(url_for("auth.login"))
+
+    return render_template("reset_password.html", form=form)
+
+
+@auth_bp.route("/verify-email/<token>")
+def verify_email(token: str):
+    """邮箱验证。注意：验证与否不影响登录，仅作标记，避免影响既有老用户。"""
+    user = User.query.filter_by(verify_token=token).first()
+    if not user:
+        flash("验证链接无效。", "error")
+        return redirect(url_for("main.index"))
+
+    user.email_verified = True
+    user.verify_token = None
+    db.session.commit()
+    flash("邮箱验证成功，谢谢！", "success")
+    return redirect(url_for("main.dashboard") if current_user.is_authenticated else url_for("auth.login"))
+
+
+@auth_bp.route("/resend-verification", methods=["POST"])
+@login_required
+def resend_verification():
+    """重新发送验证邮件。"""
+    user = current_user
+    if user.email_verified:
+        flash("你的邮箱已经验证过了。", "info")
+        return redirect(url_for("main.profile"))
+
+    if not user.verify_token:
+        user.verify_token = secrets.token_urlsafe(32)
+        db.session.commit()
+
+    verify_url = url_for("auth.verify_email", token=user.verify_token, _external=True)
+    if send_email(
+        user.email,
+        "请验证你的邮箱 · English Word Study",
+        f"你好 {user.username}，\n\n请点击下面的链接完成邮箱验证：\n{verify_url}\n\n"
+        "如果不是你本人操作，请忽略本邮件。",
+    ):
+        flash("验证邮件已重新发送，请查收。", "info")
+    else:
+        flash(f"（邮件未配置 SMTP）邮箱验证链接：{verify_url}", "info")
+    return redirect(url_for("main.profile"))
 
 
 def _login_now(user: User, remember: bool = False) -> None:

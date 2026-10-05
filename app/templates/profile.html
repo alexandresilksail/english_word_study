@@ -1,49 +1,87 @@
 {% extends "base.html" %}
 {% import "_macros.html" as mm %}
-{% block title %}个人资料 · {{ app_title }}{% endblock %}
+{% from "_macros.html" import icon %}
+{% block title %}{{ bi_plain('nav.profile') }} · {{ app_title }}{% endblock %}
 
 {% block content %}
+
 <div class="page-head">
   <div>
-    <h2><span class="ico">👤</span>个人资料</h2>
-    <p>管理你的账号信息与登录密码</p>
+    <span class="eyebrow">{{ t('nav.profile') }} / My Account</span>
+    <h2>{{ bi('prof.title') }}</h2>
+    <p>{{ t('prof.sub') }}</p>
   </div>
-  <span class="tag blue">注册第 {{ joined_days }} 天</span>
+  <span class="tag blue">{{ t('prof.joined_days') }} {{ joined_days }} {{ t('prof.joined_days_unit') }}</span>
 </div>
 
-<div class="grid" style="grid-template-columns:.95fr 1.05fr">
-  <div>
-    <div class="card" style="margin-bottom:14px">
-      <div class="section-title"><h3>👋 基本信息</h3></div>
-      <div class="kv" style="display:grid;gap:12px">
-        <div><b>用户名</b><p>{{ current_user.username }}</p></div>
-        <div><b>邮箱（登录账号）</b><p class="mono">{{ current_user.email }}</p></div>
-        <div><b>账号类型</b><p>{{ '🛠 管理员' if current_user.is_admin else '🎓 普通用户' }}</p></div>
-        <div><b>注册时间</b><p>{{ current_user.created_at|dt('%Y-%m-%d %H:%M') }}</p></div>
-        <div><b>最近登录</b><p>{{ (current_user.last_login_at|dt) or '首次登录' }}</p></div>
-        <div><b>登录次数</b><p>{{ current_user.login_count or 0 }} 次</p></div>
+<div class="grid-2" style="grid-template-columns:.95fr 1.05fr">
+
+  {# ---------------------------------------------------------- 左：账号信息 + 数据 #}
+  <div class="stack">
+    <div class="card">
+      <div class="card-head"><h3>{{ bi('prof.basic') }}</h3></div>
+      <div class="stack" style="gap:var(--ds-sp-3)">
+        <div class="row-between">
+          <span class="small muted">{{ bi('prof.field_username') }}</span>
+          <b>{{ current_user.username }}</b>
+        </div>
+        <div class="row-between">
+          <span class="small muted">{{ bi('prof.field_email') }}</span>
+          <b class="mono" style="word-break:break-all">{{ current_user.email }}</b>
+        </div>
+        <div class="row-between">
+          <span class="small muted">{{ t('auth.verify_title') }} / Email</span>
+          <span>
+            {% if current_user.email_verified %}
+              <span class="tag green">{{ icon('check-circle') }}{{ bi('auth.verified') }}</span>
+            {% else %}
+              <span class="tag amber">{{ bi('auth.unverified') }}</span>
+              <form method="post" action="{{ url_for('auth.resend_verification') }}" style="display:inline;margin-left:6px">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-link btn-sm">{{ bi('auth.resend') }}</button>
+              </form>
+            {% endif %}
+          </span>
+        </div>
+        <div class="row-between">
+          <span class="small muted">{{ bi('prof.field_role') }}</span>
+          <b>{{ t('prof.role_admin') if current_user.is_admin else t('prof.role_user') }}</b>
+        </div>
+        <div class="row-between">
+          <span class="small muted">{{ bi('prof.field_created') }}</span>
+          <b class="small">{{ current_user.created_at|dt('%Y-%m-%d %H:%M') }}</b>
+        </div>
+        <div class="row-between">
+          <span class="small muted">{{ bi('prof.field_last_login') }}</span>
+          <b class="small">{{ (current_user.last_login_at|dt) or '—' }}</b>
+        </div>
+        <div class="row-between">
+          <span class="small muted">{{ bi('prof.field_login_count') }}</span>
+          <b class="small">{{ current_user.login_count or 0 }}</b>
+        </div>
       </div>
     </div>
 
     <div class="card">
-      <div class="section-title"><h3>📊 我的数据</h3></div>
-      <div class="stat-grid" style="grid-template-columns:repeat(2,1fr);gap:10px;margin:0">
-        <div class="stat"><div class="ico">📘</div><b>{{ stats.learned }}</b><span>已学习</span></div>
-        <div class="stat s-mastered"><div class="ico">✅</div><b>{{ stats.mastered }}</b><span>已掌握</span></div>
-        <div class="stat s-acc"><div class="ico">🎯</div><b>{{ stats.accuracy }}%</b><span>正确率</span></div>
-        <div class="stat"><div class="ico">🔥</div><b>{{ stats.streak }}</b><span>连续天数</span></div>
+      <div class="card-head"><h3>{{ bi('prof.my_data') }}</h3></div>
+      <div class="stat-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+        <div class="stat">{{ icon('book') }}<b>{{ stats.learned }}</b><span>{{ bi('dash.words_learned') }}</span></div>
+        <div class="stat">{{ icon('check-circle') }}<b>{{ stats.mastered }}</b><span>{{ bi('dash.words_mastered') }}</span></div>
+        <div class="stat">{{ icon('quiz') }}<b>{{ stats.accuracy }}%</b><span>{{ bi('prog.accuracy') }}</span></div>
+        <div class="stat">{{ icon('clock') }}<b>{{ stats.streak }}</b><span>{{ bi('dash.streak') }}</span></div>
       </div>
     </div>
   </div>
 
-  <div>
-    <div class="card" style="margin-bottom:14px">
-      <div class="section-title"><h3>✏️ 修改用户名</h3></div>
+  {# ---------------------------------------------------------- 右：表单 + 最近作答 #}
+  <div class="stack">
+    <div class="card">
+      <div class="card-head"><h3>{{ bi('prof.change_username') }}</h3></div>
       <form method="post" action="{{ url_for('main.profile') }}" novalidate>
         {{ form.hidden_tag() }}
         <input type="hidden" name="form_kind" value="profile">
-        <div class="form-row">
-          <label for="username">新的用户名</label>
+        <div class="field">
+          <label for="username">{{ bi('auth.username') }}</label>
           {{ form.username(class="input", id="username") }}
           <div class="errs">{% for e in form.username.errors %}<div>{{ e }}</div>{% endfor %}</div>
         </div>
@@ -52,46 +90,48 @@
     </div>
 
     <div class="card">
-      <div class="section-title"><h3>🔐 修改密码</h3></div>
+      <div class="card-head"><h3>{{ bi('prof.change_password') }}</h3></div>
       <form method="post" action="{{ url_for('main.profile') }}" novalidate>
         {{ pwd_form.hidden_tag() }}
         <input type="hidden" name="form_kind" value="password">
-        <div class="form-row">
-          <label for="current_password">当前密码</label>
-          {{ pwd_form.current_password(class="input", id="current_password") }}
+        <div class="field">
+          <label for="current_password">{{ bi('prof.current_password') }}</label>
+          {{ pwd_form.current_password(class="input", id="current_password", autocomplete="current-password") }}
           <div class="errs">{% for e in pwd_form.current_password.errors %}<div>{{ e }}</div>{% endfor %}</div>
         </div>
-        <div class="form-row">
-          <label for="new_password">新密码</label>
-          {{ pwd_form.new_password(class="input", id="new_password") }}
+        <div class="field">
+          <label for="new_password">{{ bi('prof.new_password') }}</label>
+          {{ pwd_form.new_password(class="input", id="new_password", autocomplete="new-password") }}
+          <div class="hint">{{ t('auth.password_hint') }}</div>
           <div class="errs">{% for e in pwd_form.new_password.errors %}<div>{{ e }}</div>{% endfor %}</div>
         </div>
-        <div class="form-row">
-          <label for="confirm2">确认新密码</label>
-          {{ pwd_form.confirm(class="input", id="confirm2") }}
+        <div class="field">
+          <label for="confirm2">{{ bi('prof.confirm_new_password') }}</label>
+          {{ pwd_form.confirm(class="input", id="confirm2", autocomplete="new-password") }}
           <div class="errs">{% for e in pwd_form.confirm.errors %}<div>{{ e }}</div>{% endfor %}</div>
         </div>
         {{ pwd_form.submit(class="btn btn-primary") }}
       </form>
-      <div class="secure-note">🔒 修改成功后，下次登录请使用新密码。</div>
+      <div class="secure-note">{{ icon('lock') }}<span>{{ t('auth.secure_note') }}</span></div>
     </div>
 
-    <div class="card" style="margin-top:14px">
-      <div class="section-title"><h3>🕘 最近作答</h3></div>
+    <div class="card">
+      <div class="card-head"><h3>{{ bi('prof.recent_answers') }}</h3></div>
       {% if recent %}
-        <div class="tags" style="flex-direction:column;align-items:stretch;gap:7px">
+        <div class="stack" style="gap:7px">
           {% for r in recent %}
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
-              <span class="small">{% if r.word %}{{ r.word.word }}{% else %}(已删除){% endif %}</span>
-              <span class="tag {{ 'green' if r.is_correct else 'red' }}">{{ '✓ 正确' if r.is_correct else '✗ 错误' }}</span>
+            <div class="row-between">
+              <span class="small">{{ r.word.word if r.word else '(已删除)' }}</span>
+              <span class="tag {{ 'green' if r.is_correct else 'red' }}">{{ '✓ ' ~ t('quiz.correct') if r.is_correct else '✗ ' ~ t('quiz.wrong') }}</span>
               <span class="small muted">{{ r.created_at|dt('%m-%d %H:%M') }}</span>
             </div>
           {% endfor %}
         </div>
       {% else %}
-        <p class="muted small" style="margin:0">还没有作答记录，去 <a href="{{ url_for('quiz.test_page') }}" style="color:var(--brand);font-weight:700">做一组测试</a> 吧。</p>
+        <p class="muted small">{{ t('prof.no_answers') }}. <a href="{{ url_for('quiz.test_page') }}">{{ t('act.take_quiz') }}</a></p>
       {% endif %}
     </div>
   </div>
 </div>
+
 {% endblock %}
