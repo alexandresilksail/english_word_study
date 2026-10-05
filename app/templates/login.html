@@ -8,46 +8,96 @@
     <h2>{{ bi('auth.login_title') }}</h2>
     <p>{{ t('auth.login_sub') }}</p>
 
-    <form method="post" action="{{ url_for('auth.login', next=request.args.get('next')) }}" novalidate>
-      {{ form.hidden_tag() }}
+    {# ---- 登录方式切换：邮箱验证码（推荐） / 密码 ---- #}
+    <div class="seg-tabs" role="tablist" data-seg="login">
+      <button type="button" class="seg-tab {{ 'active' if (tab|default('code')) == 'code' else '' }}" data-tab="code" role="tab">
+        {{ icon('mail') }}<span>{{ bi('auth.tab_code') }}</span>
+      </button>
+      <button type="button" class="seg-tab {{ 'active' if (tab|default('code')) == 'password' else '' }}" data-tab="password" role="tab">
+        {{ icon('lock') }}<span>{{ bi('auth.tab_password') }}</span>
+      </button>
+    </div>
 
-      <div class="field">
-        <label for="email">{{ bi('auth.email') }}</label>
-        {{ form.email(class="input", id="email", placeholder=t('auth.email_placeholder'), autofocus=true, autocomplete="email") }}
-        <div class="errs">{% for e in form.email.errors %}<div>{{ e }}</div>{% endfor %}</div>
+    {# ===================== 邮箱验证码登录 ===================== #}
+    <div class="tab-pane {{ 'active' if (tab|default('code')) == 'code' else '' }}" data-pane="code">
+      <p class="pane-sub">{{ t('auth.code_sub') }}</p>
+
+      <form method="post" action="{{ url_for('auth.code_login', next=request.args.get('next')) }}" novalidate
+            data-code-form data-purpose="login">
+        {{ code_form.hidden_tag() }}
+
+        <div class="field">
+          <label for="code-email">{{ bi('auth.email') }}</label>
+          {{ code_form.email(class="input", id="code-email", placeholder=t('auth.email_placeholder'),
+                             autocomplete="email", inputmode="email", autofocus=true) }}
+          <div class="errs">{% for e in code_form.email.errors %}<div>{{ e }}</div>{% endfor %}</div>
+        </div>
+
+        <div class="field">
+          <label for="code-input">{{ bi('auth.code') }}</label>
+          <div class="otp-row">
+            {{ code_form.code(class="input otp-input", id="code-input", placeholder="······",
+                              autocomplete="one-time-code", inputmode="numeric", maxlength="6") }}
+            <button type="button" class="btn btn-outline otp-send" data-send-code>{{ t('auth.send_code') }}</button>
+          </div>
+          <div class="hint">{{ t('auth.code_ttl') }}</div>
+          <div class="errs">{% for e in code_form.code.errors %}<div>{{ e }}</div>{% endfor %}</div>
+          <div class="code-msg" data-code-msg hidden></div>
+        </div>
+
+        <label class="check-row" for="code-remember" style="margin-bottom:var(--ds-sp-4)">
+          {{ code_form.remember(id="code-remember") }} {{ bi('auth.remember') }}
+        </label>
+
+        {{ code_form.submit(class="btn btn-primary btn-block", value=t('auth.submit_code_login')) }}
+      </form>
+
+      <div class="secure-note">{{ icon('shield') }}<span>{{ t('auth.code_note') }}</span></div>
+    </div>
+
+    {# ===================== 密码登录（原有方式，保留） ===================== #}
+    <div class="tab-pane {{ 'active' if (tab|default('code')) == 'password' else '' }}" data-pane="password">
+      <p class="pane-sub">{{ t('auth.login_sub') }}</p>
+
+      <form method="post" action="{{ url_for('auth.login', next=request.args.get('next')) }}" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="field">
+          <label for="email">{{ bi('auth.email') }}</label>
+          {{ form.email(class="input", id="email", placeholder=t('auth.email_placeholder'), autocomplete="email") }}
+          <div class="errs">{% for e in form.email.errors %}<div>{{ e }}</div>{% endfor %}</div>
+        </div>
+
+        <div class="field">
+          <label for="password">{{ bi('auth.password') }}</label>
+          {{ form.password(class="input", id="password", placeholder=t('auth.password_placeholder'), autocomplete="current-password") }}
+          <div class="errs">{% for e in form.password.errors %}<div>{{ e }}</div>{% endfor %}</div>
+        </div>
+
+        <label class="check-row" for="remember" style="margin-bottom:var(--ds-sp-4)">
+          {{ form.remember(id="remember") }} {{ bi('auth.remember') }}
+        </label>
+
+        {{ form.submit(class="btn btn-primary btn-block", value=t('auth.submit_login')) }}
+
+        {% for e in form.errors.get('csrf_token', []) %}<div class="errs" style="margin-top:8px"><div>{{ e }}</div></div>{% endfor %}
+      </form>
+
+      <div class="auth-forgot">
+        <a class="btn-link" href="{{ url_for('auth.forgot_password') }}">{{ bi('auth.forgot') }}</a>
       </div>
-
-      <div class="field">
-        <label for="password">{{ bi('auth.password') }}</label>
-        {{ form.password(class="input", id="password", placeholder=t('auth.password_placeholder'), autocomplete="current-password") }}
-        <div class="errs">{% for e in form.password.errors %}<div>{{ e }}</div>{% endfor %}</div>
-      </div>
-
-      <label class="check-row" for="remember" style="margin-bottom:var(--ds-sp-4)">
-        {{ form.remember(id="remember") }} {{ bi('auth.remember') }}
-      </label>
-
-      {{ form.submit(class="btn btn-primary btn-block", value=t('auth.submit_login')) }}
-
-      {% for e in form.errors.get('csrf_token', []) %}<div class="errs" style="margin-top:8px"><div>{{ e }}</div></div>{% endfor %}
-    </form>
-
-    <div class="auth-forgot">
-      <a class="btn-link" href="{{ url_for('auth.forgot_password') }}">{{ bi('auth.forgot') }}</a>
     </div>
 
     <div class="auth-alt">
       {{ t('auth.no_account') }} <a href="{{ url_for('auth.register') }}">{{ bi('auth.register_link') }}</a>
     </div>
-
-    <div class="secure-note">{{ icon('lock') }}<span>{{ t('auth.secure_note') }}</span></div>
   </div>
 
   <aside class="auth-side">
     <div class="perk">{{ icon('book') }}<div><b>{{ t('footer.wordbank') }} 2000 {{ t('learn.words_unit') }}</b><span>{{ t('learn.sub') }}</span></div></div>
     <div class="perk">{{ icon('quiz') }}<div><b>{{ t('quiz.choose_mode') }}</b><span>{{ t('quiz.sub') }}</span></div></div>
     <div class="perk">{{ icon('chart') }}<div><b>{{ t('prog.title') }}</b><span>{{ t('prog.sub') }}</span></div></div>
-    <div class="perk">{{ icon('shield') }}<div><b>{{ t('footer.privacy') }}</b><span>{{ t('dash.sub') if false else '' }}</span></div></div>
+    <div class="perk">{{ icon('shield') }}<div><b>{{ t('footer.privacy') }}</b><span></span></div></div>
   </aside>
 </div>
 {% endblock %}

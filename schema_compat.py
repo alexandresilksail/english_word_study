@@ -29,6 +29,8 @@ _EXTRA_COLUMNS = {
     "verify_token": "str64",
     "reset_token": "str64",
     "reset_token_exp": "datetime",
+    # 无密码账号标记（邮箱验证码注册）
+    "is_passwordless": "bool",
 }
 
 
@@ -38,6 +40,12 @@ def _ddl_for(col_type: str, dialect: str) -> str:
         return "BOOLEAN DEFAULT FALSE NOT NULL" if pg else "BOOLEAN DEFAULT 0 NOT NULL"
     if col_type == "str64":
         return "VARCHAR(64)"
+    if col_type == "str255":
+        return "VARCHAR(255)"
+    if col_type == "str16":
+        return "VARCHAR(16)"
+    if col_type == "int":
+        return "INTEGER DEFAULT 0 NOT NULL"
     if col_type == "datetime":
         return "TIMESTAMP" if pg else "DATETIME"
     return "VARCHAR(255)"

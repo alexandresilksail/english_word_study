@@ -379,4 +379,103 @@
       if (btn) { btn.disabled = true; setTimeout(function () { btn.disabled = false; }, 3000); }
     });
   });
+
+  /* ==========================================================
+     登录方式分段切换（邮箱验证码 / 密码）
+     ========================================================== */
+  qsa('[data-seg]').forEach(function (seg) {
+    var tabs = qsa('.seg-tab', seg);
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        var name = tab.getAttribute('data-tab');
+        tabs.forEach(function (x) { x.classList.toggle('active', x === tab); });
+        qsa('[data-pane]').forEach(function (pane) {
+          pane.classList.toggle('active', pane.getAttribute('data-pane') === name);
+        });
+      });
+    });
+  });
+
+  /* ==========================================================
+     邮箱验证码：发送 / 倒计时 / 结果提示
+     未配置邮件服务时，后端会把验证码放在 dev_code 里，这里直接展示，
+     便于本地自测；生产环境配置了 SMTP 后不会出现。
+     ========================================================== */
+  qsa('[data-code-form]').forEach(function (form) {
+    var sendBtn = qs('[data-send-code]', form);
+    var msgBox = qs('[data-code-msg]', form);
+    var emailInput = qs('input[name=email]', form);
+    var codeInput = qs('input[name=code]', form);
+    var purpose = form.getAttribute('data-purpose') || 'login';
+    var timer = null;
+
+    function showMsg(text, kind) {
+      if (!msgBox) return;
+      msgBox.hidden = false;
+      msgBox.className = 'code-msg' + (kind ? ' ' + kind : '');
+      msgBox.innerHTML = text;
+    }
+
+    function countdown(sec) {
+      if (!sendBtn) return;
+      var left = sec;
+      sendBtn.disabled = true;
+      sendBtn.textContent = left + 's';
+      timer = setInterval(function () {
+        left -= 1;
+        if (left <= 0) {
+          clearInterval(timer);
+          sendBtn.disabled = false;
+          sendBtn.textContent = sendBtn.getAttribute('data-label') || '重发';
+          return;
+        }
+        sendBtn.textContent = left + 's';
+      }, 1000);
+    }
+
+    if (sendBtn) {
+      sendBtn.setAttribute('data-label', sendBtn.textContent.trim());
+      sendBtn.addEventListener('click', function () {
+        var email = (emailInput && emailInput.value || '').trim();
+        if (!email || email.indexOf('@') < 0) {
+          showMsg('请先填写邮箱 / Enter your email first', 'err');
+          if (emailInput) emailInput.focus();
+          return;
+        }
+        showMsg('发送中… / Sending…');
+        sendBtn.disabled = true;
+
+        fetch('/auth/code/request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken() },
+          credentials: 'same-origin',
+          body: JSON.stringify({ email: email, purpose: purpose })
+        }).then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+          .then(function (res) {
+            var d = res.data || {};
+            if (d.ok) {
+              var extra = d.dev_code
+                ? '<br><b>' + d.dev_code + '</b><br><span>未配置邮件服务，验证码直接显示在页面上</span>'
+                : '';
+              showMsg((d.message || '验证码已发送') + extra, d.dev_code ? 'dev' : '');
+              countdown(60);
+              if (codeInput) codeInput.focus();
+            } else {
+              showMsg(d.message || '发送失败，请稍后再试', 'err');
+              sendBtn.disabled = false;
+            }
+          }).catch(function () {
+            showMsg('网络异常，请稍后再试 / Network error, try again', 'err');
+            sendBtn.disabled = false;
+          });
+      });
+    }
+
+    // 验证码框：只保留数字，最多 6 位，输满自动提交前置校验（不自动提交，避免误操作）
+    if (codeInput) {
+      codeInput.addEventListener('input', function () {
+        codeInput.value = codeInput.value.replace(/\D/g, '').slice(0, 6);
+      });
+    }
+  });
 })();

@@ -5,45 +5,97 @@
 {% block content %}
 <div class="auth-wrap">
   <div class="auth-card">
-    <h2>{{ bi('auth.register_title') }}</h2>
-    <p>{{ t('auth.register_sub') }}</p>
+    {% set m = mode|default('code') %}
 
-    <form method="post" action="{{ url_for('auth.register') }}" novalidate>
-      {{ form.hidden_tag() }}
+    {% if m == 'code' %}
+      {# ================= 邮箱验证码注册（默认，无需密码） ================= #}
+      <h2>{{ bi('auth.code_register_title') }}</h2>
+      <p>{{ t('auth.code_register_sub') }}</p>
 
-      <div class="field">
-        <label for="email">{{ bi('auth.email') }}</label>
-        {{ form.email(class="input", id="email", placeholder=t('auth.email_placeholder'), autofocus=true, autocomplete="email") }}
-        <div class="errs">{% for e in form.email.errors %}<div>{{ e }}</div>{% endfor %}</div>
+      <form method="post" action="{{ url_for('auth.code_register') }}" novalidate
+            data-code-form data-purpose="register">
+        {{ code_form.hidden_tag() }}
+
+        <div class="field">
+          <label for="reg-email">{{ bi('auth.email') }}</label>
+          {{ code_form.email(class="input", id="reg-email", placeholder=t('auth.email_placeholder'),
+                             autocomplete="email", inputmode="email", autofocus=true) }}
+          <div class="errs">{% for e in code_form.email.errors %}<div>{{ e }}</div>{% endfor %}</div>
+        </div>
+
+        <div class="field">
+          <label for="reg-username">{{ bi('auth.username_optional') }}</label>
+          {{ code_form.username(class="input", id="reg-username", placeholder=t('auth.username_placeholder'), autocomplete="nickname") }}
+          <div class="errs">{% for e in code_form.username.errors %}<div>{{ e }}</div>{% endfor %}</div>
+        </div>
+
+        <div class="field">
+          <label for="reg-code">{{ bi('auth.code') }}</label>
+          <div class="otp-row">
+            {{ code_form.code(class="input otp-input", id="reg-code", placeholder="······",
+                              autocomplete="one-time-code", inputmode="numeric", maxlength="6") }}
+            <button type="button" class="btn btn-outline otp-send" data-send-code>{{ t('auth.send_code') }}</button>
+          </div>
+          <div class="hint">{{ t('auth.code_ttl') }}</div>
+          <div class="errs">{% for e in code_form.code.errors %}<div>{{ e }}</div>{% endfor %}</div>
+          <div class="code-msg" data-code-msg hidden></div>
+        </div>
+
+        {{ code_form.submit(class="btn btn-primary btn-block", value=t('auth.submit_code_register')) }}
+      </form>
+
+      <div class="auth-alt">
+        <a href="{{ url_for('auth.register', mode='password') }}">{{ bi('auth.use_password_register') }}</a>
       </div>
 
-      <div class="field">
-        <label for="username">{{ bi('auth.username') }}</label>
-        {{ form.username(class="input", id="username", placeholder=t('auth.username_placeholder'), autocomplete="nickname") }}
-        <div class="errs">{% for e in form.username.errors %}<div>{{ e }}</div>{% endfor %}</div>
+      <div class="secure-note">{{ icon('shield') }}<span>{{ t('auth.code_note') }}</span></div>
+
+    {% else %}
+      {# ================= 密码注册（原有方式，保留） ================= #}
+      <h2>{{ bi('auth.register_title') }}</h2>
+      <p>{{ t('auth.register_sub') }}</p>
+
+      <form method="post" action="{{ url_for('auth.register') }}" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="field">
+          <label for="email">{{ bi('auth.email') }}</label>
+          {{ form.email(class="input", id="email", placeholder=t('auth.email_placeholder'), autofocus=true, autocomplete="email") }}
+          <div class="errs">{% for e in form.email.errors %}<div>{{ e }}</div>{% endfor %}</div>
+        </div>
+
+        <div class="field">
+          <label for="username">{{ bi('auth.username') }}</label>
+          {{ form.username(class="input", id="username", placeholder=t('auth.username_placeholder'), autocomplete="nickname") }}
+          <div class="errs">{% for e in form.username.errors %}<div>{{ e }}</div>{% endfor %}</div>
+        </div>
+
+        <div class="field">
+          <label for="password">{{ bi('auth.password') }}</label>
+          {{ form.password(class="input", id="password", autocomplete="new-password") }}
+          <div class="hint">{{ t('auth.password_hint') }}</div>
+          <div class="errs">{% for e in form.password.errors %}<div>{{ e }}</div>{% endfor %}</div>
+        </div>
+
+        <div class="field">
+          <label for="confirm">{{ bi('auth.confirm_password') }}</label>
+          {{ form.confirm(class="input", id="confirm", autocomplete="new-password") }}
+          <div class="errs">{% for e in form.confirm.errors %}<div>{{ e }}</div>{% endfor %}</div>
+        </div>
+
+        {{ form.submit(class="btn btn-primary btn-block", value=t('auth.submit_register')) }}
+      </form>
+
+      <div class="auth-alt">
+        <a href="{{ url_for('auth.register') }}">{{ bi('auth.use_code_register') }}</a>
       </div>
 
-      <div class="field">
-        <label for="password">{{ bi('auth.password') }}</label>
-        {{ form.password(class="input", id="password", autocomplete="new-password") }}
-        <div class="hint">{{ t('auth.password_hint') }}</div>
-        <div class="errs">{% for e in form.password.errors %}<div>{{ e }}</div>{% endfor %}</div>
-      </div>
-
-      <div class="field">
-        <label for="confirm">{{ bi('auth.confirm_password') }}</label>
-        {{ form.confirm(class="input", id="confirm", autocomplete="new-password") }}
-        <div class="errs">{% for e in form.confirm.errors %}<div>{{ e }}</div>{% endfor %}</div>
-      </div>
-
-      {{ form.submit(class="btn btn-primary btn-block", value=t('auth.submit_register')) }}
-    </form>
+      <div class="secure-note">{{ icon('lock') }}<span>{{ t('auth.secure_note') }}</span></div>
+    {% endif %}
 
     <div class="auth-alt">
       {{ t('auth.have_account') }} <a href="{{ url_for('auth.login') }}">{{ bi('auth.login_link') }}</a>
     </div>
-
-    <div class="secure-note">{{ icon('lock') }}<span>{{ t('auth.secure_note') }}</span></div>
   </div>
 
   <aside class="auth-side">

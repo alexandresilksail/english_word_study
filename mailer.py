@@ -45,12 +45,19 @@ def send_email(to_addr: str, subject: str, body: str) -> bool:
     msg.set_content(body)
 
     try:
-        with smtplib.SMTP(server, port, timeout=15) as smtp:
-            if use_tls:
-                smtp.starttls()
-            if username and password:
-                smtp.login(username, password)
-            smtp.send_message(msg)
+        # 465 为隐式 SSL（SMTPS），587/25 用 STARTTLS
+        if port == 465:
+            with smtplib.SMTP_SSL(server, port, timeout=15) as smtp:
+                if username and password:
+                    smtp.login(username, password)
+                smtp.send_message(msg)
+        else:
+            with smtplib.SMTP(server, port, timeout=15) as smtp:
+                if use_tls:
+                    smtp.starttls()
+                if username and password:
+                    smtp.login(username, password)
+                smtp.send_message(msg)
         logger.info("[mailer] 已发送邮件至 %s", to_addr)
         return True
     except Exception as exc:

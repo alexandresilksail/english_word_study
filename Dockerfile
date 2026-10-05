@@ -33,7 +33,9 @@ WORKDIR /app
 COPY --from=builder /install /usr/local
 
 COPY requirements.txt .
-COPY app.py config.py models.py services.py forms.py auth.py extensions.py wsgi.py ./
+# 用通配复制根目录模块：新增 i18n.py / mailer.py / schema_compat.py / email_code.py 等
+# 不必再改 Dockerfile，避免"本地能跑、镜像里 ImportError" 的问题
+COPY *.py ./
 COPY routes/ ./routes/
 COPY utils/ ./utils/
 COPY seeds/ ./seeds/

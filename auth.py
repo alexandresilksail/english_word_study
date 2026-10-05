@@ -11,13 +11,14 @@ import secrets
 from datetime import timedelta
 from functools import wraps
 
-from flask import (Blueprint, abort, flash, redirect, render_template, request,
-                   session, url_for)
+from flask import (Blueprint, abort, flash, jsonify, redirect, render_template,
+                   request, session, url_for)
 from flask_login import current_user, login_required, login_user, logout_user
 
+from email_code import issue_code, verify_code
 from extensions import db
-from forms import (ForgotPasswordForm, LoginForm, RegistrationForm,
-                   ResetPasswordForm)
+from forms import (CodeLoginForm, CodeRegisterForm, ForgotPasswordForm,
+                   LoginForm, RegistrationForm, ResetPasswordForm)
 from mailer import send_email
 from models import User, utcnow
 from utils.ratelimit import clear_login_failures, register_login_failure
@@ -45,12 +46,17 @@ def register():
     if current_user.is_authenticated:
         return redirect(url_for("main.dashboard"))
 
+    # 默认走「邮箱验证码注册（无密码）」，仍保留 ?mode=password 的密码注册
+    mode = (request.args.get("mode") or "code").strip().lower()
+    if mode not in ("code", "password"):
+        mode = "code"
+
     form = RegistrationForm()
     if form.validate_on_submit():
         email = (form.email.data or "").strip().lower()
         if User.query.filter_by(email=email).first():
             flash("该邮箱已被注册，请直接登录", "error")
-            return render_template("register.html", form=form)
+            return render_template("register.html", form=form, code_form=CodeRegisterForm(), mode="password")
 
         user = User(email=email, username=(form.username.data or "").strip())
         user.set_password(form.password.data)
@@ -76,7 +82,7 @@ def register():
         _login_now(user, remember=True)
         return redirect(url_for("main.dashboard"))
 
-    return render_template("register.html", form=form)
+    return render_template("register.html", form=form, code_form=CodeRegisterForm(), mode=mode)
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
@@ -85,6 +91,11 @@ def login():
         return redirect(url_for("main.dashboard"))
 
     form = LoginForm()
+    # 默认展示「邮箱验证码登录」，仍保留 ?tab=password 的密码登录
+    tab = (request.args.get("tab") or "code").strip().lower()
+    if tab not in ("code", "password"):
+        tab = "code"
+    code_form = CodeLoginForm()
     if form.validate_on_submit():
         email = (form.email.data or "").strip().lower()
         user = User.query.filter_by(email=email).first()
@@ -94,7 +105,7 @@ def login():
             remaining, wait_seconds = register_login_failure(user)
             if user.is_locked:
                 flash(f"登录失败次数过多，请 {wait_seconds // 60 + 1} 分钟后再试", "error")
-                return render_template("login.html", form=form)
+                return render_template("login.html", form=form, code_form=code_form, tab="password")
             if user.check_password(form.password.data):
                 ok = True
 
@@ -112,8 +123,107 @@ def login():
         if remaining and remaining <= 3:
             tip += f"，还可尝试 {remaining} 次"
         flash(tip, "error")
+        return render_template("login.html", form=form, code_form=code_form, tab="password")
 
-    return render_template("login.html", form=form)
+    return render_template("login.html", form=form, code_form=code_form, tab=tab)
+
+
+# --------------------------------------------------------------------------
+# 邮箱验证码（无密码）注册 / 登录
+# --------------------------------------------------------------------------
+@auth_bp.route("/auth/code/request", methods=["POST"])
+def request_code():
+    """申请邮箱验证码（AJAX）。返回 JSON：{ok, message, dev_code}。
+
+    ``dev_code`` 仅在未配置 SMTP 时出现，便于本地自测。
+    """
+    if current_user.is_authenticated:
+        return jsonify({"ok": False, "message": "已登录 / Already signed in"}), 400
+
+    data = request.get_json(silent=True) or request.form
+    email = ((data.get("email") if hasattr(data, "get") else "") or "").strip().lower()
+    purpose = ((data.get("purpose") if hasattr(data, "get") else "") or "login").strip()
+    if purpose not in ("login", "register"):
+        purpose = "login"
+
+    if "@" not in email or email.startswith("@") or email.endswith("@"):
+        return jsonify({"ok": False, "message": "请输入有效的邮箱地址 / Enter a valid email"}), 400
+
+    exists = User.query.filter_by(email=email).first() is not None
+    if purpose == "login" and not exists:
+        return jsonify({"ok": False, "message": "该邮箱尚未注册，请先注册 / Not registered yet"}), 400
+    if purpose == "register" and exists:
+        return jsonify({"ok": False, "message": "该邮箱已注册，请直接登录 / Already registered, sign in"}), 400
+
+    ok, message, dev_code = issue_code(email, purpose, request.remote_addr)
+    return jsonify({"ok": ok, "message": message, "dev_code": dev_code}), (200 if ok else 429)
+
+
+@auth_bp.route("/auth/code/login", methods=["POST"])
+def code_login():
+    """邮箱验证码登录：校验通过即登录，无需密码。"""
+    if current_user.is_authenticated:
+        return redirect(url_for("main.dashboard"))
+
+    code_form = CodeLoginForm()
+    if code_form.validate_on_submit():
+        email = (code_form.email.data or "").strip().lower()
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            flash("该邮箱尚未注册，请先创建账号 / Not registered yet", "error")
+            return render_template("login.html", form=LoginForm(), code_form=code_form, tab="code")
+
+        ok, message = verify_code(email, code_form.code.data, "login")
+        if not ok:
+            flash(message, "error")
+            return render_template("login.html", form=LoginForm(), code_form=code_form, tab="code")
+
+        # 能用邮箱里的验证码完成校验，即视为邮箱归属已确认
+        if not user.email_verified:
+            user.email_verified = True
+        clear_login_failures(user)
+        db.session.commit()
+
+        _login_now(user, remember=bool(code_form.remember.data))
+        flash(f"欢迎回来，{user.username}！", "success")
+        return redirect(_safe_next(request.args.get("next")) or url_for("main.dashboard"))
+
+    return render_template("login.html", form=LoginForm(), code_form=code_form, tab="code")
+
+
+@auth_bp.route("/auth/code/register", methods=["POST"])
+def code_register():
+    """邮箱验证码注册：不设置密码，校验通过即创建账号并登录。"""
+    if current_user.is_authenticated:
+        return redirect(url_for("main.dashboard"))
+
+    code_form = CodeRegisterForm()
+    if code_form.validate_on_submit():
+        email = (code_form.email.data or "").strip().lower()
+        if User.query.filter_by(email=email).first():
+            flash("该邮箱已被注册，请直接登录 / Already registered, sign in", "error")
+            return render_template("register.html", form=RegistrationForm(), code_form=code_form, mode="code")
+
+        ok, message = verify_code(email, code_form.code.data, "register")
+        if not ok:
+            flash(message, "error")
+            return render_template("register.html", form=RegistrationForm(), code_form=code_form, mode="code")
+
+        username = (code_form.username.data or "").strip() or email.split("@")[0][:32]
+        if len(username) < 2:
+            username = (email.split("@")[0] or "Learner")[:32]
+
+        user = User(email=email, username=username)
+        user.set_unusable_password()      # 无密码账号：密码哈希为随机值，用户并不知晓
+        user.email_verified = True        # 已完成邮箱验证码校验
+        db.session.add(user)
+        db.session.commit()
+
+        flash("注册成功！已自动登录，开始背单词吧 / Account created, you're signed in", "success")
+        _login_now(user, remember=True)
+        return redirect(url_for("main.dashboard"))
+
+    return render_template("register.html", form=RegistrationForm(), code_form=code_form, mode="code")
 
 
 @auth_bp.route("/logout", methods=["GET", "POST"])

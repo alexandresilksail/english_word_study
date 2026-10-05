@@ -47,6 +47,9 @@ class User(UserMixin, db.Model):
     reset_token = db.Column(String(64), nullable=True, index=True)
     reset_token_exp = db.Column(DateTime, nullable=True)
 
+    # 该账号是否通过「无密码 · 邮箱验证码」方式创建（密码为随机值，用户并不知晓）
+    is_passwordless = db.Column(Boolean, nullable=False, default=False, server_default="0")
+
     # 关系
     favorites = relationship("Favorite", back_populates="user", cascade="all, delete-orphan", lazy="dynamic")
     wrong_answers = relationship("WrongAnswer", back_populates="user", cascade="all, delete-orphan", lazy="dynamic")
@@ -64,12 +67,59 @@ class User(UserMixin, db.Model):
             return False
         return check_password_hash(self.password_hash, raw)
 
+    def set_unusable_password(self) -> None:
+        """无密码账号：写入一个随机且无人知晓的哈希，使密码登录自然失效。
+
+        这样既满足 password_hash 非空的既有约束，也保证此类账号只能凭邮箱验证码登录。
+        """
+        import secrets
+
+        self.set_password(secrets.token_urlsafe(32))
+        self.is_passwordless = True
+
     @property
     def is_locked(self) -> bool:
         return bool(self.locked_until and self.locked_until > utcnow())
 
     def __repr__(self) -> str:
         return f"<User {self.email}>"
+
+
+# --------------------------------------------------------------------------
+# 邮箱验证码（一次性登录 / 注册码）
+# --------------------------------------------------------------------------
+class EmailCode(db.Model):
+    """邮箱验证码。
+
+    独立于 users 之外单独建表的原因：
+    - 注册时用户记录尚不存在，验证码无处安放
+    - 支持跨设备（手机上收码、电脑上提交）
+    - 便于统一限流与清理
+
+    安全：明文验证码只出现在邮件里，库中仅保存哈希；校验成功后立即删除（一次性）。
+    """
+
+    __tablename__ = "email_codes"
+    __table_args__ = (
+        Index("ix_email_codes_email_purpose", "email", "purpose"),
+    )
+
+    id = db.Column(Integer, primary_key=True)
+    email = db.Column(String(255), nullable=False, index=True)
+    code_hash = db.Column(String(255), nullable=False)          # 哈希，绝不存明文
+    purpose = db.Column(String(16), nullable=False)             # 'login' | 'register'
+    created_at = db.Column(DateTime, nullable=False, default=utcnow, server_default=func.now())
+    expires_at = db.Column(DateTime, nullable=False, index=True)
+    attempts = db.Column(Integer, nullable=False, default=0, server_default="0")  # 错误次数
+    consumed_at = db.Column(DateTime, nullable=True)            # 已使用则标记
+    ip = db.Column(String(64), nullable=True)                   # 仅用于审计/限流
+
+    def __repr__(self) -> str:
+        return f"<EmailCode {self.email} {self.purpose}>"
+
+    @property
+    def is_expired(self) -> bool:
+        return self.expires_at < utcnow()
 
 
 # --------------------------------------------------------------------------

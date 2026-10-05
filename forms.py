@@ -114,3 +114,54 @@ class EmptyForm(FlaskForm):
     """仅用于 CSRF 保护（收藏 / 取消收藏等按钮）。"""
 
     submit = SubmitField("提交")
+
+
+# --------------------------------------------------------------------------
+# 邮箱验证码（无密码登录 / 注册）
+# --------------------------------------------------------------------------
+CODE_RE = re.compile(r"^\d{6}$")
+# 验证码注册时用户名可选，允许空格（如 "Zhang San"），比密码注册宽松
+USERNAME_LOOSE_RE = re.compile(r"^[\w\u4e00-\u9fa5·.\-\s]{2,32}$")
+
+
+class CodeLoginForm(FlaskForm):
+    """邮箱验证码登录：邮箱 + 6 位验证码，不需要密码。"""
+
+    email = StringField(
+        "邮箱",
+        validators=[InputRequired("请输入邮箱"), Email(message="邮箱格式不正确"), Length(max=255)],
+    )
+    code = StringField(
+        "验证码",
+        validators=[
+            InputRequired("请输入邮箱中的 6 位验证码"),
+            Regexp(CODE_RE, message="验证码为 6 位数字"),
+        ],
+    )
+    remember = BooleanField("记住我")
+    submit = SubmitField("登录")
+
+
+class CodeRegisterForm(FlaskForm):
+    """邮箱验证码注册：邮箱 + 验证码即可创建账号，不设置密码。"""
+
+    email = StringField(
+        "邮箱",
+        validators=[InputRequired("请输入邮箱"), Email(message="邮箱格式不正确"), Length(max=255)],
+    )
+    username = StringField(
+        "用户名",
+        validators=[
+            Optional(),
+            Length(min=2, max=32, message="用户名长度需在 2-32 个字符之间"),
+            Regexp(USERNAME_LOOSE_RE, message="用户名仅支持中英文、数字、下划线、点和短横线"),
+        ],
+    )
+    code = StringField(
+        "验证码",
+        validators=[
+            InputRequired("请输入邮箱中的 6 位验证码"),
+            Regexp(CODE_RE, message="验证码为 6 位数字"),
+        ],
+    )
+    submit = SubmitField("注册")

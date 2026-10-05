@@ -235,6 +235,14 @@ def _register_cli(app: Flask) -> None:
                 db.session.commit()
         print("✔ 初始化完成")
 
+    @app.cli.command("purge-codes")
+    def purge_codes():
+        """清理已过期 / 已使用的邮箱验证码（可放进定时任务）。"""
+        from email_code import purge_expired
+        with app.app_context():
+            n = purge_expired()
+        print(f"✔ 已清理 {n} 条过期验证码")
+
 
 def _register_template_globals(app: Flask) -> None:
     @app.context_processor

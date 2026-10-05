@@ -15,7 +15,9 @@
 - 发音为**离线 MP3**（edge-tts 英式女声 en-GB），共 2000 个文件 18MB，不依赖任何在线 TTS 服务
 
 ### 用户与数据隔离
-- 注册 / 登录 / 退出，密码用 **Werkzeug PBKDF2 哈希**存储（永不存明文）
+- **邮箱验证码登录 / 注册（推荐，无需密码）**：输入邮箱 → 收 6 位验证码 → 验证即登录，注册时自动建号
+- 同时保留**邮箱 + 密码**方式，老账号不受任何影响；验证码注册的账号密码为随机值，无法用密码登录
+- 密码用 **Werkzeug PBKDF2 哈希**存储（永不存明文）；验证码同样只存哈希，用后即焚
 - 每个用户的**学习记录、收藏、错题本、测试记录、单词进度完全隔离**，SQL 层按 `user_id` 过滤
 
 ### 学习
@@ -231,8 +233,11 @@ DATABASE_URL=postgresql+psycopg2://user:password@host:5432/dbname
 | 路径 | 方法 | 说明 | 登录 |
 |---|---|---|---|
 | `/` | GET | 首页（未登录为落地页，已登录转 dashboard） | — |
-| `/register` | GET/POST | 注册 | — |
-| `/login` | GET/POST | 登录 | — |
+| `/register` | GET/POST | 注册（默认邮箱验证码；`?mode=password` 走密码注册） | — |
+| `/login` | GET/POST | 登录（`?tab=password` 为密码登录） | — |
+| `/auth/code/request` | POST | 申请邮箱验证码（JSON，需 CSRF） | — |
+| `/auth/code/login` | POST | 验证码登录 | — |
+| `/auth/code/register` | POST | 验证码注册（无密码） | — |
 | `/logout` | GET/POST | 退出 | ✅ |
 | `/dashboard` | GET | 个人主页：今日学习、进度概览 | ✅ |
 | `/learn` | GET | 单词学习（卡片 + 发音 + 标记状态） | ✅ |
