@@ -71,6 +71,8 @@ def quiz_start():
     session["quiz"] = {
         "mode": mode, "ids": ids, "total": len(ids),
         "answered": 0, "started": datetime.now().timestamp(),
+        # 出题与判题共用同一个 seed，保证选项集合/顺序完全可复现
+        "seed": random.randrange(1, 2 ** 31),
     }
     session.modified = True
     return jsonify(ok=True, mode=mode, total=len(ids))
@@ -92,7 +94,7 @@ def quiz_item():
     word = Word.query.get(state["ids"][idx])
     if not word:
         return jsonify(ok=False, error="题目数据异常"), 500
-    q = build_question(word, state["mode"])
+    q = build_question(word, state["mode"], state.get("seed"))
     q["i"] = idx
     q["total"] = state["total"]
     # 不要把答案直接暴露给前端（除拼写模式需要校验输入，但仍不回传答案）
@@ -124,7 +126,8 @@ def quiz_answer():
     if not word:
         return jsonify(ok=False, error="题目数据异常"), 500
 
-    question = build_question(word, state["mode"])
+    # 用与出题时相同的 seed 重建题目，选项下标才对得上
+    question = build_question(word, state["mode"], state.get("seed"))
     # 选择题：answer 是选项下标
     if question["mode"] != "spell":
         try:

@@ -204,6 +204,7 @@ def main():
             st = r.get_json()
             check(f"[{mode}] 开始测试", bool(st and st.get("ok")), st)
             ok_all = True
+            grading_ok = True
             wrong_first = False
             for i in range(st["total"]):
                 it = c.get(f"/api/quiz/item?i={i}").get_json()
@@ -212,27 +213,29 @@ def main():
                     break
                 q = it["q"]
                 target = Word.query.get(q["word_id"])
+                # 每轮第 1 题故意答错，用于验证错题本；其余题提交正确选项，
+                # 且必须判对——否则说明出题/判题的选项错位（历史 bug 回归）。
+                intended_wrong = (i == 0 and not wrong_first)
                 if mode == "spell":
-                    if i == 0 and not wrong_first:
-                        ans = "zzzzz"
-                        wrong_first = True
-                    else:
-                        ans = target.word
-                elif mode == "choice":
-                    want = target.meaning_cn
-                    ans = q["options"].index(want) if want in q["options"] else 0
+                    ans = "zzzzz" if intended_wrong else target.word
                 else:
-                    want = target.word
-                    if i == 0 and not wrong_first:
-                        ans = 0 if q["options"][0] != want else 1
-                        wrong_first = True
-                    else:
-                        ans = q["options"].index(want) if want in q["options"] else 0
+                    want = target.meaning_cn if mode == "choice" else target.word
+                    if want not in q["options"]:
+                        grading_ok = False
+                        break
+                    k = q["options"].index(want)
+                    ans = ((k + 1) % len(q["options"])) if intended_wrong else k
+                if intended_wrong:
+                    wrong_first = True
                 res = c.post("/api/quiz/answer", json={"i": i, "answer": ans}).get_json()
                 if not res or not res.get("ok"):
                     ok_all = False
                     break
+                if bool(res.get("correct")) != (not intended_wrong):
+                    grading_ok = False
+                    break
             check(f"[{mode}] 逐题作答正常", ok_all)
+            check(f"[{mode}] 判分正确（对判对、错判错）", grading_ok)
             fin = c.post("/api/quiz/finish", json={}).get_json()
             check(f"[{mode}] 完成并写入测试记录",
                   bool(fin and fin.get("ok") and fin.get("total") == 6), fin)

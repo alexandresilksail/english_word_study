@@ -141,13 +141,32 @@ def _pick_word_ids(user_id: int, scope: str, size: int) -> list[int]:
     return ids[:min(size, len(ids))]
 
 
-def _distractors(exclude_id: int, n: int, field: str) -> list[str]:
-    """随机取干扰项（同字段内容）。"""
-    pool = db.session.query(getattr(Word, field)).filter(
-        Word.id != exclude_id, func.length(getattr(Word, field)) > 0
-    ).order_by(func.random()).limit(n * 3).all()
-    vals, seen = [], {None}
-    for (v,) in pool:
+def _question_rng(word_id: int, seed=None) -> random.Random:
+    """为同一道题返回**确定性**的随机源。
+
+    出题（GET /api/quiz/item）与判题（POST /api/quiz/answer）会各自调用一次
+    build_question()，两次必须得到完全相同的选项集合与顺序；否则前端提交的
+    「选项下标」在后端会指向另一个选项，表现为"点了正确答案却提示错误"。
+    seed 由一次测试会话提供：同一题在同一轮内可复现，跨轮次依然有变化。
+    """
+    base = (int(seed) if seed is not None else 0) * 1000003 + int(word_id)
+    return random.Random(base)
+
+
+def _distractors(word: Word, n: int, field: str, rng: random.Random) -> list[str]:
+    """取 n 个干扰项（同字段内容）。
+
+    - 使用传入的 rng 而不是全局 random，保证同一题重复调用结果一致；
+    - 以正确答案文本为初始 seen 集合，避免出现与正确答案完全相同的干扰项
+      （不同单词可能有相同释义），否则会出现两个一模一样的选项。
+    """
+    correct = getattr(word, field)
+    rows = db.session.query(Word.id, getattr(Word, field)).filter(
+        Word.id != word.id, func.length(getattr(Word, field)) > 0
+    ).all()
+    rng.shuffle(rows)
+    vals, seen = [], {correct}
+    for _wid, v in rows:
         if v and v not in seen:
             seen.add(v)
             vals.append(v)
@@ -156,30 +175,35 @@ def _distractors(exclude_id: int, n: int, field: str) -> list[str]:
     return vals
 
 
-def build_question(word: Word, mode: str) -> dict:
-    """按模式生成一道题（含 4 个选项，顺序打乱）。"""
+def build_question(word: Word, mode: str, seed=None) -> dict:
+    """按模式生成一道题（含 4 个选项，顺序打乱）。
+
+    seed 不变时，同一道题（同一 word）的输出完全一致——这是判分能对上号的
+    前提，详见 _question_rng()。
+    """
+    rng = _question_rng(word.id, seed)
     if mode == "choice":                       # 英文 → 中文
-        opts = _distractors(word.id, 3, "meaning_cn") + [word.meaning_cn]
+        opts = _distractors(word, 3, "meaning_cn", rng) + [word.meaning_cn]
         correct_text = word.meaning_cn
-        random.shuffle(opts)
+        rng.shuffle(opts)
         return {
             "mode": "choice", "word_id": word.id, "word": word.word,
             "stem": word.word, "stem_sub": word.phonetic_uk,
             "options": opts, "answer": correct_text,
         }
     if mode == "zh_en":                        # 中文 → 英文
-        opts = _distractors(word.id, 3, "word") + [word.word]
+        opts = _distractors(word, 3, "word", rng) + [word.word]
         correct_text = word.word
-        random.shuffle(opts)
+        rng.shuffle(opts)
         return {
             "mode": "zh_en", "word_id": word.id, "word": word.word,
             "stem": word.meaning_cn, "stem_sub": word.pos or "英文单词",
             "options": opts, "answer": correct_text,
         }
     if mode == "listen":                       # 听音 → 选单词
-        opts = _distractors(word.id, 3, "word") + [word.word]
+        opts = _distractors(word, 3, "word", rng) + [word.word]
         correct_text = word.word
-        random.shuffle(opts)
+        rng.shuffle(opts)
         return {
             "mode": "listen", "word_id": word.id, "word": word.word,
             "stem": "", "stem_sub": "", "audio": word.audio,
