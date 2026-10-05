@@ -118,7 +118,7 @@ def _skill_cards():
     return cards
 
 
-@learn_bp.route("/")
+@learn_bp.route("/hub")
 @login_required
 def hub():
     """学习中心总览：六项技能 + 今日推荐。"""

@@ -221,8 +221,12 @@
 <a class="skill-card c-{{ s.color }} {{ 'is-locked' if not ready }}" href="{{ s.url }}">
   <span class="skill-ico">{{ icon(s.icon) }}</span>
   <div class="skill-body">
-    <b class="skill-name"><span class="bi-en">{{ s.name_en }}</span><span class="bi-zh">{{ s.name_zh }}</span></b>
-    <span class="skill-desc"><span class="bi-en">{{ s.desc_en }}</span><span class="bi-zh">{{ s.desc_zh }}</span></span>
+    {% set n_en = s.get('name_en') or s.get('en') or '' %}
+    {% set n_zh = s.get('name_zh') or s.get('zh') or '' %}
+    {% set d_en = s.get('desc_en') or s.get('desc') or '' %}
+    {% set d_zh = s.get('desc_zh') or '' %}
+    <b class="skill-name"><span class="bi-en">{{ n_en }}</span><span class="bi-zh">{{ n_zh }}</span></b>
+    <span class="skill-desc"><span class="bi-en">{{ d_en }}</span><span class="bi-zh">{{ d_zh }}</span></span>
     <div class="skill-bar"><i style="width:{{ s.percent or 0 }}%"></i></div>
   </div>
   <span class="skill-xp">{{ s.xp or 0 }} XP</span>
@@ -235,8 +239,12 @@
 <a class="game-card c-{{ g.color }}" href="{{ g.url }}">
   <span class="game-ico">{{ icon(g.icon) }}</span>
   <div class="game-body">
-    <b class="game-name"><span class="bi-en">{{ g.name_en }}</span><span class="bi-zh">{{ g.name_zh }}</span></b>
-    <span class="game-desc"><span class="bi-en">{{ g.desc_en }}</span><span class="bi-zh">{{ g.desc_zh }}</span></span>
+    {% set n_en = g.get('name_en') or g.get('en') or '' %}
+    {% set n_zh = g.get('name_zh') or g.get('zh') or '' %}
+    {% set d_en = g.get('desc_en') or g.get('desc') or '' %}
+    {% set d_zh = g.get('desc_zh') or '' %}
+    <b class="game-name"><span class="bi-en">{{ n_en }}</span><span class="bi-zh">{{ n_zh }}</span></b>
+    <span class="game-desc"><span class="bi-en">{{ d_en }}</span><span class="bi-zh">{{ d_zh }}</span></span>
     <div class="game-meta">
       <span class="pill">🏆 <span class="bi-en">Best</span><span class="bi-zh">最高</span> {{ g.best or 0 }}</span>
       <span class="pill">🎮 {{ g.plays or 0 }}</span>

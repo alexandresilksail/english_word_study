@@ -81,7 +81,7 @@ def index():
         w = Word.query.order_by(Word.freq.desc()).first()
         daily = {"word": w.word, "phonetic": w.phonetic_uk, "meaning": w.meaning_cn,
                  "example_en": w.example_en, "example_cn": w.example_cn,
-                 "audio_url": audio_url(w.audio)}
+                 "audio": w.audio, "audio_url": audio_url(w.audio)}
     return render_template("index.html", total_words=total_words, daily=daily)
 
 

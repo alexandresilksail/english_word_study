@@ -4,82 +4,62 @@
 
 {% block content %}
 
-{# ---------------------------------------------------------- 首屏（无装饰插画，纯排版与色彩） #}
-<section class="card" style="padding:var(--ds-sp-7) var(--ds-sp-6)">
-  <span class="eyebrow">{{ t('brand.name') }} / English Word Study</span>
-  <h1 style="max-width:22ch">
-    {{ t('footer.wordbank') }} {{ total_words or 2000 }} {{ t('learn.words_unit') }}<br>
-    <span style="color:var(--ds-brand)">{{ t('footer.offline') }}</span>
+{# ---------------------------------------------------------- 首屏 Hero #}
+<section class="land-hero">
+  <span class="eyebrow" style="color:rgba(255,255,255,.9)">{{ t('brand.name') }} / English Word Study</span>
+  <h1>{{ t('footer.wordbank') }} {{ total_words or 2000 }} {{ t('learn.words_unit') }}<br>
+    <span style="opacity:.95">{{ t('footer.offline') }}</span>
   </h1>
-  <p style="margin-top:var(--ds-sp-4);color:var(--ds-ink-2);max-width:60ch">
-    {{ t('footer.privacy') }} · {{ t('prog.sub') }}
-  </p>
+  <p>{{ t('learn.sub') }} · {{ t('footer.privacy') }}</p>
 
-  <div class="row" style="margin-top:var(--ds-sp-5);gap:10px">
-    <a class="btn btn-primary btn-lg" href="{{ url_for('auth.register') }}">{{ icon('user') }}{{ bi('auth.register_link') }}</a>
-    <a class="btn btn-secondary btn-lg" href="{{ url_for('auth.login') }}">{{ icon('login') }}{{ bi('nav.login') }}</a>
+  <div class="v3-hero-actions">
+    <a class="v3-btn-glass" href="{{ url_for('auth.register') }}">{{ icon('user') }}{{ bi('auth.register_link') }}</a>
+    <a class="v3-btn-ghost-w" href="{{ url_for('auth.login') }}">{{ icon('login') }}{{ bi('nav.login') }}</a>
   </div>
 
-  <div class="row" style="margin-top:var(--ds-sp-5);gap:8px">
-    <span class="tag blue">{{ icon('book') }}{{ total_words or 2000 }} {{ t('learn.words_unit') }}</span>
-    <span class="tag">{{ icon('speaker') }}{{ t('footer.offline') }}</span>
-    <span class="tag">{{ icon('quiz') }}{{ t('quiz.choose_mode') }}</span>
-    <span class="tag">{{ icon('shield') }}{{ t('footer.privacy') }}</span>
+  <div class="v3-hero-deco">
+    <span class="v3-deco-orb">{{ icon('book') }}</span>
+    <span class="v3-deco-orb">{{ icon('speaker') }}</span>
+    <span class="v3-deco-orb">{{ icon('quiz') }}</span>
   </div>
 </section>
 
 {# ---------------------------------------------------------- 功能入口 #}
-<section class="grid-2" style="margin-top:var(--ds-sp-5)">
-  <a class="card" href="{{ url_for('words.learn') }}" style="text-decoration:none;color:inherit">
-    <div class="row" style="gap:var(--ds-sp-3);margin-bottom:var(--ds-sp-3)">
-      <span style="color:var(--ds-brand)">{{ icon('book') }}</span>
-      <b style="font-size:15px">{{ bi('nav.learn') }}</b>
-    </div>
-    <p class="small muted">{{ t('learn.sub') }}</p>
+<section class="land-feats">
+  <a class="land-feat" href="{{ url_for('words.learn') }}">
+    <span class="fi" style="background:linear-gradient(135deg,#8b7cff,#6d5efc)">{{ icon('book') }}</span>
+    <b>{{ bi('nav.learn') }}</b>
+    <span>{{ t('learn.sub') }}</span>
   </a>
-
-  <a class="card" href="{{ url_for('quiz.test_page', mode='listen') }}" style="text-decoration:none;color:inherit">
-    <div class="row" style="gap:var(--ds-sp-3);margin-bottom:var(--ds-sp-3)">
-      <span style="color:var(--ds-brand)">{{ icon('speaker') }}</span>
-      <b style="font-size:15px">{{ bi('quiz.mode.listen') }}</b>
-    </div>
-    <p class="small muted">{{ t('quiz.mode.listen_desc') }}</p>
+  <a class="land-feat" href="{{ url_for('quiz.test_page', mode='listen') }}">
+    <span class="fi" style="background:linear-gradient(135deg,#38bdf8,#0891b2)">{{ icon('speaker') }}</span>
+    <b>{{ bi('quiz.mode.listen') }}</b>
+    <span>{{ t('quiz.mode.listen_desc') }}</span>
   </a>
-
-  <a class="card" href="{{ url_for('quiz.test_page', mode='spell') }}" style="text-decoration:none;color:inherit">
-    <div class="row" style="gap:var(--ds-sp-3);margin-bottom:var(--ds-sp-3)">
-      <span style="color:var(--ds-brand)">{{ icon('edit') }}</span>
-      <b style="font-size:15px">{{ bi('quiz.mode.spell') }}</b>
-    </div>
-    <p class="small muted">{{ t('quiz.mode.spell_desc') }}</p>
+  <a class="land-feat" href="{{ url_for('quiz.test_page', mode='spell') }}">
+    <span class="fi" style="background:linear-gradient(135deg,#fb7185,#e11d48)">{{ icon('edit') }}</span>
+    <b>{{ bi('quiz.mode.spell') }}</b>
+    <span>{{ t('quiz.mode.spell_desc') }}</span>
   </a>
-
-  <a class="card" href="{{ url_for('words.progress') }}" style="text-decoration:none;color:inherit">
-    <div class="row" style="gap:var(--ds-sp-3);margin-bottom:var(--ds-sp-3)">
-      <span style="color:var(--ds-brand)">{{ icon('chart') }}</span>
-      <b style="font-size:15px">{{ bi('nav.progress') }}</b>
-    </div>
-    <p class="small muted">{{ t('prog.sub') }}</p>
+  <a class="land-feat" href="{{ url_for('words.progress') }}">
+    <span class="fi" style="background:linear-gradient(135deg,#34d399,#059669)">{{ icon('chart') }}</span>
+    <b>{{ bi('nav.progress') }}</b>
+    <span>{{ t('prog.sub') }}</span>
   </a>
 </section>
 
-{# ---------------------------------------------------------- 词库覆盖 #}
-<section class="card" style="margin-top:var(--ds-sp-5)">
-  <div class="card-head">
-    <div>
-      <h3>{{ t('nav.browse') }} / A–Z Coverage</h3>
-      <div class="sub">{{ t('brand.tagline') }} / {{ total_words or 2000 }} words</div>
-    </div>
+{# ---------------------------------------------------------- 每日一词 #}
+{% if daily %}
+<section class="daily-word">
+  <div>
+    <span class="eyebrow">每日一词 · Word of the Day</span>
+    <div class="dw-word" style="margin-top:4px">{{ daily.word }}</div>
+    <div class="wc-ipa">{{ daily.phonetic }}</div>
+    <p style="margin:8px 0 0;color:var(--v3-ink-2)">{{ daily.meaning }}</p>
+    {% if daily.example_en %}<p class="small muted" style="margin:6px 0 0">{{ daily.example_en }}　{{ daily.example_cn }}</p>{% endif %}
   </div>
-  <div class="row" style="gap:4px">
-    {% for c in "abcdefghijklmnopqrstuvwxyz" %}
-      <span class="icon-btn" style="min-width:34px;padding:0;cursor:default">{{ c|upper }}</span>
-    {% endfor %}
-  </div>
-  <p class="muted small" style="margin-top:var(--ds-sp-4)">
-    {{ t('word.word') }} · {{ t('word.pronunciation') }} · {{ t('word.part_of_speech') }} ·
-    {{ t('word.meaning') }} · {{ t('word.example') }} · {{ t('word.example_translation') }}
-  </p>
+  <button class="speak big" data-play="{{ daily.audio }}">{{ icon('speaker') }}</button>
 </section>
+{% endif %}
 
 {% endblock %}
