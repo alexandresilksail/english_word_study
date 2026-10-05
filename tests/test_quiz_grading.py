@@ -184,7 +184,60 @@ def main():
               f"5 题中仅 {changed} 题变化")
 
         # ------------------------------------------------------------------
-        print("\n[4] 边界与兼容")
+        print("\n[4] 判题必须使用出题时保存的状态，而不是重新生成选项")
+        # 4.1 先取 0/1/2 题，再依次作答 → 题号状态互不覆盖
+        c.post("/api/quiz/start", json={"mode": "choice", "scope": "all", "size": 5})
+        snaps = [c.get(f"/api/quiz/item?i={i}").get_json()["q"] for i in range(3)]
+        all_right, bad = True, None
+        for i in range(3):
+            w = db.session.get(Word, snaps[i]["word_id"])
+            good = snaps[i]["options"].index(w.meaning_cn)
+            res = c.post("/api/quiz/answer", json={"i": i, "answer": good}).get_json()
+            if not res or not res.get("correct"):
+                all_right, bad = False, f"第{i+1}题 {res}"
+                break
+        check("先取 0/1/2 题再依次作答 → 全部判对（状态按题号存，互不覆盖）",
+              all_right, bad)
+
+        # 4.2 跳题：快照被后面的题覆盖后，回头提交旧题
+        c.post("/api/quiz/start", json={"mode": "choice", "scope": "all", "size": 5})
+        q0 = c.get("/api/quiz/item?i=0").get_json()["q"]
+        c.get("/api/quiz/item?i=2")            # 故意让快照被第 2 题覆盖
+        w0 = db.session.get(Word, q0["word_id"])
+        good0 = q0["options"].index(w0.meaning_cn)
+        res = c.post("/api/quiz/answer", json={"i": 0, "answer": good0}).get_json()
+        check("快照被后续题覆盖后，回头提交第 0 题仍判对",
+              bool(res and res.get("correct") is True), res)
+
+        # 4.3 强行篡改会话 seed 并清空快照：若判题重新生成选项，这里必然判错
+        c.post("/api/quiz/start", json={"mode": "choice", "scope": "all", "size": 5})
+        q0 = c.get("/api/quiz/item?i=0").get_json()["q"]
+        w0 = db.session.get(Word, q0["word_id"])
+        good0 = q0["options"].index(w0.meaning_cn)
+        with c.c.session_transaction() as sess:
+            sess["quiz"]["seed"] = 987654321     # 换掉种子
+            sess["quiz"]["snap"] = None          # 连快照也清掉
+        res = c.post("/api/quiz/answer", json={"i": 0, "answer": good0}).get_json()
+        check("篡改 seed 且清空快照后仍判对（证明判分依据来自保存的状态）",
+              bool(res and res.get("correct") is True), res)
+
+        # 4.4 前后端字段一致性（saas.js 实际读取的字段必须齐全）
+        c.post("/api/quiz/start", json={"mode": "choice", "scope": "all", "size": 3})
+        q0 = c.get("/api/quiz/item?i=0").get_json()["q"]
+        need_item = ["mode", "word_id", "word", "stem", "stem_sub", "options", "i", "total"]
+        check("出题接口字段齐全（saas.js 依赖）",
+              all(k in q0 for k in need_item), [k for k in need_item if k not in q0])
+        check("出题接口不泄露答案 answer", "answer" not in q0, sorted(q0.keys()))
+        w0 = db.session.get(Word, q0["word_id"])
+        good0 = q0["options"].index(w0.meaning_cn)
+        res = c.post("/api/quiz/answer", json={"i": 0, "answer": good0}).get_json()
+        need_ans = ["ok", "correct", "expected", "user_answer", "phonetic", "meaning",
+                    "example_en", "example_cn", "audio", "word", "mode"]
+        check("判题接口字段齐全（saas.js 依赖）",
+              all(k in res for k in need_ans), [k for k in need_ans if k not in res])
+
+        # ------------------------------------------------------------------
+        print("\n[5] 边界与兼容")
         c.post("/api/quiz/start", json={"mode": "choice", "scope": "all", "size": 3})
         q = c.get("/api/quiz/item?i=0").get_json()["q"]
         word = Word.query.get(q["word_id"])
@@ -206,7 +259,7 @@ def main():
         fin = c.post("/api/quiz/finish", json={}).get_json()
         check("测试可正常结算", bool(fin and fin.get("ok")), fin)
 
-        print("\n[5] 教师视角：判分结果写入统计")
+        print("\n[6] 教师视角：判分结果写入统计")
         from models import StudyRecord
         rows = StudyRecord.query.filter_by(action="answer").all()
         check("答题流水已落库", len(rows) > 0, len(rows))

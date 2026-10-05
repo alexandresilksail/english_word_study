@@ -37,6 +37,40 @@ def _require_quiz():
     return state
 
 
+def _expected_text(word: Word, mode: str) -> str:
+    """某一模式下该题的正确答案文本（不依赖选项，word 表直接可得）。"""
+    return word.meaning_cn if mode == "choice" else word.word
+
+
+def _saved_correct_idx(state: dict, idx: int):
+    """取出出题时保存的「正确选项下标」。
+
+    出题与判题是两次请求，若判题时重新生成随机选项，用户看到的下标就会错位。
+    因此出题时把正确项下标按题号存好，判题时直接读取——每题一个键，
+    第 0/1/2…题彼此不会覆盖。
+    """
+    try:
+        saved = (state.get("answers") or {}).get(str(idx))
+        return None if saved is None else int(saved)
+    except (TypeError, ValueError):
+        return None
+
+
+def _as_option_index(answer) -> int | None:
+    """把前端提交内容解析成选项下标；提交的是文本时返回 None。"""
+    if isinstance(answer, bool):
+        return None
+    if isinstance(answer, int):
+        return answer
+    text = str(answer).strip()
+    if text.lstrip("-").isdigit():
+        try:
+            return int(text)
+        except ValueError:
+            return None
+    return None
+
+
 @quiz_bp.route("/test")
 @login_required
 def test_page():
@@ -71,8 +105,9 @@ def quiz_start():
     session["quiz"] = {
         "mode": mode, "ids": ids, "total": len(ids),
         "answered": 0, "started": datetime.now().timestamp(),
-        # 出题与判题共用同一个 seed，保证选项集合/顺序完全可复现
+        # seed 保证刷新/重复请求时选项不变；answers/snap 保存每题判题状态
         "seed": random.randrange(1, 2 ** 31),
+        "answers": {}, "snap": None,
     }
     session.modified = True
     return jsonify(ok=True, mode=mode, total=len(ids))
@@ -94,10 +129,26 @@ def quiz_item():
     word = Word.query.get(state["ids"][idx])
     if not word:
         return jsonify(ok=False, error="题目数据异常"), 500
-    q = build_question(word, state["mode"], state.get("seed"))
+    mode = state["mode"]
+    q = build_question(word, mode, state.get("seed"))
     q["i"] = idx
     q["total"] = state["total"]
-    # 不要把答案直接暴露给前端（除拼写模式需要校验输入，但仍不回传答案）
+
+    # ---- 保存本题实际使用的判题状态（判题时不再重新生成随机选项）----
+    opts = list(q.get("options") or [])
+    answers = dict(state.get("answers") or {})
+    if opts and q.get("answer") in opts:
+        answers[str(idx)] = opts.index(q["answer"])   # 按题号存，互不覆盖
+    elif opts:
+        answers[str(idx)] = -1                        # 异常：选项里没有正确答案
+    else:
+        answers[str(idx)] = -1                        # spell 模式无选项
+    state["answers"] = answers
+    # 当前题选项快照，用于判题后回填"用户当时看到的那一项"文本
+    state["snap"] = {"i": idx, "options": opts, "mode": mode}
+    session.modified = True
+
+    # 不要把答案直接暴露给前端
     q.pop("answer", None)
     return jsonify(ok=True, q=q)
 
@@ -126,30 +177,46 @@ def quiz_answer():
     if not word:
         return jsonify(ok=False, error="题目数据异常"), 500
 
-    # 用与出题时相同的 seed 重建题目，选项下标才对得上
-    question = build_question(word, state["mode"], state.get("seed"))
-    # 选择题：answer 是选项下标
-    if question["mode"] != "spell":
-        try:
-            opt_idx = int(answer)
-            user_value = question["options"][opt_idx] if 0 <= opt_idx < len(question["options"]) else ""
-        except (TypeError, ValueError):
-            user_value = str(answer).strip()
-            if user_value.isdigit():
-                n = int(user_value)
-                user_value = question["options"][n] if 0 <= n < len(question["options"]) else ""
-    else:
-        user_value = answer.strip()
+    mode = state["mode"]
+    correct_text = _expected_text(word, mode)
 
-    correct = judge(question, user_value)
-    record_answer(current_user.id, word.id, correct, question["mode"])
+    if mode == "spell":
+        # 拼写题：用户直接输入英文单词，没有选项，不存在错位问题
+        user_value = answer.strip()
+        correct = judge({"mode": mode, "answer": correct_text}, user_value)
+    else:
+        # ---- 选择题：必须用「用户当时看到的原始题目状态」判题 ----
+        snap = state.get("snap") or {}
+        if snap.get("i") == idx and isinstance(snap.get("options"), list):
+            opts = list(snap["options"])           # 出题时保存的快照，不重新生成
+        else:
+            # 快照不是本题（多标签页答题 / 旧会话）：用与出题相同的 seed 确定性复现
+            rebuilt = build_question(word, mode, state.get("seed"))
+            opts = list(rebuilt.get("options") or [])
+
+        opt_idx = _as_option_index(answer)
+        if opt_idx is None:
+            # 提交的是选项文本（兼容手工调用），与正确答案文本直接比对
+            user_value = str(answer).strip()
+            correct = judge({"mode": mode, "answer": correct_text}, user_value)
+        else:
+            user_value = opts[opt_idx] if 0 <= opt_idx < len(opts) else ""
+            saved_idx = _saved_correct_idx(state, idx)
+            if saved_idx is not None and saved_idx >= 0:
+                # 判题依据来自出题时保存的状态
+                correct = (opt_idx == saved_idx)
+            else:
+                # 没有保存状态兜底：退化为文本比对
+                correct = judge({"mode": mode, "answer": correct_text}, user_value)
+
+    record_answer(current_user.id, word.id, correct, mode)
 
     return jsonify(
-        ok=True, correct=correct, expected=question["answer"],
+        ok=True, correct=correct, expected=correct_text,
         user_answer=user_value,
         phonetic=word.phonetic_uk, meaning=word.meaning_cn,
         example_en=word.example_en, example_cn=word.example_cn,
-        audio=word.audio, word=word.word, mode=question["mode"],
+        audio=word.audio, word=word.word, mode=mode,
     )
 
 
