@@ -58,6 +58,21 @@
   </div>
 </section>
 
+{# ============================================================ V5 Today's Review #}
+<section class="review-strip">
+  <div>
+    <h2 class="sec-title">{{ icon('rotate-ccw') }} Today's Review · 今日复习</h2>
+    <p class="muted">按记忆曲线复习，抗遗忘 · Spaced repetition keeps what you learn.</p>
+  </div>
+  <div class="review-counts">
+    <span><b>{{ review_today.vocabulary }}</b> Vocabulary</span>
+    <span><b>{{ review_today.phrase }}</b> Phrases</span>
+    <span><b>{{ review_today.sentence }}</b> Sentences</span>
+    <span><b>{{ review_today.grammar }}</b> Grammar</span>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('main.review') }}">Start Review →</a>
+</section>
+
 {# ============================================================ Continue Learning #}
 <section style="margin-top:20px">
   <div class="sec-head">

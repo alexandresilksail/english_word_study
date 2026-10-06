@@ -1,0 +1,19 @@
+{% from "_icons.html" import icon %}
+{% extends "base.html" %}
+{% block title %}{{ unit.title_en }} · {{ app_title_en }}{% endblock %}
+{% block content %}
+<section class="course-hero c-{{ course.color }}">
+  <span class="eyebrow">{{ course.title_en }}</span>
+  <h1>{{ unit.emoji }} Unit {{ unit.no }} · {{ unit.title_en }}</h1>
+  <p>{{ unit.title_zh }}</p>
+</section>
+<div class="lesson-grid">
+  {% for l in lessons %}
+  <a class="lesson-card k-{{ l.kind }}" href="{{ url_for('main.lesson_view', lesson_id=l.id) }}">
+    <b>{{ l.title_en }}</b>
+    <small>{{ l.title_zh }}</small>
+    <span class="lesson-go">{{ icon('play') }}</span>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

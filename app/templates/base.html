@@ -45,6 +45,10 @@
 
         <a class="{{ 'active' if request.endpoint and request.endpoint == 'main.learning_path' }}"
            href="{{ url_for('main.learning_path') }}">{{ icon('route') }}{{ bi('nav.path') }}</a>
+        <a class="{{ 'active' if request.endpoint and (request.endpoint.startswith('main.courses') or request.endpoint == 'main.learn_language') }}"
+           href="{{ url_for('main.courses') }}">{{ icon('book-open') }}<span>Courses</span></a>
+        <a class="{{ 'active' if request.endpoint and request.endpoint == 'main.review' }}"
+           href="{{ url_for('main.review') }}">{{ icon('rotate-ccw') }}<span>Review</span></a>
         <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('quiz.') }}"
            href="{{ url_for('quiz.test_page') }}">{{ icon('practice') }}{{ bi('nav.quiz') }}</a>
         <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('games.') }}"

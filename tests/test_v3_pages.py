@@ -156,6 +156,18 @@ def main():
         check("/learn?cefr=A1 正常 200", c.get("/learn?cefr=A1").status_code == 200)
         check("/learn?cefr=C2 正常 200", c.get("/learn?cefr=C2").status_code == 200)
 
+        print("\n[6] V5 平台：Onboarding / Courses / Review / 粤语")
+        check("/onboarding 200", c.get("/onboarding").status_code == 200)
+        check("/courses 200 且含 Cantonese",
+              c.get("/courses").status_code == 200 and "Cantonese" in c.get("/courses").get_data(as_text=True))
+        check("/review 200（Today's Review）",
+              c.get("/review").status_code == 200 and "Review" in c.get("/review").get_data(as_text=True))
+        ry = c.client.get("/learn/yue", follow_redirects=False)
+        check("/learn/yue 跳转粤语 Unit", ry.status_code in (301, 302) and "/unit/" in (ry.headers.get("Location") or ""),
+              f"{ry.status_code} {ry.headers.get('Location')}")
+        rdash = c.get("/dashboard")
+        check("Dashboard 含 Today's Review 条", "Review" in rdash.get_data(as_text=True))
+
         print("\n" + "=" * 62)
         print(f"结果：通过 {PASS} / 失败 {FAIL}")
         print("=" * 62)

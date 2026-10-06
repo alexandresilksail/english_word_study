@@ -1,0 +1,29 @@
+{% from "_icons.html" import icon %}
+{% extends "base.html" %}
+{% block title %}{{ lesson.title_en }} · {{ app_title_en }}{% endblock %}
+{% block content %}
+<section class="course-hero c-violet">
+  <span class="eyebrow">{{ unit.title_en }}</span>
+  <h1>{{ lesson.title_en }}</h1>
+  <p>{{ lesson.title_zh }}</p>
+</section>
+<div class="learn-cards">
+  {% for it in items %}
+  <article class="learn-card">
+    <div class="lc-head">
+      <b class="lc-surface">{{ it.surface }}</b>
+      {% if it.phonetic %}<i class="lc-phon">{{ it.phonetic }}</i>{% endif %}
+    </div>
+    <p class="lc-mean">{{ it.meaning_cn }}</p>
+    {% if it.example_en %}<p class="lc-ex">{{ it.example_en }}</p>{% endif %}
+    {% if it.example_cn %}<p class="lc-exc">{{ it.example_cn }}</p>{% endif %}
+  </article>
+  {% else %}
+  <p class="muted">This lesson is being prepared. 内容筹备中。</p>
+  {% endfor %}
+</div>
+<div style="display:flex;gap:10px;margin-top:20px">
+  <a class="btn btn-secondary" href="{{ url_for('main.unit_view', unit_id=unit.id) }}">← {{ icon('book-open') }} Back to Unit</a>
+  <a class="btn btn-primary" href="{{ url_for('quiz.test_page') }}">🎯 Practice Quiz</a>
+</div>
+{% endblock %}

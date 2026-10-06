@@ -557,3 +557,166 @@ GAMES = [
     {"key": "word_builder", "icon": "puzzle", "color": "emerald",
      "xp": 25, "desc": "打乱的字母，拼回正确单词"},
 ]
+
+
+# ==========================================================================
+# V5.0：AI 多语言分级学习平台核心模型
+#
+# 核心关系：
+#   Language → Course → Level → Unit → Lesson → Content → Practice → Quiz → Review
+#
+# 设计约束（沿用项目既有约定）：
+# 1. 全部新增表，不 ALTER 任何旧表；SQLite → PostgreSQL 只用通用类型。
+# 2. 旧 2000 词数据保留为历史/测试数据，不再是产品核心定位。
+# 3. ReviewSchedule 走 Leitner 间隔（1/3/7/14/30 天），答错缩间隔、连对延间隔。
+# ==========================================================================
+
+class LearningLanguage(db.Model):
+    """学习课程目录（English / 粤语 / 未来日语/西语…）。"""
+    __tablename__ = "learning_languages"
+
+    id = db.Column(Integer, primary_key=True)
+    code = db.Column(String(16), nullable=False, unique=True, index=True)   # en / yue / ja …
+    name_zh = db.Column(String(64), nullable=False)
+    name_en = db.Column(String(64), nullable=False)
+    flag = db.Column(String(8), nullable=False, default="🌐")
+    sort = db.Column(Integer, nullable=False, default=0)
+    ready = db.Column(Boolean, nullable=False, default=True, server_default="1")
+
+
+class Course(db.Model):
+    """课程：一门语言 × 一个 CEFR 等级。"""
+    __tablename__ = "courses"
+    __table_args__ = (UniqueConstraint("language_code", "cefr_level", name="uq_course_lang_level"),)
+
+    id = db.Column(Integer, primary_key=True)
+    language_code = db.Column(String(16), nullable=False, index=True)
+    cefr_level = db.Column(String(8), nullable=False, index=True)        # Pre-A1/A1..C2
+    title_zh = db.Column(String(128), nullable=False)
+    title_en = db.Column(String(128), nullable=False)
+    description = db.Column(Text, nullable=False, default="")
+    color = db.Column(String(16), nullable=False, default="violet")
+    sort = db.Column(Integer, nullable=False, default=0)
+
+
+class Unit(db.Model):
+    __tablename__ = "units"
+    __table_args__ = (UniqueConstraint("course_id", "no", name="uq_unit_course_no"),)
+
+    id = db.Column(Integer, primary_key=True)
+    course_id = db.Column(Integer, ForeignKey("courses.id", ondelete="CASCADE"),
+                          nullable=False, index=True)
+    no = db.Column(Integer, nullable=False)
+    title_zh = db.Column(String(128), nullable=False)
+    title_en = db.Column(String(128), nullable=False)
+    emoji = db.Column(String(8), nullable=False, default="📘")
+
+    lessons = relationship("Lesson", back_populates="unit",
+                           cascade="all, delete-orphan", order_by="Lesson.no")
+
+
+class Lesson(db.Model):
+    __tablename__ = "lessons"
+    __table_args__ = (UniqueConstraint("unit_id", "no", name="uq_lesson_unit_no"),)
+
+    id = db.Column(Integer, primary_key=True)
+    unit_id = db.Column(Integer, ForeignKey("units.id", ondelete="CASCADE"),
+                        nullable=False, index=True)
+    no = db.Column(Integer, nullable=False)
+    kind = db.Column(String(16), nullable=False, default="vocabulary")
+    # vocabulary / phrase / sentence / grammar / listening / speaking / quiz / review
+    title_zh = db.Column(String(128), nullable=False)
+    title_en = db.Column(String(128), nullable=False)
+
+    unit = relationship("Unit", back_populates="lessons")
+    contents = relationship("ContentItem", back_populates="lesson",
+                            cascade="all, delete-orphan", order_by="ContentItem.id")
+
+
+class ContentItem(db.Model):
+    """学习内容：词条 / 词组 / 句子 / 语法点（统一一张表，kind 区分）。"""
+    __tablename__ = "content_items"
+    __table_args__ = (Index("ix_content_lesson_kind", "lesson_id", "kind"),)
+
+    id = db.Column(Integer, primary_key=True)
+    lesson_id = db.Column(Integer, ForeignKey("lessons.id", ondelete="CASCADE"),
+                          nullable=False, index=True)
+    kind = db.Column(String(16), nullable=False, default="vocabulary")
+    # 词面 / 词组 / 句子 / 语法标题
+    surface = db.Column(String(255), nullable=False)
+    phonetic = db.Column(String(128), nullable=False, default="")       # IPA / 粤拼 jyutping
+    pos = db.Column(String(16), nullable=False, default="")
+    meaning_cn = db.Column(String(512), nullable=False, default="")
+    example_en = db.Column(Text, nullable=False, default="")
+    example_cn = db.Column(Text, nullable=False, default="")
+    topic = db.Column(String(32), nullable=False, default="general")
+    difficulty = db.Column(Integer, nullable=False, default=1, server_default="1")
+    audio = db.Column(String(128), nullable=False, default="")
+
+    lesson = relationship("Lesson", back_populates="contents")
+
+
+class ReviewItem(db.Model):
+    """抗遗忘复习项（Leitner）。挂在 user × content_item 上。"""
+    __tablename__ = "review_items"
+    __table_args__ = (UniqueConstraint("user_id", "content_id", name="uq_review_user_content"),
+                      Index("ix_review_user_due", "user_id", "next_review_at"))
+
+    id = db.Column(Integer, primary_key=True)
+    user_id = db.Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),
+                        nullable=False, index=True)
+    content_id = db.Column(Integer, ForeignKey("content_items.id", ondelete="CASCADE"),
+                           nullable=False, index=True)
+    box = db.Column(Integer, nullable=False, default=1, server_default="1")   # Leitner 1..5
+    first_learned_at = db.Column(DateTime, nullable=False, default=utcnow, server_default=func.now())
+    last_reviewed_at = db.Column(DateTime, nullable=True)
+    next_review_at = db.Column(DateTime, nullable=False, default=utcnow, index=True)
+    review_count = db.Column(Integer, nullable=False, default=0, server_default="0")
+    correct_streak = db.Column(Integer, nullable=False, default=0, server_default="0")
+    wrong_count = db.Column(Integer, nullable=False, default=0, server_default="0")
+
+
+class UserOnboarding(db.Model):
+    """新用户画像：年龄组 / 教育 / 当前水平 / 学习目标。"""
+    __tablename__ = "user_onboarding"
+
+    user_id = db.Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),
+                        primary_key=True)
+    age_group = db.Column(String(16), nullable=False, default="adult")
+    education = db.Column(String(16), nullable=False, default="adult")
+    current_level = db.Column(String(8), nullable=False, default="A1")
+    goal = db.Column(String(32), nullable=False, default="daily")
+    completed_at = db.Column(DateTime, nullable=True)
+
+
+class Subscription(db.Model):
+    """商业化预留：free / premium / pro（第一阶段 Mock，不接真实支付）。"""
+    __tablename__ = "subscriptions"
+
+    user_id = db.Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    plan = db.Column(String(16), nullable=False, default="free", server_default="free")
+    status = db.Column(String(16), nullable=False, default="active", server_default="active")
+    started_at = db.Column(DateTime, nullable=True)
+    expires_at = db.Column(DateTime, nullable=True)
+
+
+# Onboarding 选项（与模板共用，单一来源）
+AGE_GROUPS = [
+    ("children", "儿童", "Children"),
+    ("elementary", "小学", "Elementary School"),
+    ("middle", "初中", "Middle School"),
+    ("high", "高中", "High School"),
+    ("university", "大学", "University"),
+    ("adult", "成人", "Adult"),
+    ("workplace", "职场", "Workplace"),
+]
+LEARNING_GOALS = [
+    ("daily", "日常英语", "Daily English"),
+    ("school", "学校英语", "School English"),
+    ("exam", "考试英语", "Exam English"),
+    ("workplace", "职场英语", "Workplace English"),
+    ("business", "商务英语", "Business English"),
+    ("travel", "旅行英语", "Travel English"),
+    ("speaking", "口语", "Speaking"),
+    ("listening", "听力", "Listening"),
+]

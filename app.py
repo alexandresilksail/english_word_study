@@ -110,6 +110,12 @@ def create_app(config_object=None):
             ensure_word_meta()
         except Exception as exc:  # pragma: no cover
             logger.warning("word_meta 回填跳过：%s", exc)
+        # V5：English / Cantonese 课程体系幂等播种
+        try:
+            from seed_courses import seed_courses
+            seed_courses()
+        except Exception as exc:  # pragma: no cover
+            logger.warning("课程播种跳过：%s", exc)
 
     _setup_logging(app)
     return app

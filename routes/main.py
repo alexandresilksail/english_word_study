@@ -138,13 +138,19 @@ def dashboard():
     # ---- V5：学习路径（当前位置 / 下一课程 / 锁定等级） ----
     from path_service import level_progress
     path_levels, path_current = level_progress(uid)
+    from review_service import due_count_by_kind
+    review_today = due_count_by_kind(uid)
+    from models import UserOnboarding
+    onb = UserOnboarding.query.get(uid)
 
     return render_template("dashboard.html", stats=stats, trend=trend,
                            recent_tests=recent_tests, badges=unlocked_badges(stats),
                            today_new=today_new, gam=gam, skills=skills,
                            games=cards, challenge=challenge,
                            recent_games=recent_games(uid, 3),
-                           path_levels=path_levels, path_current=path_current)
+                           path_levels=path_levels, path_current=path_current,
+                           review_today=review_today,
+                           onboarding_done=bool(onb and onb.completed_at))
 
 
 @main_bp.route("/profile", methods=["GET", "POST"])
@@ -204,3 +210,113 @@ def healthz():
         return jsonify(status="ok", words=total_words, users=users)
     except Exception as exc:  # pragma: no cover
         return jsonify(status="error", detail=str(exc)), 500
+
+
+# ============================================================ V5 学习平台路由
+@main_bp.route("/onboarding", methods=["GET", "POST"])
+@login_required
+def onboarding():
+    """首次进入：年龄 / 教育 / 当前水平 / 学习目标 → 个性化路径。"""
+    from models import AGE_GROUPS, LEARNING_GOALS, UserOnboarding
+    levels = ["Pre-A1", "A1", "A2", "B1", "B2", "C1", "C2"]
+    uid = current_user.id
+    current = UserOnboarding.query.get(uid)
+    if request.method == "POST":
+        age_group = (request.form.get("age_group") or "adult").strip()
+        education = (request.form.get("education") or "adult").strip()
+        current_level = (request.form.get("current_level") or "A1").strip()
+        goal = (request.form.get("goal") or "daily").strip()
+        if not current:
+            current = UserOnboarding(user_id=uid)
+            db.session.add(current)
+        current.age_group = age_group
+        current.education = education
+        current.current_level = current_level
+        current.goal = goal
+        from models import utcnow
+        current.completed_at = utcnow()
+        db.session.commit()
+        return redirect(url_for("main.learning_path"))
+    return render_template("onboarding.html", age_groups=AGE_GROUPS,
+                           goals=LEARNING_GOALS, levels=levels, current=current)
+
+
+@main_bp.route("/courses")
+@login_required
+def courses():
+    from models import Course, LearningLanguage
+    langs = LearningLanguage.query.order_by(LearningLanguage.sort).all()
+    by_lang = {}
+    for l in langs:
+        by_lang[l.code] = (l, Course.query.filter_by(language_code=l.code).order_by(Course.sort).all())
+    return render_template("courses.html", by_lang=by_lang)
+
+
+@main_bp.route("/learn/<lang_code>")
+@login_required
+def learn_language(lang_code: str):
+    from models import Course, LearningLanguage, Unit
+    # 与旧技能路由 /learn/<skill> 不冲突：技能 key 仍走原页面
+    SKILL_KEYS = {"vocabulary", "listening", "reading", "grammar", "speaking", "writing", "hub"}
+    if lang_code in SKILL_KEYS:
+        from routes import learn as learn_mod
+        return learn_mod.skill(lang_code)
+    LearningLanguage.query.filter_by(code=lang_code).first_or_404()
+    course = Course.query.filter_by(language_code=lang_code).order_by(Course.sort).first()
+    if not course:
+        return redirect(url_for("main.courses"))
+    unit = Unit.query.filter_by(course_id=course.id).order_by(Unit.no).first()
+    if unit:
+        return redirect(url_for("main.unit_view", unit_id=unit.id))
+    return redirect(url_for("main.course_view", course_id=course.id))
+
+
+@main_bp.route("/course/<int:course_id>")
+@login_required
+def course_view(course_id: int):
+    from models import Course, Unit
+    course = Course.query.get_or_404(course_id)
+    units = Unit.query.filter_by(course_id=course.id).order_by(Unit.no).all()
+    return render_template("course.html", course=course, units=units)
+
+
+@main_bp.route("/unit/<int:unit_id>")
+@login_required
+def unit_view(unit_id: int):
+    from models import Course, Lesson, Unit
+    unit = Unit.query.get_or_404(unit_id)
+    course = Course.query.get(unit.course_id)
+    lessons = Lesson.query.filter_by(unit_id=unit.id).order_by(Lesson.no).all()
+    return render_template("unit.html", unit=unit, course=course, lessons=lessons)
+
+
+@main_bp.route("/lesson/<int:lesson_id>")
+@login_required
+def lesson_view(lesson_id: int):
+    from models import ContentItem, Lesson, Unit
+    lesson = Lesson.query.get_or_404(lesson_id)
+    unit = Unit.query.get(lesson.unit_id)
+    items = ContentItem.query.filter_by(lesson_id=lesson.id).all()
+    return render_template("lesson.html", lesson=lesson, unit=unit, items=items)
+
+
+@main_bp.route("/review")
+@login_required
+def review():
+    from review_service import due_count_by_kind, due_items
+    uid = current_user.id
+    counts = due_count_by_kind(uid)
+    items = due_items(uid, limit=20)
+    total = sum(counts.values())
+    return render_template("review.html", counts=counts, items=items, total=total)
+
+
+@main_bp.route("/review/answer", methods=["POST"])
+@login_required
+def review_answer():
+    from review_service import record_result
+    cid = request.form.get("content_id", type=int)
+    correct = (request.form.get("correct") or "0") == "1"
+    if cid:
+        record_result(current_user.id, cid, correct)
+    return redirect(request.referrer or url_for("main.review"))
