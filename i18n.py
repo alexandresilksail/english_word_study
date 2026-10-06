@@ -280,6 +280,25 @@ STRINGS: dict[str, tuple[str, str]] = {
     "lang.en": ("English", "English"),
     "lang.both": ("双语", "Bilingual"),
 
+    # ----------------------------------------------------- V5 学习路径 / 语言
+    "nav.path": ("学习路径", "Path"),
+    "path.eyebrow": ("学习路径", "Learning Path"),
+    "path.title": ("选择你的语言，逐级闯关", "Pick your language, level up step by step"),
+    "path.sub": ("完成课程 → 赢得 XP → 解锁下一等级。先从 English A1 开始。",
+                 "Finish lessons → earn XP → unlock the next level. Start with English A1."),
+    "path.level_unit": ("单元", "Unit"),
+    "path.words": ("词", "words"),
+    "path.start": ("开始学习", "Start"),
+    "path.continue": ("继续", "Continue"),
+    "path.locked": ("未解锁", "Locked"),
+    "path.done": ("已完成", "Completed"),
+    "path.next": ("下一等级", "Next level"),
+    "path.current": ("当前位置", "You are here"),
+    "path.mylearning": ("我的学习路径", "My Learning Path"),
+    "path.mylearning_sub": ("按完成度自动解锁下一等级", "Levels unlock automatically as you progress"),
+    "path.other_lang": ("更多学习语言即将开放", "More learning languages coming soon"),
+    "path.coming_soon": ("正在制作中", "Coming soon"),
+
     # ----------------------------------------------------- 技能 / 游戏（模板备用；主来源是路由传入的 zh/en）
     "skill.vocabulary": ("词汇", "Vocabulary"),
     "skill.listening": ("听力", "Listening"),

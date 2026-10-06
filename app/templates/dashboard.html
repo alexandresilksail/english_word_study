@@ -31,6 +31,33 @@
   </div>
 </section>
 
+{# ============================================================ V5 My Learning Path #}
+<section class="mypath">
+  <div class="sec-head">
+    <div>
+      <h2 class="sec-title">{{ icon('route') }}{{ bi('path.mylearning') }}</h2>
+      <p class="muted">{{ bi('path.mylearning_sub') }}</p>
+    </div>
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('main.learning_path') }}">{{ bi('nav.path') }} →</a>
+  </div>
+  <div class="mypath-track">
+    {% for lv in path_levels %}
+      <div class="mp-level c-{{ lv.color }} {{ 'on' if lv.unlocked }} {{ 'off' if not lv.unlocked }}">
+        <div class="mp-head">
+          <b>{{ lv.emoji }} {{ lv.code }} <span>{{ lv.name_en }}</span></b>
+          {% if not lv.unlocked %}{{ icon('lock') }}{% elif lv.done %}{{ icon('check') }}{% endif %}
+        </div>
+        <div class="mp-units">
+          {% for u in range(1, lv.units + 1) %}
+            <a class="mp-unit {{ 'done' if lv.done }} {{ 'off' if not lv.unlocked }}"
+               href="{{ url_for('words.learn') }}?cefr={{ lv.code }}&unit={{ u }}">U{{ u }}</a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
 {# ============================================================ Continue Learning #}
 <section style="margin-top:20px">
   <div class="sec-head">

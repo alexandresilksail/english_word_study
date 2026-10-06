@@ -1,6 +1,6 @@
 {% from "_icons.html" import icon %}
 <!doctype html>
-<html lang="zh-CN" data-lang="both">
+<html lang="{% if ui_lang == 'en' %}en{% else %}zh-CN{% endif %}" data-lang="{{ ui_lang }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -43,6 +43,8 @@
           </div>
         </div>
 
+        <a class="{{ 'active' if request.endpoint and request.endpoint == 'main.learning_path' }}"
+           href="{{ url_for('main.learning_path') }}">{{ icon('route') }}{{ bi('nav.path') }}</a>
         <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('quiz.') }}"
            href="{{ url_for('quiz.test_page') }}">{{ icon('practice') }}{{ bi('nav.quiz') }}</a>
         <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('games.') }}"
@@ -80,10 +82,15 @@
         <span class="gam-chip streak" title="{{ bi_plain('dash.streak') }}">{{ icon('flame') }}{{ nav_gam.streak }}</span>
       {% endif %}
 
-      <button type="button" class="icon-btn" id="lang-toggle"
-              title="{{ bi_plain('lang.switch') }}" aria-label="{{ bi_plain('lang.switch') }}">
+      {# V5：界面语言切换 中文 | English（立即生效，登录存账号，未登录存 Cookie） #}
+      <div class="lang-switch" role="group" aria-label="{{ bi_plain('lang.switch') }}">
         {{ icon('globe') }}
-      </button>
+        <a href="{{ url_for('main.set_lang', lang='zh') }}{% if request.path and request.path != url_for('main.set_lang') %}?next={{ request.path }}{% endif %}"
+           class="{{ 'on' if ui_lang == 'zh' }}">中文</a>
+        <i class="ls-div"></i>
+        <a href="{{ url_for('main.set_lang', lang='en') }}{% if request.path %}?next={{ request.path }}{% endif %}"
+           class="{{ 'on' if ui_lang == 'en' }}">English</a>
+      </div>
 
       {% if current_user.is_authenticated %}
         <a class="user-chip" href="{{ url_for('main.profile') }}" title="{{ bi_plain('nav.profile') }}">

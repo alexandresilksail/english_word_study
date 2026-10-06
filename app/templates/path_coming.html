@@ -1,0 +1,12 @@
+{% from "_icons.html" import icon %}
+{% extends "base.html" %}
+{% block title %}{{ target.name_en if target else '' }} · {{ app_title_en }}{% endblock %}
+{% block content %}
+<section class="empty-card" style="max-width:640px;margin:60px auto;text-align:center">
+  <div class="empty-ill c-rose">{{ icon('clock') }}</div>
+  <h1>{{ target.flag if target else '' }} {{ target.name_en if target else '' }} {{ target.name_zh if target else '' }}</h1>
+  <p class="muted">{{ t('path.other_lang') }}</p>
+  <a class="btn btn-primary" href="{{ url_for('main.learning_path', lang_code='en') }}">
+    {{ icon('book-open') }}English · {{ t('path.start') }}</a>
+</section>
+{% endblock %}

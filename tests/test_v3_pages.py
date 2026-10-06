@@ -40,6 +40,8 @@ def build(csrf_enabled: bool = False):
         db.create_all()
         from seeds.seed_words import seed_from_json
         seed_from_json(app.config["WORDS_JSON"])
+        from path_service import ensure_word_meta
+        ensure_word_meta()
     return app
 
 
@@ -137,6 +139,22 @@ def main():
         r_dash = anon.get("/dashboard")
         check("Dashboard 匿名被拦截", r_dash.status_code == 302 and "/login" in
               (r_dash.headers.get("Location") or ""), r_dash.status_code)
+
+        print("\n[5] V5 学习路径 + i18n 切换")
+        rp = c.get("/path")
+        pbody = rp.get_data(as_text=True)
+        check("/path 学习路径页 200", rp.status_code == 200, rp.status_code)
+        check("/path 含 CEFR 阶梯 A1/C2", ("A1" in pbody and "C2" in pbody), "缺 CEFR 节点")
+        check("/path 有锁定/完成节点", ("未解锁" in pbody or "Locked" in pbody), "缺锁定态")
+        with app.app_context():
+            from models import WordMeta
+            total_meta = WordMeta.query.count()
+            check("词库 CEFR 分级已回填（>=1000 词）", total_meta >= 1000, total_meta)
+        rlang = c.client.get("/set-lang?lang=en", follow_redirects=False)
+        cookie = rlang.headers.get("Set-Cookie", "")
+        check("/set-lang?lang=en 写入 ui_lang Cookie", "ui_lang=en" in cookie, cookie[:120])
+        check("/learn?cefr=A1 正常 200", c.get("/learn?cefr=A1").status_code == 200)
+        check("/learn?cefr=C2 正常 200", c.get("/learn?cefr=C2").status_code == 200)
 
         print("\n" + "=" * 62)
         print(f"结果：通过 {PASS} / 失败 {FAIL}")

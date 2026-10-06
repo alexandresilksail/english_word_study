@@ -31,6 +31,8 @@ _EXTRA_COLUMNS = {
     "reset_token_exp": "datetime",
     # 无密码账号标记（邮箱验证码注册）
     "is_passwordless": "bool",
+    # V5：界面语言偏好（zh/en，可空=双语自动）
+    "preferred_lang": "str8",
 }
 
 
@@ -40,6 +42,8 @@ def _ddl_for(col_type: str, dialect: str) -> str:
         return "BOOLEAN DEFAULT FALSE NOT NULL" if pg else "BOOLEAN DEFAULT 0 NOT NULL"
     if col_type == "str64":
         return "VARCHAR(64)"
+    if col_type == "str8":
+        return "VARCHAR(8)"
     if col_type == "str255":
         return "VARCHAR(255)"
     if col_type == "str16":

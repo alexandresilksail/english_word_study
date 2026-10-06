@@ -50,6 +50,9 @@ class User(UserMixin, db.Model):
     # 该账号是否通过「无密码 · 邮箱验证码」方式创建（密码为随机值，用户并不知晓）
     is_passwordless = db.Column(Boolean, nullable=False, default=False, server_default="0")
 
+    # V5：界面语言偏好（zh / en / None=双语自动）。登录用户存这里，未登录走 Cookie
+    preferred_lang = db.Column(String(8), nullable=True)
+
     # 关系
     favorites = relationship("Favorite", back_populates="user", cascade="all, delete-orphan", lazy="dynamic")
     wrong_answers = relationship("WrongAnswer", back_populates="user", cascade="all, delete-orphan", lazy="dynamic")
@@ -142,6 +145,28 @@ class Word(db.Model):
 
     def __repr__(self) -> str:
         return f"<Word {self.word}>"
+
+
+# --------------------------------------------------------------------------
+# V5：词库分级元数据（CEFR / 难度 / 类别 / 单元 / 学习语言）
+#
+# 不动 words 表本身（生产风险），用独立表挂分级；学习语言 learning_language
+# 为未来粤语/日语/西语等课程预留 —— 同一套学习引擎，只换数据行。
+# --------------------------------------------------------------------------
+class WordMeta(db.Model):
+    __tablename__ = "word_meta"
+    __table_args__ = (UniqueConstraint("word_id", "learning_language", name="uq_meta_word_lang"),)
+
+    id = db.Column(Integer, primary_key=True)
+    word_id = db.Column(Integer, ForeignKey("words.id", ondelete="CASCADE"),
+                       nullable=False, unique=True, index=True)
+    learning_language = db.Column(String(16), nullable=False, default="en", index=True)  # en/yue/ja/es…
+    cefr_level = db.Column(String(4), nullable=False, default="A1", index=True)          # A1..C2
+    unit_no = db.Column(Integer, nullable=False, default=1, server_default="1")           # 1..3
+    difficulty = db.Column(Integer, nullable=False, default=1, server_default="1")        # 1..6 ≈ CEFR 序+1
+    category = db.Column(String(32), nullable=False, default="general")
+
+    word = relationship("Word")
 
 
 # --------------------------------------------------------------------------

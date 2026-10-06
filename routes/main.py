@@ -85,6 +85,38 @@ def index():
     return render_template("index.html", total_words=total_words, daily=daily)
 
 
+@main_bp.route("/set-lang")
+def set_lang():
+    """界面语言切换：zh / en / both。登录用户写账号，未登录写 Cookie。"""
+    lang = (request.args.get("lang") or "").strip().lower()
+    nxt = request.args.get("next") or request.referrer or url_for("main.index")
+    if lang not in ("zh", "en", "both"):
+        return redirect(nxt)
+    resp = redirect(nxt)
+    resp.set_cookie("ui_lang", lang, max_age=3600 * 24 * 365, samesite="Lax")
+    if current_user.is_authenticated:
+        current_user.preferred_lang = lang if lang in ("zh", "en") else None
+        db.session.commit()
+    return resp
+
+
+@main_bp.route("/path")
+@main_bp.route("/path/<lang_code>")
+@login_required
+def learning_path(lang_code: str = "en"):
+    """Duolingo 式学习路径：CEFR 阶梯 + 单元节点 + 解锁状态。"""
+    from learning_path import LEARNING_LANGUAGES
+    from path_service import level_progress
+    langs = LEARNING_LANGUAGES
+    if lang_code != "en":
+        # 其他课程（粤语/日语…）尚未开放内容
+        target = next((l for l in langs if l["code"] == lang_code), None)
+        return render_template("path_coming.html", langs=langs, target=target)
+    levels, current = level_progress(current_user.id)
+    return render_template("path.html", langs=langs, levels=levels,
+                           current=current, lang_code=lang_code)
+
+
 @main_bp.route("/dashboard")
 @login_required
 def dashboard():
@@ -103,11 +135,16 @@ def dashboard():
     cards = _game_cards(uid)
     challenge = daily_challenge(uid, gam)
 
+    # ---- V5：学习路径（当前位置 / 下一课程 / 锁定等级） ----
+    from path_service import level_progress
+    path_levels, path_current = level_progress(uid)
+
     return render_template("dashboard.html", stats=stats, trend=trend,
                            recent_tests=recent_tests, badges=unlocked_badges(stats),
                            today_new=today_new, gam=gam, skills=skills,
                            games=cards, challenge=challenge,
-                           recent_games=recent_games(uid, 3))
+                           recent_games=recent_games(uid, 3),
+                           path_levels=path_levels, path_current=path_current)
 
 
 @main_bp.route("/profile", methods=["GET", "POST"])

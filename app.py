@@ -104,6 +104,12 @@ def create_app(config_object=None):
 
     with app.app_context():
         db.create_all()
+        # V5：词库 CEFR 分级元数据幂等回填（空表才写）
+        try:
+            from path_service import ensure_word_meta
+            ensure_word_meta()
+        except Exception as exc:  # pragma: no cover
+            logger.warning("word_meta 回填跳过：%s", exc)
 
     _setup_logging(app)
     return app
@@ -259,11 +265,12 @@ def _register_template_globals(app: Flask) -> None:
     def inject_globals():
         from models import TEST_MODE_LABELS
         from services import dashboard_stats
-        from flask import url_for
+        from flask import request, url_for
         from models import SKILLS
         stats = None
         gam = None
         skills = []
+        ui_lang = "both"   # zh / en / both（双语自动）
         if current_user and current_user.is_authenticated:
             try:
                 stats = dashboard_stats(current_user.id)
@@ -278,14 +285,20 @@ def _register_template_globals(app: Flask) -> None:
                 item["url"] = (url_for("words.learn") if s["key"] == "vocabulary"
                                else url_for("learn.skill", key=s["key"]))
                 skills.append(item)
+            if getattr(current_user, "preferred_lang", None) in ("zh", "en"):
+                ui_lang = current_user.preferred_lang
+        cookie_lang = (request.cookies.get("ui_lang") or "").strip()
+        if cookie_lang in ("zh", "en", "both"):
+            ui_lang = cookie_lang
         return dict(app_title=app.config.get("APP_TITLE_CN", "英语单词学习"),
                     app_title_en=app.config.get("APP_TITLE_EN", "English Learning Platform"),
-                    app_version=app.config.get("APP_VERSION", "3.0.0"),
+                    app_version=app.config.get("APP_VERSION", "5.0.0"),
                     domain=app.config.get("DOMAIN", ""),
                     mode_labels=TEST_MODE_LABELS,
                     nav_stats=stats,
                     nav_gam=gam,
-                    nav_skills=skills)
+                    nav_skills=skills,
+                    ui_lang=ui_lang)
 
 
 def _register_filters(app: Flask) -> None:

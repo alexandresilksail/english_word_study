@@ -34,6 +34,8 @@ def learn():
     page = request.args.get("page", 1, type=int) or 1
     scope = request.args.get("scope", "all")
     letter = (request.args.get("letter") or "").lower()
+    cefr = (request.args.get("cefr") or "").upper()
+    unit = request.args.get("unit", type=int)
 
     progress_ids = {
         p.word_id: p for p in UserWordProgress.query.filter_by(user_id=uid).all()
@@ -41,10 +43,26 @@ def learn():
     fav_ids = {f.word_id for f in Favorite.query.filter_by(user_id=uid).all()}
     wrong_ids = {w.word_id for w in WrongAnswer.query.filter_by(user_id=uid).all()}
 
+    # V5：按 CEFR 等级 / 单元过滤（来自学习路径页的入口）
+    if cefr or unit:
+        from models import WordMeta
+        mq = WordMeta.query
+        if cefr:
+            mq = mq.filter_by(cefr_level=cefr)
+        if unit:
+            mq = mq.filter_by(unit_no=unit)
+        meta_ids = [m.word_id for m in mq.all()]
+    else:
+        meta_ids = None
+
     q = Word.query
+    if meta_ids is not None:
+        q = q.filter(Word.id.in_(meta_ids))
     if scope == "favorites":
         words = [Word.query.get(i) for i in fav_ids]
         words = sorted([w for w in words if w], key=lambda x: x.word)
+        if meta_ids is not None:
+            words = [w for w in words if w.id in set(meta_ids)]
     elif scope == "wrong":
         q = q.join(WrongAnswer, WrongAnswer.word_id == Word.id).filter(WrongAnswer.user_id == uid)
         words = q.order_by(Word.word).all()
