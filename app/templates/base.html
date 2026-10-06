@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="English Learning Platform · 英语学习平台：2000 常用词、英式发音、四种测试、四款小游戏、XP 与连续学习激励。">
+  <meta name="description" content="AI Language Learning Platform · AI 语言学习平台：CEFR 分级学习路径、听说读写练、抗遗忘复习、XP 与连续学习激励。">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta name="theme-color" content="#6d5efc">
   <title>{% block title %}{{ app_title }} · {{ app_title_en }}{% endblock %}</title>
@@ -19,7 +19,7 @@
     <a class="brand" href="{{ url_for('main.dashboard') if current_user.is_authenticated else url_for('main.index') }}">
       <span class="brand-mark">EL</span>
       <span class="brand-text">
-        <b>{{ app_title }}</b>
+        <b class="bi"><span class="bi-en">AI Language Learning</span><span class="bi-zh">AI 语言学习平台</span></b>
         <small>{{ app_title_en }}</small>
       </span>
     </a>
@@ -127,8 +127,8 @@
   {% block content %}{% endblock %}
 
   <footer class="footer">
-    <p><b>{{ app_title }}</b> · {{ app_title_en }} <span class="muted">v{{ app_version }}</span></p>
-    <p class="muted">{{ t('footer.wordbank') }} {{ nav_stats.total_words if nav_stats else 2000 }} {{ t('learn.words_unit') }} · {{ t('footer.offline') }}</p>
+    <p><b class="bi"><span class="bi-en">AI Language Learning Platform</span><span class="bi-zh">AI 语言学习平台</span></b> <span class="muted">v{{ app_version }}</span></p>
+    <p class="muted"><span class="bi"><span class="bi-en">English · Cantonese · more languages coming · spaced review keeps your memory</span><span class="bi-zh">英语 · 粤语 · 更多语言即将上线 · 间隔复习记得更牢</span></span></p>
     <p class="muted">{{ t('footer.privacy') }}</p>
   </footer>
 </main>

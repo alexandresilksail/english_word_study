@@ -21,8 +21,8 @@ from markupsafe import Markup, escape
 # 每条文案固定为 (中文, English)
 STRINGS: dict[str, tuple[str, str]] = {
     # ---------------------------------------------------------------- 品牌
-    "brand.name": ("英语单词学习", "English Word Study"),
-    "brand.tagline": ("系统化掌握 2000 个常用词", "Master 2000 Essential Words"),
+    "brand.name": ("AI 语言学习平台", "AI Language Learning Platform"),
+    "brand.tagline": ("按水平规划学习路径，持续练习与复习", "Your personalized path to language mastery"),
 
     # ---------------------------------------------------------------- 导航
     "nav.home": ("首页", "Home"),

@@ -12,10 +12,10 @@
       {{ icon('calendar') }}<span id="today-date"></span>
     </span>
     <h1><span data-greet></span>, {{ current_user.username }} 👋</h1>
-    <p style="color:rgba(255,255,255,.85);margin:0">{{ t('learn.total') }} {{ stats.learned }} / {{ stats.total_words }} {{ t('learn.words_unit') }} · {{ t('dash.today_answers') }} {{ stats.today_answers }}</p>
+    <p style="color:rgba(255,255,255,.85);margin:0"><span class="bi"><span class="bi-en">Your personalized learning path · {{ stats.today_answers }} answers today</span><span class="bi-zh">个性化学习路径 · 今日答题 {{ stats.today_answers }} 题</span></span></p>
 
     <div class="goal-row">
-      <span class="goal-label">{{ icon('target') }} Today's goal · {{ gam.daily_goal or 20 }} {{ t('learn.words_unit') }}</span>
+      <span class="goal-label">{{ icon('target') }} <span class="bi"><span class="bi-en">Today's goal · {{ gam.daily_goal or 20 }} tasks</span><span class="bi-zh">今日目标 · 完成 {{ gam.daily_goal or 20 }} 项</span></span></span>
       <span class="goal-segments" id="goal-segs" data-done="{{ gam.today_done }}" data-goal="{{ gam.daily_goal or 20 }}">
         {% for i in range(10) %}<i{% if i < (gam.goal_percent * 10 / 100)|round|int %} class="on"{% endif %}></i>{% endfor %}
       </span>
@@ -61,8 +61,8 @@
 {# ============================================================ V5 Today's Review #}
 <section class="review-strip">
   <div>
-    <h2 class="sec-title">{{ icon('rotate-ccw') }} Today's Review · 今日复习</h2>
-    <p class="muted">按记忆曲线复习，抗遗忘 · Spaced repetition keeps what you learn.</p>
+    <h2 class="sec-title">{{ icon('rotate-ccw') }} <span class="bi"><span class="bi-en">Today's Review</span><span class="bi-zh">今日复习</span></span></h2>
+    <p class="muted bi"><span class="bi-en">Spaced repetition keeps what you learn.</span><span class="bi-zh">按记忆曲线复习，抗遗忘。</span></p>
   </div>
   <div class="review-counts">
     <span><b>{{ review_today.vocabulary }}</b> Vocabulary</span>
@@ -78,7 +78,7 @@
   <div class="sec-head">
     <div>
       <h2 class="sec-title">{{ icon('play-circle') }} Continue Learning</h2>
-      <p class="sec-sub">从上次停下的地方继续</p>
+      <p class="sec-sub bi"><span class="bi-en">Pick up where you left off</span><span class="bi-zh">从上次停下的地方继续</span></p>
     </div>
     <a class="sec-more" href="{{ url_for('words.learn') }}">{{ bi('act.continue') }} {{ icon('chevron-right') }}</a>
   </div>
@@ -94,8 +94,8 @@
         <span class="tag">Beginner · A1</span>
         <span class="tag amber">{{ icon('clock') }}~10 min</span>
       </div>
-      <h3>{{ t('dash.greeting') }}, 每日单词 · Daily Words</h3>
-      <p class="small muted" style="margin:0 0 8px">{{ t('learn.total') }} {{ stats.learned }} / {{ stats.total_words }} {{ t('learn.words_unit') }} · {{ t('dash.words_mastered') }} {{ stats.mastered }}</p>
+      <h3><span class="bi"><span class="bi-en">A1 Unit 1 · Getting Started</span><span class="bi-zh">A1 第 1 单元 · 开始学习</span></span></h3>
+      <p class="small muted" style="margin:0 0 8px"><span class="bi"><span class="bi-en">Your progress · {{ stats.progress_percent }}% complete</span><span class="bi-zh">学习进度 · 已完成 {{ stats.progress_percent }}%</span></span></p>
       <div class="cont-bar"><i style="width:{{ stats.progress_percent }}%"></i></div>
     </div>
     <span class="btn btn-primary" style="align-self:center">{{ bi('act.continue') }} {{ icon('arrow-right') }}</span>
@@ -107,7 +107,7 @@
   <div class="sec-head">
     <div>
       <h2 class="sec-title">{{ icon('calendar-check') }} Daily Challenge</h2>
-      <p class="sec-sub">每天一个小目标，保持连续学习</p>
+      <p class="sec-sub bi"><span class="bi-en">One small goal a day, keep your streak</span><span class="bi-zh">每天一个小目标，保持连续学习</span></p>
     </div>
   </div>
 
@@ -136,7 +136,7 @@
   <div class="sec-head">
     <div>
       <h2 class="sec-title">{{ icon('sparkles') }} Recommended for You</h2>
-      <p class="sec-sub">根据你的学习数据推荐</p>
+      <p class="sec-sub bi"><span class="bi-en">Picked for you from your learning data</span><span class="bi-zh">根据你的学习数据推荐</span></p>
     </div>
     <a class="sec-more" href="{{ url_for('learn.hub') }}">{{ bi('nav.learn') }} {{ icon('chevron-right') }}</a>
   </div>
@@ -174,7 +174,7 @@
   <div class="sec-head">
     <div>
       <h2 class="sec-title">{{ icon('chart') }} Your Stats</h2>
-      <p class="sec-sub">学习概览</p>
+      <p class="sec-sub bi"><span class="bi-en">Your learning at a glance</span><span class="bi-zh">学习概览</span></p>
     </div>
   </div>
   <div class="stat-grid">
