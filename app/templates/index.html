@@ -9,16 +9,16 @@
   <div>
     <span class="eyebrow">{{ icon('sparkles') }}{{ t('brand.name') }} · Learn English</span>
     <h1>Learn English.<br>Every day.</h1>
-    <p class="sub">2000 个高频词 · 英式发音 · 四种测试 · 四款小游戏 · XP 与连续学习激励。从今天开始，每天进步一点点。</p>
+    <p class="sub">CEFR Pre-A1 → C2 分级学习路径 · 听说读写练 · 抗遗忘复习 · XP 与连续学习激励。按你的水平开始，每天进步一点点。</p>
 
     <div class="hero-actions">
       <a class="btn btn-cta btn-lg" href="{{ url_for('auth.register') }}">{{ icon('rocket') }}<span>Start Learning</span></a>
-      <a class="btn btn-secondary btn-lg" href="{{ url_for('words.browse') }}">{{ icon('compass') }}<span>Explore Lessons</span></a>
+      <a class="btn btn-secondary btn-lg" href="{{ url_for('main.courses') }}">{{ icon('compass') }}<span>Explore Courses</span></a>
     </div>
 
     <div class="hero-trust">
-      <span class="ht">{{ icon('book-open') }}<span>{{ total_words or 2000 }} {{ t('learn.words_unit') }}</span></span>
-      <span class="ht">{{ icon('volume-2') }}<span>{{ t('footer.offline') }}</span></span>
+      <span class="ht">{{ icon('route') }}<span>CEFR A1–C2</span></span>
+      <span class="ht">{{ icon('book-open') }}<span>{{ t('nav.courses') if 'nav.courses' in {} else 'Courses' }}</span></span>
       <span class="ht">{{ icon('gamepad-2') }}<span>4 {{ t('nav.games') }}</span></span>
       <span class="ht">{{ icon('zap') }}<span>XP · Streak · Badges</span></span>
     </div>

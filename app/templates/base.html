@@ -30,8 +30,8 @@
 
         {# Learn：六项技能下拉 #}
         <div class="nav-drop">
-          <a class="nav-drop-toggle {{ 'active' if request.endpoint and (request.endpoint.startswith('learn.') or request.endpoint.startswith('words.')) }}"
-             href="{{ url_for('learn.hub') }}">{{ icon('book') }}{{ bi('nav.learn') }}{{ icon('chevron-right') }}</a>
+          <a class="nav-drop-toggle {{ 'active' if request.endpoint and (request.endpoint.startswith('learn.') or request.endpoint.startswith('words.') or request.endpoint.startswith('main.courses') or request.endpoint.startswith('main.unit')) }}"
+             href="{{ url_for('main.courses') }}">{{ icon('book') }}<span class="bi"><span class="bi-en">Courses</span><span class="bi-zh">课程</span></span>{{ icon('chevron-right') }}</a>
           <div class="nav-drop-menu">
             {% for s in nav_skills %}
               <a href="{{ s.url }}">
@@ -139,8 +139,8 @@
   <div class="tabbar-inner">
     <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('main.dashboard') }}"
        href="{{ url_for('main.dashboard') }}">{{ icon('home') }}<span>{{ bi('nav.dashboard') }}</span></a>
-    <a class="{{ 'active' if request.endpoint and (request.endpoint.startswith('learn.') or request.endpoint.startswith('words.learn')) }}"
-       href="{{ url_for('learn.hub') }}">{{ icon('book') }}<span>{{ bi('nav.learn') }}</span></a>
+    <a class="{{ 'active' if request.endpoint and (request.endpoint.startswith('learn.') or request.endpoint.startswith('words.learn') or request.endpoint.startswith('main.courses') or request.endpoint.startswith('main.unit')) }}"
+       href="{{ url_for('main.courses') }}">{{ icon('book') }}<span class="bi"><span class="bi-en">Courses</span><span class="bi-zh">课程</span></span></a>
     <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('quiz.') }}"
        href="{{ url_for('quiz.test_page') }}">{{ icon('practice') }}<span>{{ bi('nav.quiz') }}</span></a>
     <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('games.') }}"
