@@ -45,8 +45,6 @@
 
         <a class="{{ 'active' if request.endpoint and request.endpoint == 'main.learning_path' }}"
            href="{{ url_for('main.learning_path') }}">{{ icon('route') }}{{ bi('nav.path') }}</a>
-        <a class="{{ 'active' if request.endpoint and (request.endpoint.startswith('main.courses') or request.endpoint == 'main.learn_language') }}"
-           href="{{ url_for('main.courses') }}">{{ icon('book-open') }}<span>Courses</span></a>
         <a class="{{ 'active' if request.endpoint and request.endpoint == 'main.review' }}"
            href="{{ url_for('main.review') }}">{{ icon('rotate-ccw') }}<span>Review</span></a>
         <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('quiz.') }}"
@@ -73,7 +71,7 @@
         {% endif %}
       {% else %}
         <a href="{{ url_for('main.index') }}">{{ icon('home') }}{{ bi('nav.home') }}</a>
-        <a href="{{ url_for('words.browse') }}">{{ icon('list') }}{{ bi('nav.browse') }}</a>
+        <a href="{{ url_for('main.courses') }}">{{ icon('book') }}<span class="bi"><span class="bi-en">Courses</span><span class="bi-zh">课程</span></span></a>
         <a href="{{ url_for('quiz.test_page') }}">{{ icon('practice') }}{{ bi('nav.quiz') }}</a>
         <a href="{{ url_for('games.index') }}">{{ icon('gamepad') }}{{ bi('nav.games') }}</a>
         <a href="{{ url_for('podcast.index') }}">{{ icon('headphones') }}{{ bi('nav.podcast') }}</a>

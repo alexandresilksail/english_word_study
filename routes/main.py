@@ -74,15 +74,15 @@ def index():
     """未登录：产品落地页。已登录：直接进入学习主页。"""
     if current_user.is_authenticated:
         return redirect(url_for("main.dashboard"))
-    total_words = Word.query.count()
-    # 落地页展示每日一词（未登录也能听发音，降低注册门槛）
-    daily = None
-    if total_words:
-        w = Word.query.order_by(Word.freq.desc()).first()
-        daily = {"word": w.word, "phonetic": w.phonetic_uk, "meaning": w.meaning_cn,
-                 "example_en": w.example_en, "example_cn": w.example_cn,
-                 "audio": w.audio, "audio_url": audio_url(w.audio)}
-    return render_template("index.html", total_words=total_words, daily=daily)
+    # 落地页推荐第一个课程单元（不是"每日一词"）
+    from models import Course, Lesson, Unit
+    rec_unit = (Unit.query.join(Course, Course.id == Unit.course_id)
+                .filter(Course.language_code == "en", Course.cefr_level == "A1")
+                .order_by(Unit.no).first())
+    rec_lessons = []
+    if rec_unit:
+        rec_lessons = Lesson.query.filter_by(unit_id=rec_unit.id).order_by(Lesson.no).limit(4).all()
+    return render_template("index.html", rec_unit=rec_unit, rec_lessons=rec_lessons)
 
 
 @main_bp.route("/set-lang")
@@ -298,6 +298,24 @@ def lesson_view(lesson_id: int):
     unit = Unit.query.get(lesson.unit_id)
     items = ContentItem.query.filter_by(lesson_id=lesson.id).all()
     return render_template("lesson.html", lesson=lesson, unit=unit, items=items)
+
+
+@main_bp.route("/lesson/<int:lesson_id>/complete", methods=["POST"])
+@login_required
+def lesson_complete(lesson_id: int):
+    """交互完成一节课：发 XP + 把内容加入抗遗忘队列。"""
+    from gamification import add_xp
+    from models import ContentItem, Lesson
+    from review_service import ensure_review
+    lesson = Lesson.query.get_or_404(lesson_id)
+    uid = current_user.id
+    items = ContentItem.query.filter_by(lesson_id=lesson.id).all()
+    for it in items:
+        ensure_review(uid, it.id)
+    xp = max(10, len(items) * 2)
+    info = add_xp(uid, xp, skill=lesson.kind, items=len(items))
+    return {"ok": True, "xp": xp, "level": info.get("level"),
+            "leveled_up": info.get("leveled_up", False)}
 
 
 @main_bp.route("/review")

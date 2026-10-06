@@ -43,7 +43,7 @@
 
   {% set paths = [
     ('vocabulary', 'Vocabulary', '词汇', 'vocab', 'book-open', '📚',
-     '2000 高频词 · 英式发音 · 例句', url_for('words.learn'), True),
+     'CEFR 分级词汇 · A1-C2 循序渐进', url_for('main.courses'), True),
     ('listening', 'Listening', '听力', 'listen', 'headphones', '🎧',
      '播客精听 · 听写 · 变速训练', url_for('learn.skill', key='listening'), False),
     ('reading', 'Reading', '阅读', 'read', 'book-open', '📖',
@@ -76,7 +76,7 @@
 <section class="feature-strip">
   <div class="feature-item">
     <span class="fi-ico" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">{{ icon('volume-2') }}</span>
-    <div><b>{{ t('word.pronunciation') }}</b><p>2000 词英式发音全部本地离线</p></div>
+    <div><b>CEFR 分级内容</b><p>Pre-A1 → C2，每级独立单元与例句</p></div>
   </div>
   <div class="feature-item">
     <span class="fi-ico" style="background:linear-gradient(135deg,#06b6d4,#14b8a6)">{{ icon('practice') }}</span>
@@ -92,17 +92,17 @@
   </div>
 </section>
 
-{# ============================================================ 每日一词 #}
-{% if daily %}
+{# ============================================================ 推荐单元 #}
+{% if rec_unit %}
 <section class="daily-word">
   <div>
-    <span class="eyebrow">{{ icon('calendar') }}每日一词 · Word of the Day</span>
-    <div class="dw-word" style="margin-top:8px">{{ daily.word }}</div>
-    <div class="wc-ipa">{{ daily.phonetic }}</div>
-    <p style="margin:8px 0 0;color:var(--ink-2)">{{ daily.meaning }}</p>
-    {% if daily.example_en %}<p class="small muted" style="margin:6px 0 0">{{ daily.example_en }}　{{ daily.example_cn }}</p>{% endif %}
+    <span class="eyebrow">{{ icon('route') }}推荐单元 · Recommended Unit</span>
+    <div class="dw-word" style="margin-top:8px">{{ rec_unit.emoji }} A1 · Unit {{ rec_unit.no }} {{ rec_unit.title_en }}</div>
+    <div class="wc-ipa">{{ rec_unit.title_zh }}</div>
+    <p style="margin:8px 0 0;color:var(--ink-2)">{{ rec_lessons|length }} lessons:
+      {% for l in rec_lessons %}<span class="tag" style="margin-right:6px">{{ l.title_en }}</span>{% endfor %}</p>
   </div>
-  <button class="speak big" data-play="{{ daily.audio }}">{{ icon('speaker') }}</button>
+  <a class="btn btn-primary btn-lg" href="{{ url_for('auth.register') }}">{{ icon('rocket') }}Start this Unit →</a>
 </section>
 {% endif %}
 

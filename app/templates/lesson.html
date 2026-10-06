@@ -5,25 +5,93 @@
 <section class="course-hero c-violet">
   <span class="eyebrow">{{ unit.title_en }}</span>
   <h1>{{ lesson.title_en }}</h1>
-  <p>{{ lesson.title_zh }}</p>
+  <p>{{ lesson.title_zh }} · {{ items|length }} items</p>
 </section>
-<div class="learn-cards">
-  {% for it in items %}
-  <article class="learn-card">
-    <div class="lc-head">
-      <b class="lc-surface">{{ it.surface }}</b>
-      {% if it.phonetic %}<i class="lc-phon">{{ it.phonetic }}</i>{% endif %}
+
+{% if lesson.kind == 'quiz' and items %}
+  {# ---------- Quiz 课节：四选一即时判分 ---------- #}
+  <div class="quiz-practice" data-quiz>
+    {% set correct = items[0] %}
+    <div class="qp-card">
+      <span class="qp-eyebrow">Translate · 选择正确释义</span>
+      <h2 class="qp-surface">{{ correct.surface }}</h2>
+      {% if correct.phonetic %}<i class="lc-phon">{{ correct.phonetic }}</i>{% endif %}
+      <div class="qp-options" data-answer="{{ correct.id }}">
+        {% for opt in items %}
+        <button class="qp-opt" data-correct="{{ '1' if loop.first else '0' }}">{{ opt.meaning_cn }}</button>
+        {% endfor %}
+        {% for i in range(4 - items|length) %}
+        {% endfor %}
+      </div>
+      <p class="qp-feedback" hidden></p>
+      <form method="post" action="{{ url_for('main.review_answer') }}" class="qp-record">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="content_id" value="{{ correct.id }}">
+        <input type="hidden" name="correct" value="1">
+      </form>
     </div>
-    <p class="lc-mean">{{ it.meaning_cn }}</p>
-    {% if it.example_en %}<p class="lc-ex">{{ it.example_en }}</p>{% endif %}
-    {% if it.example_cn %}<p class="lc-exc">{{ it.example_cn }}</p>{% endif %}
-  </article>
-  {% else %}
+  </div>
+{% elif items %}
+  {# ---------- 学习课节：闪卡 + 掌握反馈 ---------- #}
+  <div class="flash-deck">
+    {% for it in items %}
+    <article class="flash-card" data-flash data-id="{{ it.id }}">
+      <div class="fc-face fc-front">
+        <b class="lc-surface">{{ it.surface }}</b>
+        {% if it.phonetic %}<i class="lc-phon">{{ it.phonetic }}</i>{% endif %}
+        <span class="fc-hint">Tap to reveal · 点击查看</span>
+      </div>
+      <div class="fc-face fc-back" hidden>
+        <p class="lc-mean">{{ it.meaning_cn }}</p>
+        {% if it.example_en %}<p class="lc-ex">{{ it.example_en }}</p>{% endif %}
+        {% if it.example_cn %}<p class="lc-exc">{{ it.example_cn }}</p>{% endif %}
+        <div class="fc-actions">
+          <form method="post" action="{{ url_for('main.review_answer') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="content_id" value="{{ it.id }}">
+            <button class="btn btn-secondary btn-sm" name="correct" value="0">😅 Still learning</button>
+            <button class="btn btn-primary btn-sm" name="correct" value="1">💪 Got it</button>
+          </form>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+{% else %}
   <p class="muted">This lesson is being prepared. 内容筹备中。</p>
-  {% endfor %}
-</div>
+{% endif %}
+
 <div style="display:flex;gap:10px;margin-top:20px">
   <a class="btn btn-secondary" href="{{ url_for('main.unit_view', unit_id=unit.id) }}">← {{ icon('book-open') }} Back to Unit</a>
   <a class="btn btn-primary" href="{{ url_for('quiz.test_page') }}">🎯 Practice Quiz</a>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 闪卡翻转
+document.querySelectorAll('[data-flash]').forEach(card => {
+  const front = card.querySelector('.fc-front'), back = card.querySelector('.fc-back');
+  card.addEventListener('click', e => {
+    if (e.target.closest('form,button')) return;
+    front.hidden = true; back.hidden = false;
+    card.classList.add('flipped');
+  });
+});
+// Quiz 即时反馈
+const quiz = document.querySelector('[data-quiz]');
+if (quiz) {
+  const fb = quiz.querySelector('.qp-feedback');
+  quiz.querySelectorAll('.qp-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ok = btn.dataset.correct === '1';
+      btn.classList.add(ok ? 'right' : 'wrong');
+      fb.hidden = false;
+      fb.textContent = ok ? '🎉 Correct! +10 XP' : '❌ Not quite — review the card above.';
+      fb.style.color = ok ? '#059669' : '#e11d48';
+      if (ok) quiz.querySelector('.qp-record').submit();
+    });
+  });
+}
+</script>
 {% endblock %}
