@@ -1,18 +1,32 @@
 {% extends "base.html" %}
 {% block title %}词汇 · Vocabulary{% endblock %}
 {% block content %}
-<div class="v3-hero">
-  <div class="v3-hero-deco"><span class="v3-deco-orb">{{ icon('book') }}</span></div>
-  <h1>词汇 Vocabulary</h1>
+
+{# ============================================================ Hero（词汇=蓝紫） #}
+<div class="v3-hero" style="background:linear-gradient(120deg,#4338ca,#6366f1 50%,#8b5cf6)">
+  <div class="v3-hero-deco">
+    <span class="v3-deco-orb">{{ icon('book') }}</span>
+    <span class="v3-deco-orb">{{ icon('volume-2') }}</span>
+    <span class="v3-deco-orb">{{ icon('list') }}</span>
+  </div>
+  <h1>词汇 <span style="font-weight:600;font-size:18px;opacity:.85">Vocabulary</span></h1>
   <p>2000 个高频词，英式发音、例句、释义一应俱全。从下面的入口开始吧。</p>
+  {% if gamification %}
+  <div class="v3-hero-actions">
+    <span class="v3-btn-glass">{{ icon('zap') }} Lv {{ gamification.level or 0 }} · {{ gamification.xp or 0 }} XP</span>
+    <span class="v3-btn-ghost-w">{{ icon('flame') }} {{ gamification.streak or 0 }} {{ t('dash.streak_unit') }}</span>
+  </div>
+  {% endif %}
 </div>
 
+{# ============================================================ 词汇模块入口 #}
 <div class="sec-head">
   <div>
     <h2 class="sec-title">词汇模块 Modules</h2>
     <p class="sec-sub">听、读、测、复习，一条龙</p>
   </div>
 </div>
+
 <div class="skill-grid">
   {% for m in modules %}
   <a class="skill-card c-{{ m.color or 'violet' }}" href="{{ m.url }}">
@@ -26,7 +40,17 @@
   {% endfor %}
 </div>
 
-<div style="text-align:center;margin-top:20px">
-  <a class="btn btn-primary" href="{{ url_for('quiz.test_page') }}">做一组测试 Take a Quiz {{ icon('quiz') }}</a>
+{# ============================================================ 测验 CTA #}
+<div class="empty-card" style="--ec1:#eef2ff;--ec2:#ecfeff;margin-top:26px">
+  <div class="ec-ill">
+    <img src="{{ url_for('static', filename='img/ill-quiz.svg') }}" alt="Quiz illustration">
+  </div>
+  <div class="ec-body">
+    <span class="tag violet">{{ icon('practice') }} Quiz</span>
+    <h3>检验掌握度 · Take a Quiz</h3>
+    <p>英译中、中译英、听音、拼写四种模式，每次测试都能拿到 XP 并计入连续学习。</p>
+    <a class="btn btn-primary" href="{{ url_for('quiz.test_page') }}">{{ icon('play') }} 开始测试 Start Quiz</a>
+  </div>
 </div>
+
 {% endblock %}

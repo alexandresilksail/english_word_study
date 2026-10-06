@@ -67,7 +67,7 @@ def main():
     body = c.get("/login").get_data(as_text=True)
     check("登录页含双语结构 bi-en", 'class="bi-en"' in body)
     check("登录页含双语结构 bi-zh", 'class="bi-zh"' in body)
-    check("登录页引入 design.css", "design.css" in body)
+    check("登录页引入 v4.css 设计系统", "css/v4.css" in body)
     check("登录页提供忘记密码入口", "/forgot-password" in body)
 
     # ---------------------------------------------------------- 注册并登录

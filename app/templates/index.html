@@ -1,65 +1,117 @@
 {% extends "base.html" %}
 {% from "_macros.html" import icon %}
-{% block title %}{{ bi_plain('brand.name') }} · {{ bi_plain('brand.tagline') }}{% endblock %}
+{% block title %}{{ app_title }} · {{ app_title_en }}{% endblock %}
 
 {% block content %}
 
-{# ---------------------------------------------------------- 首屏 Hero #}
+{# ============================================================ Hero #}
 <section class="land-hero">
-  <span class="eyebrow" style="color:rgba(255,255,255,.9)">{{ t('brand.name') }} / English Word Study</span>
-  <h1>{{ t('footer.wordbank') }} {{ total_words or 2000 }} {{ t('learn.words_unit') }}<br>
-    <span style="opacity:.95">{{ t('footer.offline') }}</span>
-  </h1>
-  <p>{{ t('learn.sub') }} · {{ t('footer.privacy') }}</p>
+  <div>
+    <span class="eyebrow">{{ icon('sparkles') }}{{ t('brand.name') }} · Learn English</span>
+    <h1>Learn English.<br>Every day.</h1>
+    <p class="sub">2000 个高频词 · 英式发音 · 四种测试 · 四款小游戏 · XP 与连续学习激励。从今天开始，每天进步一点点。</p>
 
-  <div class="v3-hero-actions">
-    <a class="v3-btn-glass" href="{{ url_for('auth.register') }}">{{ icon('user') }}{{ bi('auth.register_link') }}</a>
-    <a class="v3-btn-ghost-w" href="{{ url_for('auth.login') }}">{{ icon('login') }}{{ bi('nav.login') }}</a>
+    <div class="hero-actions">
+      <a class="btn btn-cta btn-lg" href="{{ url_for('auth.register') }}">{{ icon('rocket') }}<span>Start Learning</span></a>
+      <a class="btn btn-secondary btn-lg" href="{{ url_for('words.browse') }}">{{ icon('compass') }}<span>Explore Lessons</span></a>
+    </div>
+
+    <div class="hero-trust">
+      <span class="ht">{{ icon('book-open') }}<span>{{ total_words or 2000 }} {{ t('learn.words_unit') }}</span></span>
+      <span class="ht">{{ icon('volume-2') }}<span>{{ t('footer.offline') }}</span></span>
+      <span class="ht">{{ icon('gamepad-2') }}<span>4 {{ t('nav.games') }}</span></span>
+      <span class="ht">{{ icon('zap') }}<span>XP · Streak · Badges</span></span>
+    </div>
   </div>
 
-  <div class="v3-hero-deco">
-    <span class="v3-deco-orb">{{ icon('book') }}</span>
-    <span class="v3-deco-orb">{{ icon('speaker') }}</span>
-    <span class="v3-deco-orb">{{ icon('quiz') }}</span>
+  <div class="hero-art">
+    <img src="{{ url_for('static', filename='img/ill-hero.svg') }}" alt="English learning illustration">
+    <span class="float-badge fb-1">{{ icon('bolt') }} +25 XP</span>
+    <span class="float-badge fb-2">{{ icon('flame') }} 7-day streak</span>
+    <span class="float-badge fb-3">{{ icon('headphones') }} Listening</span>
   </div>
 </section>
 
-{# ---------------------------------------------------------- 功能入口 #}
-<section class="land-feats">
-  <a class="land-feat" href="{{ url_for('words.learn') }}">
-    <span class="fi" style="background:linear-gradient(135deg,#8b7cff,#6d5efc)">{{ icon('book') }}</span>
-    <b>{{ bi('nav.learn') }}</b>
-    <span>{{ t('learn.sub') }}</span>
-  </a>
-  <a class="land-feat" href="{{ url_for('quiz.test_page', mode='listen') }}">
-    <span class="fi" style="background:linear-gradient(135deg,#38bdf8,#0891b2)">{{ icon('speaker') }}</span>
-    <b>{{ bi('quiz.mode.listen') }}</b>
-    <span>{{ t('quiz.mode.listen_desc') }}</span>
-  </a>
-  <a class="land-feat" href="{{ url_for('quiz.test_page', mode='spell') }}">
-    <span class="fi" style="background:linear-gradient(135deg,#fb7185,#e11d48)">{{ icon('edit') }}</span>
-    <b>{{ bi('quiz.mode.spell') }}</b>
-    <span>{{ t('quiz.mode.spell_desc') }}</span>
-  </a>
-  <a class="land-feat" href="{{ url_for('words.progress') }}">
-    <span class="fi" style="background:linear-gradient(135deg,#34d399,#059669)">{{ icon('chart') }}</span>
-    <b>{{ bi('nav.progress') }}</b>
-    <span>{{ t('prog.sub') }}</span>
-  </a>
+{# ============================================================ 学习路径 #}
+<section>
+  <div class="sec-head">
+    <div>
+      <h2 class="sec-title">Choose your learning path</h2>
+      <p class="sec-sub">六条路径，六种颜色，按你的目标开始</p>
+    </div>
+  </div>
+
+  {% set paths = [
+    ('vocabulary', 'Vocabulary', '词汇', 'vocab', 'book-open', '📚',
+     '2000 高频词 · 英式发音 · 例句', url_for('words.learn'), True),
+    ('listening', 'Listening', '听力', 'listen', 'headphones', '🎧',
+     '播客精听 · 听写 · 变速训练', url_for('learn.skill', key='listening'), False),
+    ('reading', 'Reading', '阅读', 'read', 'book-open', '📖',
+     '分级短文 · 生词即点即查', url_for('learn.skill', key='reading'), False),
+    ('grammar', 'Grammar', '语法', 'grammar', 'puzzle', '✏️',
+     '情景语法 · 例句驱动规则讲解', url_for('learn.skill', key='grammar'), False),
+    ('speaking', 'Speaking', '口语', 'speak', 'mic', '🎤',
+     '跟读打分 · 情景对话', url_for('learn.skill', key='speaking'), False),
+    ('writing', 'Writing', '写作', 'write', 'square-pen', '📝',
+     '句型练习 · 短文批改', url_for('learn.skill', key='writing'), False),
+  ] %}
+
+  <div class="path-grid stagger">
+    {% for key, en, zh, color, ic, emoji, desc, href, ready in paths %}
+    <a class="path-card" href="{{ href }}">
+      <div class="path-top">
+        <span class="path-ico" style="background:linear-gradient(135deg,var(--c-{{ key }}) 0%,var(--c-{{ key }}-2) 100%)">{{ icon(ic) }}</span>
+        {% if not ready %}<span class="path-lock">{{ icon('lock') }}Soon</span>{% endif %}
+      </div>
+      <h3>{{ emoji }} {{ en }} <span class="muted" style="font-weight:700;font-size:13px">· {{ zh }}</span></h3>
+      <p class="path-desc">{{ desc }}</p>
+      <div class="path-bar"><i style="width:0%;background:linear-gradient(90deg,var(--c-{{ key }}),var(--c-{{ key }}-2))"></i></div>
+      <span class="path-cta">{{ 'Start' if ready else 'Preview' }} {{ icon('arrow-right') }}</span>
+    </a>
+    {% endfor %}
+  </div>
 </section>
 
-{# ---------------------------------------------------------- 每日一词 #}
+{# ============================================================ 功能亮点 #}
+<section class="feature-strip">
+  <div class="feature-item">
+    <span class="fi-ico" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">{{ icon('volume-2') }}</span>
+    <div><b>{{ t('word.pronunciation') }}</b><p>2000 词英式发音全部本地离线</p></div>
+  </div>
+  <div class="feature-item">
+    <span class="fi-ico" style="background:linear-gradient(135deg,#06b6d4,#14b8a6)">{{ icon('practice') }}</span>
+    <div><b>4 种测试模式</b><p>英译中 · 中译英 · 听音 · 拼写</p></div>
+  </div>
+  <div class="feature-item">
+    <span class="fi-ico" style="background:linear-gradient(135deg,#f59e0b,#f97316)">{{ icon('gamepad-2') }}</span>
+    <div><b>4 款小游戏</b><p>配对 · 抢答 · 听音 · 拼词</p></div>
+  </div>
+  <div class="feature-item">
+    <span class="fi-ico" style="background:linear-gradient(135deg,#f43f5e,#fb7185)">{{ icon('zap') }}</span>
+    <div><b>XP · Streak · Badge</b><p>每次学习都有即时反馈与成就感</p></div>
+  </div>
+</section>
+
+{# ============================================================ 每日一词 #}
 {% if daily %}
 <section class="daily-word">
   <div>
-    <span class="eyebrow">每日一词 · Word of the Day</span>
-    <div class="dw-word" style="margin-top:4px">{{ daily.word }}</div>
+    <span class="eyebrow">{{ icon('calendar') }}每日一词 · Word of the Day</span>
+    <div class="dw-word" style="margin-top:8px">{{ daily.word }}</div>
     <div class="wc-ipa">{{ daily.phonetic }}</div>
-    <p style="margin:8px 0 0;color:var(--v3-ink-2)">{{ daily.meaning }}</p>
+    <p style="margin:8px 0 0;color:var(--ink-2)">{{ daily.meaning }}</p>
     {% if daily.example_en %}<p class="small muted" style="margin:6px 0 0">{{ daily.example_en }}　{{ daily.example_cn }}</p>{% endif %}
   </div>
   <button class="speak big" data-play="{{ daily.audio }}">{{ icon('speaker') }}</button>
 </section>
 {% endif %}
+
+{# ============================================================ CTA #}
+<section class="cta-banner">
+  <span class="deco d1"></span><span class="deco d2"></span>
+  <h2>Ready to learn English?</h2>
+  <p>免费注册，2 分钟开始你的第一条学习路径</p>
+  <a class="btn btn-white btn-lg" href="{{ url_for('auth.register') }}">{{ icon('rocket') }}Start Learning — 免费开始</a>
+</section>
 
 {% endblock %}

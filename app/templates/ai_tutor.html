@@ -1,41 +1,64 @@
 {% extends "base.html" %}
+{% from "_macros.html" import icon %}
 {% block title %}AI 导师 · AI Tutor{% endblock %}
 {% block content %}
-<div class="v3-hero">
-  <div class="v3-hero-deco"><span class="v3-deco-orb">{{ icon('sparkles') }}</span></div>
-  <h1>AI 导师 <span class="bi"><span class="bi-en">AI Tutor</span></span></h1>
+
+{# ============================================================ AI Tutor（深色渐变） #}
+<div class="v3-hero hero-dark">
+  <div class="v3-hero-deco">
+    <span class="v3-deco-orb">{{ icon('sparkles') }}</span>
+    <span class="v3-deco-orb">{{ icon('bot') }}</span>
+    <span class="v3-deco-orb">{{ icon('mic') }}</span>
+  </div>
+  <h1>AI 导师 <span style="font-weight:600;font-size:18px;opacity:.85">AI Tutor</span></h1>
   <p>未来的智能陪练：口语对练、写作批改、个性复习计划。当前为规划页，尚未接入任何模型。</p>
+  <div class="v3-hero-actions">
+    <a class="v3-btn-glass" href="{{ url_for('words.learn') }}">{{ icon('book-open') }} 先去背单词</a>
+    <a class="v3-btn-ghost-w" href="{{ url_for('learn.hub') }}">{{ icon('compass') }} 返回学习中心</a>
+  </div>
 </div>
 
-<div class="card" style="padding:24px">
-  <div class="challenge">
-    <div class="challenge-ico">{{ icon('sparkles') }}</div>
-    <div class="challenge-body">
-      <b>规划中 · Coming soon</b>
-      <p>本阶段页面如实说明方向，不假装有 AI 功能。接入大模型后，下方能力会自动开启，无需改代码。</p>
+{# ============================================================ 空态：插画 + 能力清单 #}
+<div class="empty-card" style="--ec1:#eef2ff;--ec2:#f5f3ff">
+  <div class="ec-ill">
+    <img src="{{ url_for('static', filename='img/ill-tutor.svg') }}" alt="AI Tutor illustration">
+  </div>
+  <div class="ec-body">
+    <span class="tag" style="background:#f5f3ff;color:#6d28d9">{{ icon('clock') }} Coming soon · 规划中</span>
+    <h3>AI Tutor 正在训练中</h3>
+    <p>本页面如实说明方向，不假装有 AI 功能。接入大模型后，下方能力会自动开启，无需改代码。</p>
+    <div class="row">
+      <a class="btn btn-primary" href="{{ url_for('quiz.test_page', mode='spell') }}">{{ icon('edit') }} 先做拼写测试</a>
+      <a class="btn btn-secondary" href="{{ url_for('games.index') }}">{{ icon('gamepad-2') }} 去玩游戏</a>
     </div>
   </div>
+</div>
 
-  {% set plans = [
-    ('口语对练','Speaking','录音对比原音，给出流利度与发音反馈'),
-    ('写作批改','Writing','提交短文获得结构与用词建议'),
-    ('个性复习','Review','根据错题与遗忘曲线自动生成复习计划'),
-    ('语法讲解','Grammar','从真实语料中抽取例句讲解规则')] %}
-  <div class="skill-grid" style="margin-top:18px">
+{# ============================================================ 规划能力 #}
+<section style="margin-top:26px">
+  <div class="sec-head">
+    <div>
+      <h2 class="sec-title">规划中的 AI 能力</h2>
+      <p class="sec-sub">上线后自动出现在这里</p>
+    </div>
+  </div>
+  <div class="skill-grid">
+    {% set plans = [
+      ('口语对练','Speaking','录音对比原音，给出流利度与发音反馈'),
+      ('写作批改','Writing','提交短文获得结构与用词建议'),
+      ('个性复习','Review','根据错题与遗忘曲线自动生成复习计划'),
+      ('语法讲解','Grammar','从真实语料中抽取例句讲解规则')] %}
     {% for zh, en, desc in plans %}
-    <div class="skill-card c-indigo">
-      <div class="skill-ico">{{ icon('wand') }}</div>
+    <div class="skill-card c-indigo is-locked">
+      <div class="skill-ico">{{ icon('wand-sparkles') }}</div>
       <div class="skill-body">
         <div class="skill-name">{{ zh }} <span class="bi"><span class="bi-en">{{ en }}</span></span></div>
         <div class="skill-desc">{{ desc }}</div>
       </div>
+      <span class="skill-soon">{{ icon('clock') }} Soon</span>
     </div>
     {% endfor %}
   </div>
-</div>
+</section>
 
-<div style="text-align:center;margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-  <a class="btn btn-secondary" href="{{ url_for('learn.hub') }}">返回学习中心</a>
-  <a class="btn btn-primary" href="{{ url_for('words.learn') }}">先去背单词 Start with Vocabulary</a>
-</div>
 {% endblock %}

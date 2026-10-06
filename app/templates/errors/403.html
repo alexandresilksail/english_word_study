@@ -1,10 +1,12 @@
 {% extends "base.html" %}
-{% block title %}403 · 没有权限{% endblock %}
+{% block title %}403 · 无权限{% endblock %}
 {% block content %}
-<div class="empty">
-  <em>🚫</em>
-  <b>你没有访问这个页面的权限（403）</b>
-  <p>这个区域仅限管理员访问。如果你是站点管理员，请用管理员账号登录。</p>
-  <a class="btn btn-primary" href="{{ url_for('main.dashboard') }}">返回学习主页</a>
+<div class="card" style="max-width:640px;margin:4vh auto">
+  <div class="empty">
+    <img class="ill" src="{{ url_for('static', filename='img/ill-lock.svg') }}" alt="403">
+    <b>没有访问权限（403）</b>
+    <p>这个页面需要相应权限才能查看。如有疑问请联系管理员。</p>
+    <a class="btn btn-primary" href="{{ url_for('main.index') }}">回到首页</a>
+  </div>
 </div>
 {% endblock %}

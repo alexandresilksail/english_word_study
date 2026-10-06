@@ -5,16 +5,18 @@
 
 {% block content %}
 
-<div class="page-head">
+{# ---------------------------------------------------------- 轻量视觉头部 #}
+<div class="pod-hero" style="background:linear-gradient(120deg,#eef2ff,#f5f3ff 55%,#ecfeff);border-color:#e0e7ff;margin-bottom:22px">
   <div>
-    <span class="eyebrow">{{ t('nav.learn') }} / Learn</span>
-    <h2>{{ bi('learn.title') }}</h2>
-    <p>{{ t('learn.sub') }}</p>
+    <span class="eyebrow" style="background:#fff">{{ t('nav.learn') }} / Learn</span>
+    <h1>{{ bi('learn.title') }}</h1>
+    <p style="color:var(--ink-2);margin:0">{{ t('learn.sub') }}</p>
+    <div class="row" style="gap:6px;margin-top:12px">
+      <span class="tag violet">{{ t('learn.scope') }}: {{ scopes.get(scope, t('quiz.scope.all')) }}</span>
+      <span class="tag">{{ icon('book-open') }} {{ t('learn.total') }} {{ total }} {{ t('learn.words_unit') }}</span>
+    </div>
   </div>
-  <div class="row" style="gap:6px">
-    <span class="tag blue">{{ t('learn.scope') }}: {{ scopes.get(scope, t('quiz.scope.all')) }}</span>
-    <span class="tag">{{ t('learn.total') }} {{ total }} {{ t('learn.words_unit') }}</span>
-  </div>
+  <img src="{{ url_for('static', filename='img/ill-word.svg') }}" alt="Vocabulary">
 </div>
 
 {# ---------------------------------------------------------- 筛选工具栏 #}

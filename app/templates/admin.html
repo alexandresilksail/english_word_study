@@ -1,15 +1,17 @@
 {% extends "base.html" %}
+{% from "_macros.html" import icon %}
 {% block title %}管理员后台 · {{ app_title }}{% endblock %}
 
 {% block content %}
 <div class="page-head">
   <div>
-    <h2><span class="ico">🛠</span>管理员控制台</h2>
+    <span class="eyebrow">{{ icon('shield') }} Admin Console</span>
+    <h2>管理员控制台</h2>
     <p>站点概览数据；仅管理员可见</p>
   </div>
-  <div style="display:flex;gap:8px">
-    <a class="btn btn-ghost btn-sm" href="{{ url_for('admin.users') }}">👥 用户明细</a>
-    <a class="btn btn-outline btn-sm" href="/healthz" target="_blank">💗 健康检查</a>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('admin.users') }}">{{ icon('users') }} 用户明细</a>
+    <a class="btn btn-outline btn-sm" href="/healthz" target="_blank">{{ icon('activity') }} 健康检查</a>
   </div>
 </div>
 
@@ -26,7 +28,7 @@
 
 <div class="grid" style="grid-template-columns:1fr 1fr">
   <div class="card">
-    <div class="section-title"><h3>📈 近 7 天注册趋势</h3></div>
+    <div class="section-title"><h3>{{ icon('chart') }} 近 7 天注册趋势</h3></div>
     <div class="mini-chart">
       {% set maxv = days|map(attribute='count')|max or 1 %}
       {% for d in days %}
@@ -37,15 +39,15 @@
       {% endfor %}
     </div>
     <div class="tags" style="margin-top:14px">
-      <span class="tag amber">错题总数 {{ stats.wrong_count }}</span>
-      <span class="tag blue">今日答题 {{ stats.answers_today }}</span>
-      <span class="tag">今日测试 {{ stats.tests_today }}</span>
-      <span class="tag">管理员 {{ stats.admins }} 位</span>
+      <span class="tag amber">{{ icon('review') }} 错题总数 {{ stats.wrong_count }}</span>
+      <span class="tag blue">{{ icon('practice') }} 今日答题 {{ stats.answers_today }}</span>
+      <span class="tag">{{ icon('check') }} 今日测试 {{ stats.tests_today }}</span>
+      <span class="tag">{{ icon('shield') }} 管理员 {{ stats.admins }} 位</span>
     </div>
   </div>
 
   <div class="card">
-    <div class="section-title"><h3>👥 最新注册用户</h3><a class="btn btn-ghost btn-sm" href="{{ url_for('admin.users') }}">查看全部</a></div>
+    <div class="section-title"><h3>{{ icon('users') }} 最新注册用户</h3><a class="btn btn-ghost btn-sm" href="{{ url_for('admin.users') }}">查看全部</a></div>
     {% if recent_users %}
       <div class="table-wrap">
         <table>
@@ -53,7 +55,7 @@
           <tbody>
           {% for u in recent_users %}
             <tr>
-              <td><b>{{ u.username }}</b>{% if u.is_admin %} <span class="tbl-badge admin">管理员</span>{% endif %}</td>
+              <td><b>{{ u.username }}</b>{% if u.is_admin %} <span class="tbl-badge admin">{{ icon('shield') }}管理员</span>{% endif %}</td>
               <td class="mono small">{{ u.email }}</td>
               <td class="small muted">{{ u.created_at|dt('%m-%d %H:%M') }}</td>
               <td class="small">{{ u.login_count or 0 }} 次</td>

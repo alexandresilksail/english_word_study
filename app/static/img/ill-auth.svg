@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 420" role="img" aria-label="Study anywhere with any device">
+<defs>
+<linearGradient id="ag1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient>
+<linearGradient id="ag2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#14b8a6"/></linearGradient>
+</defs>
+<rect width="480" height="420" rx="36" fill="#eef2ff"/>
+<circle cx="430" cy="30" r="110" fill="#6366f1" opacity="0.10"/>
+<circle cx="30" cy="390" r="130" fill="#22d3ee" opacity="0.12"/>
+<!-- laptop -->
+<g transform="translate(96 148)">
+  <rect x="0" y="0" width="288" height="188" rx="18" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+  <rect x="12" y="12" width="264" height="140" rx="10" fill="#f8f7ff"/>
+  <rect x="24" y="24" width="90" height="14" rx="7" fill="#c7d2fe"/>
+  <rect x="24" y="48" width="140" height="10" rx="5" fill="#e0e7ff"/>
+  <rect x="24" y="66" width="120" height="10" rx="5" fill="#e0e7ff"/>
+  <rect x="24" y="92" width="200" height="40" rx="10" fill="#f3f4ff"/>
+  <rect x="36" y="102" width="120" height="8" rx="4" fill="#ddd6fe"/>
+  <rect x="36" y="118" width="90" height="8" rx="4" fill="#e0e7ff"/>
+  <circle cx="220" cy="112" r="18" fill="url(#ag1)"/>
+  <path d="M220 104l4 8 9 1-6.5 6 1.5 9-8-4.5-8 4.5 1.5-9-6.5-6 9-1z" fill="#ffffff"/>
+  <rect x="0" y="188" width="288" height="10" rx="5" fill="#a5b4fc"/>
+  <rect x="110" y="198" width="68" height="14" rx="7" fill="#6366f1"/>
+</g>
+<!-- phone -->
+<g transform="translate(316 226)">
+  <rect width="96" height="160" rx="18" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+  <rect x="10" y="10" width="76" height="16" rx="8" fill="url(#ag2)"/>
+  <rect x="12" y="36" width="72" height="9" rx="4" fill="#e0e7ff"/>
+  <rect x="12" y="52" width="52" height="9" rx="4" fill="#e0e7ff"/>
+  <rect x="12" y="70" width="72" height="44" rx="10" fill="#f0fdfa"/>
+  <circle cx="48" cy="92" r="16" fill="#14b8a6"/>
+  <path d="M40 92l6 6 10-12" stroke="#ffffff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="12" y="124" width="72" height="8" rx="4" fill="#ccfbf1"/>
+  <rect x="12" y="138" width="44" height="8" rx="4" fill="#e0e7ff"/>
+</g>
+<!-- floating cards -->
+<g transform="translate(40 60)"><rect width="84" height="84" rx="22" fill="url(#ag1)"/><text x="42" y="54" text-anchor="middle" font-family="ui-rounded, 'Segoe UI', sans-serif" font-size="36" font-weight="900" fill="#fff">W</text></g>
+<g transform="translate(200 56)"><rect width="66" height="66" rx="18" fill="#fbbf24"/><text x="33" y="43" text-anchor="middle" font-family="ui-rounded, 'Segoe UI', sans-serif" font-size="28" font-weight="900" fill="#fff">i</text></g>
+<g transform="translate(300 70)"><circle r="26" fill="#fb7185"/><text x="-11" y="11" text-anchor="middle" font-family="ui-rounded, sans-serif" font-size="28" font-weight="900" fill="#fff">✓</text></g>
+<g transform="translate(430 140)"><rect width="40" height="40" rx="12" fill="#34d399"/></g>
+<g transform="translate(60 320)"><path d="M12 0l2.6 6.6L22 9l-6.6 2.6L12 18l-2.6-6.6L2 9l6.6-2.6z" fill="#8b5cf6"/></g>
+<g transform="translate(420 320)"><path d="M10 0l2.2 5.5L18 8l-5.8 2.2L10 16l-2.2-5.8L2 8l5.8-2.2z" fill="#f59e0b"/></g>
+</svg>
