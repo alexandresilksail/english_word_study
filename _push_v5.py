@@ -23,7 +23,8 @@ API = "https://api.github.com"
 
 # 不纳入推送的目录 / 文件（本地产物、密钥、缓存、预览辅助脚本）
 SKIP_DIRS = {".git", "__pycache__", ".pytest_cache", "instance", "logs",
-             "node_modules", "venv", ".venv", ".mypy_cache", ".idea", ".vscode"}
+             "node_modules", "venv", ".venv", ".mypy_cache", ".idea", ".vscode",
+             ".workbuddy"}
 SKIP_FILES = {".env", "preview_server.py"}
 SKIP_SUFFIX = (".pyc", ".db", ".sqlite", ".sqlite3", ".log")
 
@@ -125,9 +126,12 @@ def main():
     print("new_tree", new_tree_sha[:12])
 
     # 5) 新 commit
-    message = ("V5.0 AI 多语言分级学习平台：/learn 学习中心与技能路由梳理、"
-               "/quiz 别名、conftest 让 pytest 可跑、AI Tutor 读取真实等级/路径/薄弱点；"
-               "English 版面零中文（含登录闪现与匿名重定向）。")
+    message = ("V5.1 词库引擎 Master Lexicon：新增 LexiconEntry 模型（4 索引+去重唯一约束）；"
+               "lexicon/ 引擎包（normalize/dedup/license_filter/cefr/validate/sources/pipeline/db_io/to_content）；"
+               "scripts/import_lexicon.py、validate_lexicon.py、lexicon_to_content.py、perf_lexicon_import.py；"
+               "data/lexicon/license_registry.json；tests/test_lexicon.py（17 用例）。"
+               "轻量化：SQLite 批量 250/commit、无常驻内存、无启动时导入、无重型依赖；"
+               "English 5000 + Cantonese 2000 合计 7000 已开发验证，peak RAM 11.5MB、DB 4.58MB。")
     st4, commit = api("POST", f"/repos/{REPO}/git/commits", token, {
         "message": message,
         "tree": new_tree_sha,

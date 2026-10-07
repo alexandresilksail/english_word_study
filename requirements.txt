@@ -9,3 +9,11 @@ SQLAlchemy==2.1.3
 python-dotenv==1.2.4
 email-validator==2.3.0
 gunicorn==23.0.0
+
+# 测试
+pytest==8.3.4
+
+# V5.1 词库英文频率源（可选，仅在使用 --source wordfreq 时需要，且需可联网取数）。
+# 默认不安装，保持 Docker 镜像轻量；生产导入英文词库前由运维按需安装。
+# wordfreq==1.16.0
+

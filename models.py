@@ -894,3 +894,80 @@ LEARNING_GOALS = [
     ("speaking", "口语", "Speaking"),
     ("listening", "听力", "Listening"),
 ]
+
+
+# --------------------------------------------------------------------------
+# V5.1 Master Lexicon（独立于 ContentItem 的主词库）
+# --------------------------------------------------------------------------
+class LexiconEntry(db.Model):
+    """主词库条目（Master Lexicon）。
+
+    与 ContentItem 解耦：词库只负责「词条本身」，不加 user_id、不绑定课程。
+    课程由 scripts/lexicon_to_content.py 按 CEFR / 频率 / 主题 / 难度筛选后生成，
+    绝不会把全部 7000 条自动灌进课程内容。
+
+    去重键（数据库层强制唯一）：language_code + normalized + kind + pos
+    —— 不按 surface 去重（同一词形可能有不同词性 / 不同 kind）。
+    """
+
+    __tablename__ = "lexicon_entries"
+    __table_args__ = (
+        Index("ix_lexicon_lang_norm", "language_code", "normalized"),
+        Index("ix_lexicon_lang_cefr", "language_code", "cefr"),
+        Index("ix_lexicon_lang_kind", "language_code", "kind"),
+        Index("ix_lexicon_source", "source", "source_id"),
+        UniqueConstraint(
+            "language_code", "normalized", "kind", "pos",
+            name="uq_lexicon_lang_norm_kind_pos",
+        ),
+    )
+
+    id = db.Column(Integer, primary_key=True)
+
+    # 语言：'en' / 'yue'
+    language_code = db.Column(String(8), nullable=False, index=True)
+    surface = db.Column(String(255), nullable=False)          # 原始词面 / 词组 / 句子
+    lemma = db.Column(String(255), nullable=False, default="")  # 词目（原形）
+    normalized = db.Column(String(255), nullable=False, default="")  # 归一化后用于去重/查询
+
+    # 类型：vocabulary / phrase / sentence
+    kind = db.Column(String(16), nullable=False, default="vocabulary")
+    pos = db.Column(String(16), nullable=False, default="")     # 词性
+
+    pronunciation = db.Column(String(128), nullable=False, default="")  # 英文 IPA
+    jyutping = db.Column(String(128), nullable=False, default="")      # 粤拼（粤语必填）
+
+    meaning_en = db.Column(Text, nullable=False, default="")     # 英文释义
+    meaning_zh = db.Column(Text, nullable=False, default="")     # 中文释义
+    example_en = db.Column(Text, nullable=False, default="")
+    example_zh = db.Column(Text, nullable=False, default="")
+
+    # 频率：wordfreq 提供的是频率分数 / 频率排名，绝不是 CEFR
+    frequency = db.Column(db.Float, nullable=True)
+    frequency_rank = db.Column(Integer, nullable=True)
+
+    # CEFR：必须记录来源（cefr_source），不允许凭空声称
+    cefr = db.Column(String(8), nullable=False, default="", index=True)   # Pre-A1/A1..C2
+    cefr_source = db.Column(String(32), nullable=False, default="")
+
+    # 难度：简单规则计算（cefr + 频率），不引入机器学习
+    difficulty = db.Column(Integer, nullable=False, default=1, server_default="1")
+
+    topic = db.Column(String(32), nullable=False, default="general")
+
+    # 来源与许可证（以数据源当前公布的 License 为准）
+    source = db.Column(String(32), nullable=False, default="")        # wordfreq/cc-canto/...
+    source_id = db.Column(String(64), nullable=False, default="")
+    license = db.Column(String(64), nullable=False, default="")
+    license_url = db.Column(String(255), nullable=False, default="")
+    attribution = db.Column(String(255), nullable=False, default="")
+
+    # 商业授权：不确定时一律 False（绝不为填数据而假设可商用）
+    commercial_allowed = db.Column(Boolean, nullable=False, default=False, server_default="0")
+    redistribution_allowed = db.Column(Boolean, nullable=False, default=False, server_default="0")
+
+    verified = db.Column(Boolean, nullable=False, default=False, server_default="0")
+    created_at = db.Column(DateTime, nullable=False, default=utcnow, server_default=func.now())
+
+    def __repr__(self) -> str:
+        return f"<LexiconEntry {self.language_code}:{self.normalized!r} [{self.kind}/{self.pos}]>"
