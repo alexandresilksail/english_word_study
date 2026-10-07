@@ -1392,5 +1392,7 @@ td { padding: 12px; border-bottom: 1px solid var(--line); }
   border-radius:10px;padding:10px 12px;}
 .listen-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-top:12px;}
 .listen-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;}
-.listen-card audio{width:100%;}
-.listen-surface{font-weight:700;margin-top:8px;font-size:15px;}
+.listen-card audio{width:100%;margin-top:6px;}
+/* 答案区：Reveal 之前不占位，避免卡片高度参差 */
+.listen-answer{font-weight:700;margin-top:8px;font-size:15px;}
+.listen-answer .small{font-weight:400;}

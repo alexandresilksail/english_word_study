@@ -19,6 +19,29 @@
   </div>
 </div>
 
+{# ============================================================ 今日额度 #}
+{# AI Tutor 的完整使用权属 PRO；非 PRO 靠每日试用额度进入，
+   页面必须先把「还能用几次」说清楚，而不是等用户撞上 403。 #}
+{% if access and not access.by_plan %}
+<div class="spk-note">
+  {{ icon('info') }}
+  <div>
+    <b>{{ pick('Daily trial', '每日试用') }}</b>
+    <div class="muted small">
+      {% if access.quota.remaining %}
+        {{ pick('AI Tutor is a PRO feature. You have', 'AI Tutor 为 PRO 专享，你今天还有') }}
+        <b>{{ access.quota.remaining }}</b>
+        {{ pick('requests left today (resets at UTC 00:00).',
+                '次提问机会（UTC 00:00 重置）。') }}
+      {% else %}
+        {{ pick('Trial requests exhausted for today. Upgrade to PRO for unlimited access, or come back after UTC 00:00.',
+                '今日试用次数已用完。升级 PRO 可不限量使用，或在 UTC 00:00 后重试。') }}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
 {# ============================================================ 用户画像（真实数据，规格 §14） #}
 <section style="margin-top:26px">
   <div class="sec-head">

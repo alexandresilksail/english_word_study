@@ -728,6 +728,40 @@ class ContentMastery(db.Model):
     updated_at = db.Column(DateTime, nullable=False, default=utcnow, server_default=func.now())
 
 
+class UsageCounter(db.Model):
+    """每日用量计数（V5.9：免费档配额的落点）。
+
+    粒度是 **用户 × 功能 × 自然日**，一行一天一条，靠唯一约束保证幂等：
+
+    * ``check()`` 读它判断还能不能用；
+    * ``consume()`` 在**真正执行成功后**才自增 ——
+      放在这里而不是 ``before_request``，是为了让 422（参数错误）、
+      401（未登录）这类失败请求**不占用用户额度**。
+
+    日期用 UTC 自然日（``YYYY-MM-DD`` 字符串）而非本地时间：
+    服务器分布在多时区时，本地日会让「今天」的长度随部署地漂移，
+    配额会出现「刚重置又没了」的投诉。
+
+    自然增长：每天每个用户每个功能最多一行，长期运行会累积行数，
+    由 :func:`purge_old_usage` 定期清理（见 CLI ``purge-codes`` 同款思路）。
+    """
+
+    __tablename__ = "usage_counters"
+    __table_args__ = (
+        UniqueConstraint("user_id", "feature", "day", name="uq_usage_user_feature_day"),
+        Index("ix_usage_day", "day"),
+    )
+
+    id = db.Column(Integer, primary_key=True)
+    user_id = db.Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),
+                        nullable=False, index=True)
+    feature = db.Column(String(32), nullable=False)
+    day = db.Column(String(10), nullable=False)          # UTC 自然日 YYYY-MM-DD
+    count = db.Column(Integer, nullable=False, default=0, server_default="0")
+    updated_at = db.Column(DateTime, nullable=False, default=utcnow,
+                           server_default=func.now(), onupdate=utcnow)
+
+
 class UserOnboarding(db.Model):
     """新用户画像：年龄组 / 教育 / 当前水平 / 学习目标。"""
     __tablename__ = "user_onboarding"

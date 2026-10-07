@@ -8,6 +8,12 @@
 鉴权与其它 /api/* 保持一致：未登录返回 **401 JSON**（不是 302 跳登录页），
 便于前端区分处理。
 
+.. note:: 每日配额
+
+   只有 ``POST /api/ai-tutor/<action>`` 会消耗额度，且**仅在成功执行后**计数
+   （参数错误 422 不占额度）。``/status`` 是纯查询，不计数。
+   非 PRO 用户靠每日试用额度放行，响应里带 ``quota`` 快照供前端显示剩余次数。
+
 .. note:: Mock 标注
 
    ``is_mock()`` 为真时，返回值里必定带 ``mock: true``。前端必须据此显示
@@ -40,10 +46,24 @@ def _guard():
     from entitlements import check
     verdict = check("ai_tutor", current_user.id)
     if not verdict["allowed"]:
-        return fail(verdict["hint"], code="plan_required", status=403,
+        return fail(verdict["hint"], code=verdict["code"] or "plan_required", status=403,
                     details={"plan": verdict["plan"],
-                             "required": verdict["required"]})
+                             "required": verdict["required"],
+                             "quota": verdict["quota"]})
     return None
+
+
+def _consume() -> dict:
+    """成功执行后计数一次，返回配额快照供前端显示剩余次数。
+
+    计数失败不能影响已经成功的结果，所以整体吞异常。
+    """
+    from entitlements import consume, quota_state
+    try:
+        consume(current_user.id, "ai_tutor")
+        return quota_state("ai_tutor", current_user.id)
+    except Exception:  # pragma: no cover - 计数是旁路
+        return {}
 
 
 @ai_tutor_bp.route("/status", methods=["GET"])
@@ -73,4 +93,6 @@ def api_run(action: str):
                     code=result.get("code", "bad_request"), status=422)
     # 前端据此显示「本地规则模式」，保证不误导用户
     result["mock"] = bool(result.get("mock"))
+    # 只在成功路径计数：422 / 401 之类的失败不占用用户额度
+    result["quota"] = _consume()
     return ok(result)

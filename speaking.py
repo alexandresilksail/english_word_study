@@ -121,6 +121,10 @@ def listening_items(lang_code: str = "en", limit: int = 12) -> list[dict]:
             url = f"/static/audio/{name}"
         out.append({
             "word_id": w.id,
+            # 模板要用它拼 DOM id。听力素材来自 legacy Word 而不是
+            # ContentItem，所以这里必须有自己的 id —— 沿用 content_id 会拿到
+            # None，结果多张卡片共用 id="lm-"，点「显示答案」永远只翻开第一张。
+            "id": f"w{w.id}",
             "surface": w.word,
             "phonetic": w.phonetic_uk or "",
             "meaning_en": "",
@@ -346,8 +350,11 @@ def score(user_text: str, reference: str, lang: str = "en") -> dict:
         "transcript": user_text,
         "accuracy": accuracy,
         "vocabulary": vocabulary,
-        "fluency": None if practice else None,   # 需要音频特征，暂无实现
-        "grammar": None if practice else None,   # 需要语法解析，暂无实现
+        # 这两个维度分别需要「音频时长/停顿特征」与「语法解析器」，
+        # 本项目不引入重型组件，因此恒为 None（不是 0）。
+        # 接入评分引擎后在此替换为真实值，其余字段无需改动。
+        "fluency": None,
+        "grammar": None,
         "overall": overall,
         "alignment": rows,
         "feedback": feedback,

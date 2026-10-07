@@ -2,6 +2,12 @@
 
 统一 JSON 约定与其它 /api/* 一致：成功 ``{"ok": true, "data": ...}``，
 失败 ``{"ok": false, "error": {...}}``；未登录返回 **401 JSON**。
+
+.. note:: 每日配额
+
+   计数的端点只有 ``/score``、``/transcribe``、``/synthesize``（真正消耗算力的
+   三件事），且**仅在成功执行后**计数。``/status`` 与 ``/listening`` 是纯查询，
+   不占用额度（``listening`` 本来就是三档通用功能）。
 """
 from __future__ import annotations
 
@@ -22,15 +28,30 @@ def _guard():
     from entitlements import check
     verdict = check("speaking", current_user.id)
     if not verdict["allowed"]:
-        return fail(verdict["hint"], code="plan_required", status=403,
+        return fail(verdict["hint"], code=verdict["code"] or "plan_required", status=403,
                     details={"plan": verdict["plan"],
-                             "required": verdict["required"]})
+                             "required": verdict["required"],
+                             "quota": verdict["quota"]})
     return None
+
+
+def _consume() -> dict:
+    """成功执行后计数一次，返回配额快照。旁路失败不影响主结果。"""
+    from entitlements import consume, quota_state
+    try:
+        consume(current_user.id, "speaking")
+        return quota_state("speaking", current_user.id)
+    except Exception:  # pragma: no cover - 计数是旁路
+        return {}
 
 
 @speaking_bp.route("/status", methods=["GET"])
 def api_status():
-    return ok(status())
+    """能力状态 + 今日额度（给页面显示「还剩 N 次」）。查询不计数。"""
+    from entitlements import quota_state
+    payload = status()
+    payload["quota"] = quota_state("speaking", current_user.id)
+    return ok(payload)
 
 
 @speaking_bp.route("/score", methods=["POST"])
@@ -49,7 +70,9 @@ def api_score():
         return fail("缺少参考答案", code="bad_request", status=422)
     if not text:
         return fail("请输入你说的话", code="bad_request", status=422)
-    return ok(score(text, reference, lang))
+    payload = score(text, reference, lang)
+    payload["quota"] = _consume()   # 只在成功路径计数
+    return ok(payload)
 
 
 @speaking_bp.route("/transcribe", methods=["POST"])
@@ -67,6 +90,7 @@ def api_transcribe():
     if not result.get("ok"):
         return fail(result.get("error") or result.get("note") or "识别失败",
                     code="bad_request", status=422)
+    result["quota"] = _consume()
     return ok(result)
 
 
@@ -78,7 +102,9 @@ def api_synthesize():
     lang = (body.get("lang") or "en").strip().lower()
     if not text:
         return fail("文本为空", code="bad_request", status=422)
-    return ok(synthesize(text, lang))
+    payload = synthesize(text, lang)
+    payload["quota"] = _consume()
+    return ok(payload)
 
 
 @speaking_bp.route("/listening", methods=["GET"])

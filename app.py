@@ -9,6 +9,7 @@ import os
 import sys
 from datetime import timedelta
 
+import click
 from dotenv import load_dotenv
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -324,6 +325,38 @@ def _register_cli(app: Flask) -> None:
         with app.app_context():
             n = purge_expired()
         print(f"✔ 已清理 {n} 条过期验证码")
+
+    @app.cli.command("recompute-mastery")
+    @click.option("--user-id", type=int, default=None,
+                  help="只重算指定用户；不传则全量重算")
+    def recompute_mastery(user_id):
+        """按当前统一 0-4 规则重算掌握度 level。
+
+        用途：掌握度规则演进后（如 V5.5 初步规则 → V5.6 统一规则），
+        老数据仍是按旧规则算出的 level，需要一次性刷平。
+
+        **幂等**，可反复执行；只在 level 真的变化时才写库，
+        因此第二次执行应该是「变更 0 行」。
+        """
+        from mastery_service import recompute
+        with app.app_context():
+            n = recompute(user_id)
+        scope = f"用户 {user_id}" if user_id is not None else "全量"
+        print(f"✔ 掌握度重算完成（{scope}）：更新 {n} 行")
+
+    @app.cli.command("purge-usage")
+    @click.option("--days", type=int, default=90,
+                  help="保留最近 N 天的用量记录，默认 90")
+    def purge_usage(days):
+        """清理过期的每日用量计数行（usage_counters）。
+
+        计数表是「每用户 × 每功能 × 每天」一行，长期运行会持续膨胀，
+        而 90 天前的行已无任何查询价值 —— 建议挂月度定时任务清理。
+        """
+        from entitlements import purge_old_usage
+        with app.app_context():
+            n = purge_old_usage(days)
+        print(f"✔ 已清理 {n} 条 {days} 天前的用量记录")
 
 
 def _register_template_globals(app: Flask) -> None:

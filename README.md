@@ -8,7 +8,7 @@
 
 ---
 
-## 零、V5 版本特性（V5.2 – V5.8）
+## 零、V5 版本特性（V5.2 – V5.9）
 
 | 版本 | 能力 |
 |---|---|
@@ -19,6 +19,7 @@
 | **V5.6** | 统一掌握度 **Mastery 0-4** + 间隔重复（复习时刻单一真源） |
 | **V5.7** | **AI Tutor**：讲解 / 例句 / 对话 / 批改 / 翻译 / 练习 |
 | **V5.8** | **口语**（STT / TTS / 词级评分）+ **听力**（复用既有 2000 MP3）+ 套餐权限 |
+| **V5.9** | **遗留项收口**：每日配额 + 运维 CLI + 录音降级与麦克风释放 + 听力卡片缺陷修复 |
 
 ### 统一掌握度 0-4
 `New → Learning → Familiar → Strong → Mastered`，由三类证据综合判定：
@@ -36,7 +37,28 @@
 > 全部 HTTP 走标准库 `urllib`，**不引入任何 SDK / 重型模型**，
 > 技术栈仍是 Flask / SQLAlchemy / SQLite / Docker，2vCPU-2GB 可承载。
 
-📄 详见 [`docs/V5.2-V5.8_ARCHITECTURE.md`](docs/V5.2-V5.8_ARCHITECTURE.md)。
+### 每日配额（V5.9）
+
+AI Tutor 与口语评分的**完整使用权属 PRO**；其余套餐每天有少量试用次数：
+
+| 功能 | free | premium | pro |
+|---|---|---|---|
+| AI Tutor | 3 次/天 | 20 次/天 | 不限量 |
+| 口语评分 | 5 次/天 | 30 次/天 | 不限量 |
+
+- 计数只在**请求成功后**自增 —— 参数错误（422）不占额度
+- 按 **UTC 自然日 00:00** 重置
+- 可用环境变量调整：`TRIAL_QUOTA_AI_TUTOR_FREE=10`（见 `.env.example`）
+
+📄 详见 [`docs/V5.2-V5.8_ARCHITECTURE.md`](docs/V5.2-V5.8_ARCHITECTURE.md)
+与 [`docs/V5.9_遗留项收口.md`](docs/V5.9_遗留项收口.md)。
+
+### 运维命令
+
+```bash
+flask recompute-mastery [--user-id N]   # 掌握度规则升级后刷平老数据（幂等，首次部署执行一次）
+flask purge-usage [--days 90]           # 清理过期的每日用量计数行（建议月度定时任务）
+```
 
 ---
 

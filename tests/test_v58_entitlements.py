@@ -1,11 +1,16 @@
 """V5.7 / V5.8 套餐权限（entitlements）测试。
 
-规格：AI Tutor 与 Speaking 属 **PRO**；学习 / 练习 / 复习三档通用。
+规格：AI Tutor 与 Speaking 的**无限使用权属 PRO**；学习 / 练习 / 复习三档通用。
+低档套餐另有每日试用额度，见 ``tests/test_v59_quota.py``。
 
 重点覆盖容易出错的边界：
 - 无订阅记录（新用户）必须按 free 处理，不能抛异常；
 - 已过期 / 非 active 的订阅不能继续享有 PRO；
 - 未登录优先返回 401，而不是「请升级 PRO」的 403（提示要符合真实原因）。
+
+.. note:: 本文件只关心「套餐门」。低档用户现在有每日试用额度，
+   因此「free 能否调用」要看额度是否用完 —— 需要制造 403 的用例统一用
+   ``_exhaust`` 把当天额度打满，避免依赖「free 一定被拒」这一旧假设。
 """
 from __future__ import annotations
 
@@ -76,6 +81,36 @@ def free_client(app):
 @pytest.fixture
 def pro_client(app):
     return _login(app, PRO_EMAIL)
+
+
+@pytest.fixture(autouse=True)
+def _clean_usage(app):
+    """每个用例从干净额度开始：free 用户已有每日试用额度，
+    不清理的话用例之间会互相吃掉额度，导致 403 断言随机失败。"""
+    with app.app_context():
+        from models import UsageCounter
+        UsageCounter.query.delete()
+        db.session.commit()
+    yield
+    with app.app_context():
+        from models import UsageCounter
+        UsageCounter.query.delete()
+        db.session.commit()
+
+
+def _exhaust(app, email, feature):
+    """把某用户当天在某功能上的额度打满，用于制造 403 场景。"""
+    with app.app_context():
+        from entitlements import daily_limit, plan_of
+        from models import UsageCounter, User
+        uid = User.query.filter_by(email=email).first().id
+        limit = daily_limit(feature, plan_of(uid))
+        if limit is None:
+            return
+        db.session.add(UsageCounter(user_id=uid, feature=feature,
+                                    day=__import__("entitlements").today(),
+                                    count=int(limit)))
+        db.session.commit()
 
 
 # --------------------------------------------------------------------------
@@ -149,25 +184,31 @@ def test_unknown_plan_value_treated_as_free(app):
 # --------------------------------------------------------------------------
 # API 行为
 # --------------------------------------------------------------------------
-def test_free_user_blocked_from_ai_tutor(app, free_client):
-    r = free_client.post("/api/ai-tutor/explain", json={"text": "hello"})
-    assert r.status_code == 403
-    body = r.get_json()
-    assert body["ok"] is False
-    assert body["error"]["code"] == "plan_required"
-
-
 def test_pro_user_can_use_ai_tutor(app, pro_client):
     r = pro_client.post("/api/ai-tutor/explain", json={"text": "hello"})
     assert r.status_code == 200
     assert r.get_json()["ok"] is True
 
 
-def test_free_user_blocked_from_speaking(app, free_client):
+def test_free_user_blocked_from_ai_tutor_once_quota_runs_out(app, free_client):
+    """free 档有每日试用额度；用尽后才拒绝，错误码是 quota_exceeded。
+
+    与 plan_required 区分开：前者提示「明天再来 / 升级」，后者提示「升级」。
+    """
+    _exhaust(app, FREE_EMAIL, "ai_tutor")
+    r = free_client.post("/api/ai-tutor/explain", json={"text": "hello"})
+    assert r.status_code == 403
+    body = r.get_json()
+    assert body["ok"] is False
+    assert body["error"]["code"] == "quota_exceeded"
+
+
+def test_free_user_blocked_from_speaking_once_quota_runs_out(app, free_client):
+    _exhaust(app, FREE_EMAIL, "speaking")
     r = free_client.post("/api/speaking/score",
                          json={"text": "hi", "reference": "hi"})
     assert r.status_code == 403
-    assert r.get_json()["error"]["code"] == "plan_required"
+    assert r.get_json()["error"]["code"] == "quota_exceeded"
 
 
 def test_pro_user_can_use_speaking(app, pro_client):
@@ -187,13 +228,19 @@ def test_anonymous_gets_401_not_403(app):
 
 
 def test_stt_status_endpoint_also_gated(app, free_client):
+    """/status 是查询端点，但仍要过门禁：额度用完时同样返回 403。"""
+    _exhaust(app, FREE_EMAIL, "speaking")
     r = free_client.get("/api/speaking/status")
     assert r.status_code == 403
 
 
 def test_403_payload_includes_current_and_required_plan(app, free_client):
     """前端要据此展示「当前套餐 → 需要套餐」，所以两边都得给。"""
+    _exhaust(app, FREE_EMAIL, "ai_tutor")
     r = free_client.post("/api/ai-tutor/explain", json={"text": "hello"})
     details = r.get_json()["error"]["details"]
     assert details["plan"] == "free"
     assert "pro" in details["required"]
+    # 还要给出额度快照，前端才能显示「今日 3/3 已用完」
+    assert details["quota"]["limit"] == 3
+    assert details["quota"]["remaining"] == 0

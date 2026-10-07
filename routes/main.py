@@ -290,8 +290,11 @@ def ai_tutor():
     }
     # V5.7：AI 能力状态 —— 页面据此如实显示「本地规则模式」还是「已接模型」
     from ai_tutor import is_mock, status as ai_status
+    # V5.9：套餐 / 每日额度 —— 页面据此显示「PRO 无限」还是「今日还剩 N 次」
+    from entitlements import check as entitlement_check
+    verdict = entitlement_check("ai_tutor", uid)
     return render_template("ai_tutor.html", gam=overview(uid), profile=profile,
-                           ai=ai_status(), ai_mock=is_mock())
+                           ai=ai_status(), ai_mock=is_mock(), access=verdict)
 
 
 @main_bp.route("/speaking")
@@ -313,11 +316,15 @@ def speaking():
         items = listening_items(lang, limit=12)
     except Exception:  # pragma: no cover - 音频目录缺失时页面仍要可用
         items = []
+    # V5.9：页面要能说明「今天还能练几次」，否则用户点到底才发现被拒
+    from entitlements import check as entitlement_check
+    verdict = entitlement_check("speaking", current_user.id)
     return render_template("speaking.html",
                            speech=speech_status(),
                            practice_mode=is_practice_mode(),
                            listening=items,
-                           lang=lang)
+                           lang=lang,
+                           access=verdict)
 
 
 @main_bp.route("/healthz")
