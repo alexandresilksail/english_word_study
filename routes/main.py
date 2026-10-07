@@ -147,6 +147,10 @@ def dashboard():
     path_levels, path_current = level_progress(uid)
     from review_service import due_count_by_kind
     review_today = due_count_by_kind(uid)
+    # V5.6：统一掌握度 0-4 汇总（分布 / 弱项 / 今日到期总数）
+    from mastery_service import mastery_overview, review_today_count
+    mastery = mastery_overview(uid)
+    review_due_total = review_today_count(uid)
     from models import UserOnboarding
     onb = UserOnboarding.query.get(uid)
 
@@ -157,6 +161,7 @@ def dashboard():
                            recent_games=recent_games(uid, 3),
                            path_levels=path_levels, path_current=path_current,
                            review_today=review_today,
+                           mastery=mastery, review_due_total=review_due_total,
                            onboarding_done=bool(onb and onb.completed_at))
 
 
@@ -283,7 +288,36 @@ def ai_tutor():
         "focus_label_zh": focus_label[1],
         "focus_url": focus_url,
     }
-    return render_template("ai_tutor.html", gam=overview(uid), profile=profile)
+    # V5.7：AI 能力状态 —— 页面据此如实显示「本地规则模式」还是「已接模型」
+    from ai_tutor import is_mock, status as ai_status
+    return render_template("ai_tutor.html", gam=overview(uid), profile=profile,
+                           ai=ai_status(), ai_mock=is_mock())
+
+
+@main_bp.route("/speaking")
+@login_required
+def speaking():
+    """V5.8 口语 + 听力练习页。
+
+    口语：录音 →（可用时识别）→ 与参考句对比 → 词级纠错 → 评分 → 重练。
+    听力：复用站内既有 MP3，只列出**真能播放**的条目。
+
+    诚实原则由 speaking.score 保证：无评分引擎时 fluency / grammar 返回
+    ``None``（不是 0），页面显示「未评估」而不是编分数。
+    """
+    from speaking import is_practice_mode, listening_items, status as speech_status
+    lang = (request.args.get("lang") or "en").strip().lower()
+    if lang not in ("en", "zh", "yue"):
+        lang = "en"
+    try:
+        items = listening_items(lang, limit=12)
+    except Exception:  # pragma: no cover - 音频目录缺失时页面仍要可用
+        items = []
+    return render_template("speaking.html",
+                           speech=speech_status(),
+                           practice_mode=is_practice_mode(),
+                           listening=items,
+                           lang=lang)
 
 
 @main_bp.route("/healthz")

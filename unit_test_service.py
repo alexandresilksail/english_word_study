@@ -251,21 +251,36 @@ def grade(user_id: int, unit: Unit, answers: dict,
 
     score = 0
     mistakes = []
+    per_item: list[dict] = []          # V5.6：逐题掌握度明细
     for q in questions:
         raw = answers.get(str(q.id), answers.get(q.id))
         try:
             given_i = int(raw)
         except (TypeError, ValueError):
             given_i = -1
-        if given_i == q.answer_index:
-            score += 1
-            continue
+        ok = (given_i == q.answer_index)
+
         try:
             opts = json.loads(q.options or "[]")
         except (TypeError, ValueError):
             opts = []
         given_txt = opts[given_i]["en"] if 0 <= given_i < len(opts) else ""
         right_txt = opts[q.answer_index]["en"] if 0 <= q.answer_index < len(opts) else ""
+
+        # 单元测试是真实曝光：每题对应内容都进入统一掌握度。
+        # content_id 可能为空（题目不与具体条目绑定），跳过即可。
+        if getattr(q, "content_id", None):
+            per_item.append({
+                "content_id": q.content_id,
+                "correct": ok,
+                "kind": q.kind,
+                "given": given_txt,
+                "expected": right_txt,
+            })
+
+        if ok:
+            score += 1
+            continue
         mistakes.append({
             "question_id": q.id,
             "kind": q.kind,
@@ -315,6 +330,18 @@ def grade(user_id: int, unit: Unit, answers: dict,
                 nprog.status = "available"
 
     db.session.commit()
+
+    # ── V5.6：测验结果并入统一掌握度 0-4 ──────────────────────────────
+    # 放在判分之后、且整体包 try：掌握度是派生数据，写失败绝不能影响
+    # 已经算好的判分结果与解锁联动（用户不能因为次要写入失败而丢掉成绩）。
+    if per_item:
+        try:
+            from mastery_service import record_unit_test_results
+            record_unit_test_results(user_id, per_item, accuracy=accuracy)
+        except Exception as exc:  # pragma: no cover - 次要路径
+            db.session.rollback()
+            logger.warning("掌握度入账跳过（unit=%s）：%s", unit.id, exc)
+
     return attempt
 
 

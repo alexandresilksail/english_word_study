@@ -1,8 +1,42 @@
-# 英语单词学习 · Web SaaS 版
+# AI Multilingual Language Learning Platform · AI 多语种语言学习平台
 
-一个可以真正放到公网访问的英语单词学习网站：**多用户注册登录、每人独立学习数据、2000 词 A-Z 词库、离线英式真人发音、四种测试模式、收藏/错题本/学习进度、简易后台**。
+一个可以真正放到公网访问的多语种学习平台：**多用户注册登录、每人独立学习数据、2000 词 A-Z 词库、离线英式真人发音、结构化课程体系、统一掌握度与间隔重复、AI Tutor、口语练习、收藏/错题本/学习进度、简易后台**。
+
+语种：**English** + **Cantonese（粤语，繁体 + 粤拼）**
 
 服务器只需要装 **Docker + Docker Compose**，不需要装 Python / Nginx / Gunicorn——这些全部打包在镜像里。
+
+---
+
+## 零、V5 版本特性（V5.2 – V5.8）
+
+| 版本 | 能力 |
+|---|---|
+| **V5.2** | 遗留 2000 词审计 + `production_ready` 生产就绪判定（`synthetic-dev` 永不进生产） |
+| **V5.3** | English Master Lexicon 主词库引擎（去重 / CEFR 分级 / 许可证过滤） |
+| **V5.4** | 粤语课程（6 单元 × 7 类课时，繁体 + 粤拼，语种严格隔离） |
+| **V5.5** | 学习内容引擎：Learn → Practice → Quiz → Complete 四步流 |
+| **V5.6** | 统一掌握度 **Mastery 0-4** + 间隔重复（复习时刻单一真源） |
+| **V5.7** | **AI Tutor**：讲解 / 例句 / 对话 / 批改 / 翻译 / 练习 |
+| **V5.8** | **口语**（STT / TTS / 词级评分）+ **听力**（复用既有 2000 MP3）+ 套餐权限 |
+
+### 统一掌握度 0-4
+`New → Learning → Familiar → Strong → Mastered`，由三类证据综合判定：
+练习表现（正确率 / 连对 / 练习次数）+ 课时小测 + **单元测试（权威）**。
+`Mastered` 需要「练习到位 **且** 有测验佐证」，杜绝靠刷练习量刷出「已掌握」。
+
+### AI 与语音：默认 mock，且如实标注
+本项目遵循**诚实原则** —— 任何没有真实引擎支撑的能力都会明确标注，绝不冒充 AI：
+
+- 未配置 `AI_API_KEY` → AI Tutor 处于**本地规则模式**，页面与 API 均标注 `mock: true`
+- 未配置 `SPEECH_API_KEY` → 口语处于**练习模式**，无法评估的维度（流利度 / 语法）
+  返回 **`None` 而非 `0`**（0 会被误读成「很差」，而真相是「没测」）
+- 真实 provider 出错时**显式失败**，绝不悄悄退化成 mock 冒充成功
+
+> 全部 HTTP 走标准库 `urllib`，**不引入任何 SDK / 重型模型**，
+> 技术栈仍是 Flask / SQLAlchemy / SQLite / Docker，2vCPU-2GB 可承载。
+
+📄 详见 [`docs/V5.2-V5.8_ARCHITECTURE.md`](docs/V5.2-V5.8_ARCHITECTURE.md)。
 
 ---
 

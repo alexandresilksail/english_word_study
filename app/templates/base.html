@@ -55,6 +55,8 @@
            href="{{ url_for('podcast.index') }}">{{ icon('headphones') }}{{ bi('nav.podcast') }}</a>
         <a class="{{ 'active' if request.endpoint and request.endpoint == 'main.ai_tutor' }}"
            href="{{ url_for('main.ai_tutor') }}">{{ icon('bot') }}{{ bi('nav.ai_tutor') }}</a>
+        <a class="{{ 'active' if request.endpoint and request.endpoint == 'main.speaking' }}"
+           href="{{ url_for('main.speaking') }}">{{ icon('mic') }}<span class="bi"><span class="bi-en">Speaking</span><span class="bi-zh">口语听力</span></span></a>
         <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('words.progress') }}"
            href="{{ url_for('words.progress') }}">{{ icon('chart') }}{{ bi('nav.progress') }}</a>
 

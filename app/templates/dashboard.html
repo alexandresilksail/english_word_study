@@ -70,7 +70,55 @@
     <span><b>{{ review_today.sentence }}</b> Sentences</span>
     <span><b>{{ review_today.grammar }}</b> Grammar</span>
   </div>
+  <div class="review-counts" style="margin-top:2px">
+    <span class="muted small">{{ review_due_total }} due now</span>
+  </div>
   <a class="btn btn-primary" href="{{ url_for('main.review') }}">Start Review →</a>
+</section>
+
+{# ============================================================ V5.6 Mastery 0-4 + Weak Areas #}
+<section style="margin-top:20px">
+  <div class="sec-head">
+    <div>
+      <h2 class="sec-title">{{ icon('chart') }} Mastery</h2>
+      <p class="sec-sub bi">
+        <span class="bi-en">Where everything sits on the 0–4 mastery scale</span>
+        <span class="bi-zh">统一掌握度 0–4 分布</span>
+      </p>
+    </div>
+    <span class="sec-more">{{ mastery.tracked }} tracked · {{ mastery.coverage_pct }}%</span>
+  </div>
+
+  <div class="mastery-grid">
+    {% set dist = mastery.distribution %}
+    {% for lv in [0,1,2,3,4] %}
+    <div class="mastery-item lv{{ lv }}">
+      <span class="mastery-num">{{ dist[lv] }}</span>
+      <span class="mastery-name">
+        <span class="bi">
+          <span class="bi-en">{{ ['New','Learning','Familiar','Strong','Mastered'][lv] }}</span>
+          <span class="bi-zh">{{ ['未学','学习中','熟悉','扎实','已掌握'][lv] }}</span>
+        </span>
+      </span>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if mastery.weak_areas %}
+  <div class="sec-head" style="margin-top:16px">
+    <h3 class="sec-title" style="font-size:15px">{{ icon('triangle-alert') }} Weak Areas</h3>
+  </div>
+  <ul class="weak-list">
+    {% for w in mastery.weak_areas %}
+    <li>
+      <span class="weak-surface">{{ w.surface }}</span>
+      <span class="tag">{{ w.kind }}</span>
+      <span class="muted small">{{ w.level_label }} · {{ w.wrong_count }}× wrong</span>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('main.review') }}">Practice</a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
 </section>
 
 {# ============================================================ Continue Learning #}

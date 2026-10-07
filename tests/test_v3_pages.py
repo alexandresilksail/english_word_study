@@ -99,7 +99,9 @@ def main():
             "/games/speed_quiz": ["限时抢答", "怎么玩"],
             "/games/listening_challenge": ["听音挑战", "怎么玩"],
             "/games/word_builder": ["字母拼词", "怎么玩"],
-            "/ai-tutor": ["Coming soon", "规划中", "不假装有 AI"],
+            # V5.7 起 AI Tutor 不再是规划页：六项能力由本地规则真实提供，
+            # 页面必须出现「本地规则模式」标注 + 交互面板，并保留诚实说明文案。
+            "/ai-tutor": ["本地规则模式", "并非大模型回答", "tutor-panel"],
             "/podcast/": ["播客", "Podcast", "文稿"],
         }
         for path, needles in pages.items():
@@ -121,12 +123,17 @@ def main():
         check("dashboard 渲染出游戏/技能导航", ("游戏" in nav_html or "Games" in nav_html),
               "导航无游戏入口")
 
-        print("\n[3] AI Tutor 诚实：有规划，不假装有 AI")
+        print("\n[3] AI Tutor 诚实：不假装有 AI")
         ai = c.get("/ai-tutor").get_data(as_text=True)
         # 不应出现「真实可用」的聊天输入框（action 指向真实 AI 接口）
         check("AI Tutor 不含伪装可用的聊天表单",
               ("/api/ai/" not in ai) and ("ai-chat" not in ai) and ("gpt" not in ai.lower()),
               "疑似暴露了真实 AI 接口")
+        # V5.7：未配置 AI_API_KEY 时必须如实标注「本地规则模式」，
+        # 否则用户会误以为回答来自大模型 —— 这是本项目的硬性诚实约束。
+        check("AI Tutor 标注了本地规则模式",
+              ("本地规则模式" in ai) or ("Local rule mode" in ai),
+              "缺少本地规则模式标注，可能误导用户")
 
         print("\n[4] 匿名访问控制")
         anon = C(app)

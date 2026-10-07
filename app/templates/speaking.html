@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}{{ pick('Speaking & Listening', '口语 · 听力') }}{% endblock %}
+{% block content %}
+
+<div class="v3-hero hero-dark">
+  <div class="v3-hero-deco">
+    <span class="v3-deco-orb">{{ icon('mic') }}</span>
+    <span class="v3-deco-orb">{{ icon('headphones') }}</span>
+    <span class="v3-deco-orb">{{ icon('audio-lines') }}</span>
+  </div>
+  <h1>{{ pick('Speaking & Listening', '口语 · 听力') }}</h1>
+  <p>{{ pick('Record, compare with the reference sentence, and fix it word by word.',
+              '录下你的发音，与参考句逐词对比，定位并改进。') }}</p>
+</div>
+
+{# ============================================================ 练习模式提示 #}
+{% if practice_mode %}
+<div class="spk-note">
+  {{ icon('info') }}
+  <div>
+    <b>{{ pick('Practice Mode', '练习模式') }}</b>
+    <div class="muted small">{{ pick(
+      'No scoring engine or speech-to-text is connected yet. Accuracy and vocabulary are computed by real word alignment; fluency and grammar are shown as “not assessed” rather than guessed numbers. You can type what you said instead of relying on transcription.',
+      '尚未接入评分与语音识别引擎。准确率与词汇覆盖由词对齐真实算出；流利度与语法显示为「未评估」而非编造的分数。可直接用键盘输入你说的话，不必依赖识别。') }}</div>
+  </div>
+</div>
+{% endif %}
+
+{# ============================================================ 口语练习 #}
+<section style="margin-top:22px">
+  <div class="sec-head">
+    <h2 class="sec-title">{{ icon('mic') }} {{ pick('Speaking drill', '口语练习') }}</h2>
+  </div>
+
+  <div class="spk-card">
+    <label class="spk-label">{{ pick('Reference sentence', '参考句') }}</label>
+    <div class="spk-ref" id="ref-text">Good morning, everyone!</div>
+    <div class="row" style="gap:8px;margin-top:8px;flex-wrap:wrap">
+      <button type="button" class="btn btn-outline btn-sm" id="btn-say">
+        {{ icon('speaker') }} {{ pick('Listen', '听原句') }}
+      </button>
+      <button type="button" class="btn btn-outline btn-sm" id="btn-rec">
+        {{ icon('mic') }} {{ pick('Record', '录音') }}
+      </button>
+      <button type="button" class="btn btn-outline btn-sm" id="btn-stop" disabled>
+        {{ icon('square') }} {{ pick('Stop', '停止') }}
+      </button>
+      <span id="rec-state" class="muted small"></span>
+    </div>
+
+    <label class="spk-label" style="margin-top:14px">
+      {{ pick('What you said', '你说的话') }}
+      <span class="muted">{{ pick('(type it if there is no speech recognition)', '未接入识别时可手动输入') }}</span>
+    </label>
+    <textarea id="spk-input" rows="2" placeholder="Good morning everyone"></textarea>
+
+    <div class="spk-actions">
+      <button type="button" class="btn btn-primary" id="btn-score">
+        {{ icon('check-circle') }} {{ pick('Score it', '评分') }}
+      </button>
+      <button type="button" class="btn btn-secondary" id="btn-retry">
+        {{ icon('rotate-ccw') }} {{ pick('Retry', '重练') }}
+      </button>
+    </div>
+
+    <div id="spk-result" class="spk-result" hidden></div>
+  </div>
+</section>
+
+{# ============================================================ 听力练习（复用既有 MP3） #}
+<section style="margin-top:26px">
+  <div class="sec-head">
+    <div>
+      <h2 class="sec-title">{{ icon('headphones') }} {{ pick('Listening', '听力练习') }}</h2>
+      <p class="sec-sub">{{ pick('Built from the audio files already in this site.',
+                                  '素材来自站内已有音频文件。') }}</p>
+    </div>
+  </div>
+
+  {% if listening %}
+  <div class="listen-grid">
+    {% for item in listening %}
+    <div class="listen-card">
+      <audio controls preload="none" src="{{ item.audio_url }}"></audio>
+      <div class="listen-surface">{{ item.surface }}</div>
+      <div class="listen-meaning muted small" id="lm-{{ item.content_id }}" hidden>
+        {{ item.meaning_en }}
+      </div>
+      <button type="button" class="btn btn-ghost btn-sm"
+              onclick="document.getElementById('lm-{{ item.content_id }}').hidden=false; this.remove();">
+        {{ pick('Reveal', '显示答案') }}
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-card">
+    <p class="muted">{{ pick('No playable audio found for this language yet.',
+                             '该语种暂无可播放的音频素材。') }}</p>
+  </div>
+  {% endif %}
+</section>
+
+<script>
+(function () {
+  var refEl = document.getElementById('ref-text');
+  var input = document.getElementById('spk-input');
+  var out = document.getElementById('spk-result');
+  var recBtn = document.getElementById('btn-rec');
+  var stopBtn = document.getElementById('btn-stop');
+  var state = document.getElementById('rec-state');
+  var recorder = null, chunks = [];
+
+  function post(url, payload) {
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify(payload || {})
+    }).then(function (r) { return r.json(); });
+  }
+
+  // ---- 听原句：优先服务端 TTS，没有就用浏览器内置语音合成 ----
+  document.getElementById('btn-say').addEventListener('click', function () {
+    var text = refEl.textContent.trim();
+    post('/api/speaking/synthesize', { text: text, lang: '{{ lang }}' }).then(function (res) {
+      var d = (res && res.data) || {};
+      if (d.available && d.audio_base64) {
+        var a = new Audio('data:audio/mp3;base64,' + d.audio_base64);
+        a.play();
+      } else {
+        // 浏览器内置合成是真实 TTS，不占服务器资源
+        var u = new SpeechSynthesisUtterance(text);
+        u.lang = ('{{ lang }}' === 'en') ? 'en-US' : 'zh-CN';
+        window.speechSynthesis.speak(u);
+      }
+    });
+  });
+
+  // ---- 录音 ----
+  if (navigator.mediaDevices && window.MediaRecorder) {
+    recBtn.addEventListener('click', function () {
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+        recorder = new MediaRecorder(stream);
+        chunks = [];
+        recorder.ondataavailable = function (e) { chunks.push(e.data); };
+        recorder.onstop = function () {
+          var blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
+          var fd = new FormData();
+          fd.append('audio', blob, 'speech.webm');
+          fd.append('lang', '{{ lang }}');
+          state.textContent = '…';
+          fetch('/api/speaking/transcribe', {
+            method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd
+          }).then(function (r) { return r.json(); }).then(function (res) {
+            var d = (res && res.data) || {};
+            if (d.available && d.text) {
+              input.value = d.text;
+              state.textContent = '✓';
+            } else {
+              // 没有识别引擎：明确提示用户手动输入，不假装成功了
+              input.focus();
+              state.textContent = d.note || '请输入你说的话';
+            }
+          }).catch(function () { state.textContent = '网络错误'; });
+        };
+        recorder.start();
+        recBtn.disabled = true; stopBtn.disabled = false;
+        state.textContent = '● ' + '{{ pick("recording", "录制中") }}';
+      }).catch(function () { state.textContent = '无法访问麦克风'; });
+    });
+    stopBtn.addEventListener('click', function () {
+      if (recorder && recorder.state !== 'inactive') recorder.stop();
+      recBtn.disabled = false; stopBtn.disabled = true;
+    });
+  } else {
+    recBtn.disabled = true;
+    state.textContent = '{{ pick("Recording not supported in this browser", "当前浏览器不支持录音") }}';
+  }
+
+  // ---- 评分 ----
+  document.getElementById('btn-score').addEventListener('click', function () {
+    var text = (input.value || '').trim();
+    if (!text) { out.hidden = false; out.innerHTML = '<div class="spk-err">请输入你说的话</div>'; return; }
+    out.hidden = false;
+    out.innerHTML = '…';
+    post('/api/speaking/score', {
+      text: text, reference: refEl.textContent.trim(), lang: '{{ lang }}'
+    }).then(function (res) {
+      if (!res || res.ok === false) {
+        out.innerHTML = '<div class="spk-err">' + (((res || {}).error || {}).message || '失败') + '</div>';
+        return;
+      }
+      render(res.data);
+    }).catch(function () { out.innerHTML = '<div class="spk-err">网络错误</div>'; });
+  });
+
+  document.getElementById('btn-retry').addEventListener('click', function () {
+    input.value = ''; out.hidden = true; state.textContent = ''; input.focus();
+  });
+
+  function dimRow(name, value) {
+    if (value === null || value === undefined) {
+      return '<div class="spk-dim na"><span>' + name +
+             '</span><b title="未评估">—</b></div>';
+    }
+    return '<div class="spk-dim"><span>' + name + '</span><b>' + value + '</b></div>';
+  }
+
+  function render(d) {
+    var html = '<div class="spk-head">';
+    html += '<div><div class="spk-big">' + d.overall + '</div><div class="spk-cap">Overall</div></div>';
+    html += '<div class="spk-dims">';
+    html += dimRow('Accuracy', d.accuracy);
+    html += dimRow('Fluency', d.fluency);
+    html += dimRow('Grammar', d.grammar);
+    html += dimRow('Vocabulary', d.vocabulary);
+    html += '</div></div>';
+
+    // 逐词对齐
+    html += '<div class="spk-align">';
+    (d.alignment || []).forEach(function (r) {
+      if (r.status === 'extra') return;
+      html += '<span class="spk-w ' + r.status + '">' + (r.given || '…') +
+              '<i>' + r.expected + '</i></span>';
+    });
+    html += '</div>';
+
+    html += '<ul class="spk-fb">';
+    (d.feedback || []).forEach(function (f) { html += '<li>' + f + '</li>'; });
+    html += '</ul>';
+
+    if (d.note) html += '<p class="muted small">' + d.note + '</p>';
+    out.innerHTML = html;
+  }
+})();
+</script>
+
+{% endblock %}
