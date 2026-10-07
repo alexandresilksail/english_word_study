@@ -251,40 +251,220 @@ def _seed_english():
 
 
 #: 粤语：Chinese(字面) / Jyutping / 中文义 / English explanation / 例句
-YUE_SEED = [
-    ("问候", "Greetings", "🇭🇰", [
-        ("你好", "néih hóu", "你好", "Neih hou!", "Hello!"),
-        ("早晨", "zóu sàhn", "早上好", "Zou sahn!", "Good morning!"),
-        ("唔该", "m̀h gōi", "谢谢/麻烦你", "Mh goi!", "Thanks!"),
-        ("再见", "zoi gin", "再见", "Zoi gin!", "Goodbye!"),
-    ]),
-    ("数字", "Numbers", "🔢", [
-        ("一", "yāt", "一", "Yat go", "one (item)"),
-        ("二", "yih", "二", "Yih go", "two (items)"),
-        ("三", "sāam", "三", "Saam go", "three (items)"),
-        ("五", "ńgh", "五", "Ngh go", "five (items)"),
-    ]),
-    ("时间", "Time", "🕐", [
-        ("而家几点", "yìh gā géi dím", "现在几点", "Yih ga gei dim?", "What time is it now?"),
-        ("听日", "tīng yaht", "明天", "Ting yaht", "tomorrow"),
-        ("今日", "gām yaht", "今天", "Gam yaht", "today"),
-    ]),
-    ("家庭", "Family", "👨‍👩‍👧", [
-        ("爸爸", "bàh-bà", "爸爸", "Bah-ba hou!", "Hi, Dad!"),
-        ("妈妈", "màh-mà", "妈妈", "Mah-ma hou!", "Hi, Mum!"),
-        ("我阿妹", "ngóh ā mui", "我妹妹", "Ngo aa mui", "my younger sister"),
-    ]),
-    ("日常", "Daily Life", "🍜", [
-        ("食饭未", "sihk faahn meih", "吃饭了吗", "Sihk faahn meih?", "Have you eaten yet?"),
-        ("饮茶", "yám chàh", "喝茶/早茶", "Yam cha", "go for yum cha"),
-        ("行街", "hàhng gaai", "逛街", "Haang gaai", "go shopping"),
-    ]),
-    ("基础对话", "Basic Conversation", "💬", [
-        ("你系边个", "néih haih bīn-go", "你是谁", "Neih haih bin-go?", "Who are you?"),
-        ("我系学生", "ngóh haih hohk sāang", "我是学生", "Ngo haih hohk saang.", "I am a student."),
-        ("唔识听", "m̀h sīk téng", "听不懂", "Mh sik teng.", "I can't follow you."),
-    ]),
+#: 粤语课程 6 大单元（规格 §15：Greetings/Numbers/Time/Family/Daily Life/Conversation）
+YUE_UNITS = [
+    ("问候", "Greetings", "🇭🇰"),
+    ("数字", "Numbers", "🔢"),
+    ("时间", "Time", "🕐"),
+    ("家庭", "Family", "👨‍👩‍👧"),
+    ("日常", "Daily Life", "🍜"),
+    ("基础对话", "Basic Conversation", "💬"),
 ]
+
+#: 每单元 7 类课时，顺序即学习流（规格 §15 / V5.5）：
+#: Vocabulary → Phrase → Sentence → Listening → Practice → Quiz → Review
+YUE_LESSON_PLAN = [
+    ("vocabulary", "📚 词汇", "📚 Vocabulary"),
+    ("phrase", "💬 词组", "💬 Phrases"),
+    ("sentence", "✏️ 句子", "✏️ Sentences"),
+    ("listening", "🎧 听力", "🎧 Listening"),
+    ("practice", "🗣️ 练习", "🗣️ Practice"),
+    ("quiz", "📝 小测", "📝 Quiz"),
+    ("review", "🔁 复习", "🔁 Review"),
+]
+
+#: 每条目：(surface 繁体, jyutping, 中文义, English explanation, 例句粤, 例句英)
+YUE_VOCAB = {
+    1: [
+        ("你好", "nei5 hou2", "你好", "Hello", "你好！", "Neih hou!"),
+        ("早晨", "zou2 san4", "早上好", "Good morning", "早晨！", "Zou san!"),
+        ("唔該", "m4 goi1", "谢谢；麻烦你", "Thanks; excuse me", "唔該你。", "Mh goi nei."),
+        ("多謝", "do1 ze6", "多谢", "Thank you", "多謝晒。", "Do ze saai."),
+        ("再見", "zoi3 gin3", "再见", "Goodbye", "再見啦。", "Zoi gin laa."),
+    ],
+    2: [
+        ("一", "jat1", "一", "one", "一。", "Jat go."),
+        ("二", "ji6", "二", "two", "二。", "Ji go."),
+        ("三", "saam1", "三", "three", "三。", "Saam go."),
+        ("四", "sei3", "四", "four", "四。", "Sei go."),
+        ("五", "ng5", "五", "five", "五。", "Ng go."),
+        ("十", "sap6", "十", "ten", "十。", "Sap go."),
+    ],
+    3: [
+        ("今日", "gam1 jat6", "今天", "today", "今日。", "Gam jat."),
+        ("聽日", "ting1 jat6", "明天", "tomorrow", "聽日。", "Ting jat."),
+        ("昨日", "zok6 jat6", "昨天", "yesterday", "昨日。", "Zok jat."),
+        ("朝早", "ziu2 zou2", "早上", "morning", "朝早。", "Ziu zou."),
+        ("夜晚", "je6 maan5", "晚上", "night", "夜晚。", "Je maan."),
+    ],
+    4: [
+        ("爸爸", "baa1 baa1", "爸爸", "father", "爸爸。", "Baa baa."),
+        ("媽媽", "maa1 maa1", "妈妈", "mother", "媽媽。", "Maa maa."),
+        ("哥哥", "go1 go1", "哥哥", "older brother", "哥哥。", "Go go."),
+        ("妹妹", "mui6 mui6", "妹妹", "younger sister", "妹妹。", "Mui mui."),
+        ("屋企", "uk1 kei2", "家", "home", "屋企。", "Uk kei."),
+    ],
+    5: [
+        ("食飯", "sik6 faan6", "吃饭", "eat (a meal)", "食飯。", "Sihk faan."),
+        ("飲茶", "jam2 caa4", "喝茶", "drink tea", "飲茶。", "Jam caa."),
+        ("瞓覺", "fan3 gaau3", "睡觉", "sleep", "瞓覺。", "Fan gaau."),
+        ("返工", "faan1 gung1", "上班", "go to work", "返工。", "Faan gung."),
+        ("買嘢", "maai5 je5", "买东西", "go shopping", "買嘢。", "Maai je."),
+    ],
+    6: [
+        ("係", "hai6", "是", "yes / to be", "係。", "Hai."),
+        ("唔係", "m4 hai6", "不是", "no / not", "唔係。", "Mh hai."),
+        ("邊個", "bin1 go3", "谁", "who", "邊個？", "Bin go?"),
+        ("點解", "dim2 gaai2", "为什么", "why", "點解？", "Dim gaai?"),
+        ("唔該借借", "m4 goi1 ze3 ze3", "借过", "excuse me (to pass)", "唔該借借。", "Mh goi ze ze."),
+    ],
+}
+
+YUE_PHRASE = {
+    1: [
+        ("你好嗎", "nei5 hou2 maa3", "你好吗", "How are you", "你好嗎？", "Neih hou maa?"),
+        ("噉好呀", "gam2 hou2 aa3", "那很好", "That's good", "噉好呀。", "Gam hou aa."),
+        ("唔該晒", "m4 goi1 saai3", "非常感谢", "Thanks a lot", "唔該晒你。", "Mh goi saai nei."),
+    ],
+    2: [
+        ("幾多錢", "gei2 do1 cin2", "多少钱", "How much", "幾多錢？", "Gei do cin?"),
+        ("一個", "jat1 go3", "一个", "one (classifier)", "一個。", "Jat go."),
+        ("兩個", "loeng5 go3", "两个", "two (classifier)", "兩個。", "Loeng go."),
+    ],
+    3: [
+        ("而家幾點", "ji4 gaa1 gei2 dim2", "现在几点", "What time is it", "而家幾點？", "Yi gaa gei dim?"),
+        ("食咗飯未", "sik6 zo2 faan6 mei6", "吃饭了吗", "Have you eaten", "食咗飯未？", "Sihk zo faan mei?"),
+        ("幾時見", "gei2 si4 gin3", "什么时候见", "See you when", "幾時見？", "Gei si gin?"),
+    ],
+    4: [
+        ("屋企人", "uk1 kei2 jan4", "家人", "family members", "屋企人。", "Uk kei jan."),
+        ("我屋企", "ngo5 uk1 kei2", "我家", "my home", "我屋企。", "Ngo uk kei."),
+        ("幾多兄弟姐妹", "gei2 do1 hi1 dai6 zi2 mui6", "多少兄弟姐妹", "how many siblings",
+         "幾多兄弟姐妹？", "Gei do hi dai zi mui?"),
+    ],
+    5: [
+        ("去邊度", "heoi3 bin1 dou6", "去哪里", "where are you going", "去邊度？", "Heoi bin dou?"),
+        ("做緊咩", "zou6 gan2 me1", "在做什么", "what are you doing", "做緊咩？", "Zou gan me?"),
+        ("休息一下", "jau1 sik1 jat1 haa5", "休息一下", "take a rest", "休息一下。", "Jau sik jat haa."),
+    ],
+    6: [
+        ("你係邊度人", "nei5 hai6 bin1 dou6 jan4", "你是哪里人", "where are you from",
+         "你係邊度人？", "Nei hai bin dou jan?"),
+        ("我唔明", "ngo5 m4 ming4", "我不懂", "I don't understand", "我唔明。", "Ngo mh ming."),
+        ("可唔可以", "ho2 m4 ho2 ji5", "可不可以", "may I", "可唔可以？", "Ho m ho yi?"),
+    ],
+}
+
+YUE_SENTENCE = {
+    1: [
+        ("我係Alexander", "ngo5 hai6 Alexander", "我是 Alexander", "I am Alexander",
+         "我係 Alexander。", "Ngo hai6 Alexander."),
+        ("你叫咩名", "nei5 giu3 me1 meng2", "你叫什么名字", "What is your name",
+         "你叫咩名？", "Nei giu me meng?"),
+        ("好高興識你", "hou2 gou1 hing3 sik1 nei5", "很高兴认识你", "Nice to meet you",
+         "好高興識你。", "Hou gou hing sik nei."),
+    ],
+    2: [
+        ("我有三個蘋果", "ngo5 jau5 saam1 go3 ping4 gwo2", "我有三个苹果", "I have three apples",
+         "我有三個蘋果。", "Ngo jau saam go ping gwo."),
+        ("呢度有幾多人", "ne1 dou6 jau5 gei2 do1 jan4", "这里有多少人", "How many people are here",
+         "呢度有幾多人？", "Ne dou jau gei do jan?"),
+        ("我要五本書", "ngo5 jiu3 ng5 bun2 syu1", "我要五本书", "I want five books",
+         "我要五本書。", "Ngo jiu ng bun syu."),
+    ],
+    3: [
+        ("我朝早返工", "ngo5 ziu2 zou2 faan1 gung1", "我早上上班", "I go to work in the morning",
+         "我朝早返工。", "Ngo ziu zou faan gung."),
+        ("佢聽日嚟", "keoi5 ting1 jat6 lai4", "他明天来", "He is coming tomorrow",
+         "佢聽日嚟。", "Keoi ting jat lai."),
+        ("我今日好忙", "ngo5 gam1 jat6 hou2 mong4", "我今天很忙", "I am busy today",
+         "我今日好忙。", "Ngo gam jat hou mong."),
+    ],
+    4: [
+        ("我爸爸係老師", "ngo5 baa1 baa1 hai6 lou5 si1", "我爸爸是老师", "My father is a teacher",
+         "我爸爸係老師。", "Ngo baa baa hai lou si."),
+        ("佢有兩個妹妹", "keoi5 jau5 loeng5 go3 mui6 mui6", "她有两个妹妹", "She has two younger sisters",
+         "佢有兩個妹妹。", "Keoi jau loeng go mui mui."),
+        ("我愛我屋企", "ngo5 oi3 ngo5 uk1 kei2", "我爱我的家", "I love my family",
+         "我愛我屋企。", "Ngo oi ngo uk kei."),
+    ],
+    5: [
+        ("我每日飲茶", "ngo5 mui5 jat6 jam2 caa4", "我每天喝茶", "I drink tea every day",
+         "我每日飲茶。", "Ngo mui jat jam caa."),
+        ("佢夜晚瞓覺早", "keoi5 je6 maan5 fan3 gaau3 zou2", "他晚上早睡", "He sleeps early at night",
+         "佢夜晚瞓覺早。", "Keoi je maan fan gaau zou."),
+        ("我哋去買嘢", "ngo5 dei6 heoi3 maai5 je5", "我们去买东西", "We go shopping",
+         "我哋去買嘢。", "Ngo dei heoi maai je."),
+    ],
+    6: [
+        ("我係學生", "ngo5 hai6 hok6 saang1", "我是学生", "I am a student",
+         "我係學生。", "Ngo hai hok saang."),
+        ("你講乜嘢", "nei5 gong2 mat1 je5", "你说什么", "what are you saying",
+         "你講乜嘢？", "Nei gong mat je?"),
+        ("唔該幫我", "m4 goi1 bong1 ngo5", "请帮我", "please help me",
+         "唔該幫我。", "Mh goi bong ngo."),
+    ],
+}
+
+
+def _yue_unit_items(unit_no: int):
+    """返回某单元的 (vocab, phrase, sentence) 三元组。"""
+    return (YUE_VOCAB.get(unit_no, []), YUE_PHRASE.get(unit_no, []),
+            YUE_SENTENCE.get(unit_no, []))
+
+
+def _add_cantonese_item(lesson_id, kind, item, topic="cantonese", audio=""):
+    """把一条 (surface, jyutping, 中文义, English, 例句粤, 例句英) 写入 ContentItem。
+
+    粤语数据特征（规格 §15）：
+    - surface = 繁体中文词面
+    - phonetic = Jyutping（粤拼）
+    - meaning_cn / meaning_yue = 中文义（繁体）
+    - meaning_en = 英文解释（保证 English 版面零中文依赖）
+    - example_yue / example_en = 例句（粤 / 英）
+    - audio：粤语目前无本地录音资产，留空，由 V5.8 的 TTS/STT 适配层在运行时提供
+    """
+    surface, jp, cn, en, ex_yue, ex_en = item
+    return ContentItem(
+        lesson_id=lesson_id, kind=kind, surface=surface, phonetic=jp,
+        meaning_cn=cn, meaning_yue=cn, meaning_en=en,
+        example_yue=ex_yue, example_en=ex_en, topic=topic, audio=audio,
+    )
+
+
+def _fill_cantonese_lesson(lesson: Lesson, vocab, phrase, sentence) -> int:
+    """给单个粤语课时按 kind 填入内容（幂等：调用方负责跳过已有内容的课时）。"""
+    kind = lesson.kind
+    items, added = [], 0
+    if kind == "vocabulary":
+        items = vocab
+    elif kind == "phrase":
+        items = phrase
+    elif kind == "sentence":
+        items = sentence
+    elif kind == "listening":
+        items = sentence
+    elif kind == "practice":
+        items = phrase + sentence
+    elif kind == "quiz":
+        for surface, jp, cn, en, ex_yue, ex_en in vocab + phrase + sentence:
+            db.session.add(ContentItem(
+                lesson_id=lesson.id, kind="quiz",
+                surface=f"Choose the Cantonese for: {en or cn}",
+                phonetic=jp, meaning_cn=surface,
+                meaning_en=f"The Cantonese for “{en or cn}” is “{surface}”.",
+                example_yue=ex_yue, example_en=f"{ex_yue} — {ex_en}", topic="cantonese"))
+            added += 1
+        return added
+    elif kind == "review":
+        items = vocab + phrase
+    else:
+        return 0
+
+    for it in items:
+        db.session.add(_add_cantonese_item(lesson.id, kind, it))
+        added += 1
+    return added
 
 
 def _seed_cantonese():
@@ -295,37 +475,64 @@ def _seed_cantonese():
                     description="Cantonese with Jyutping · 粤语拼音起步", color="rose", sort=1)
     db.session.add(course); db.session.flush()
 
-    for u_no, (u_zh, u_en, emoji, items) in enumerate(YUE_SEED, start=1):
+    for u_no, (u_zh, u_en, emoji) in enumerate(YUE_UNITS, start=1):
         unit = Unit(course_id=course.id, no=u_no, title_zh=u_zh, title_en=u_en, emoji=emoji)
         db.session.add(unit); db.session.flush()
-
-        # 词汇：Chinese + Jyutping + Chinese gloss + **English explanation** + Example
-        v = Lesson(unit_id=unit.id, no=1, kind="vocabulary",
-                   title_zh="📚 词汇", title_en="📚 Vocabulary")
-        s = Lesson(unit_id=unit.id, no=2, kind="sentence",
-                   title_zh="✏️ 句子", title_en="✏️ Sentences")
-        q = Lesson(unit_id=unit.id, no=3, kind="quiz",
-                   title_zh="📝 小测", title_en="📝 Quiz")
-        for lesson in (v, s, q):
-            db.session.add(lesson)
-        db.session.flush()
-
-        for surface, jp, cn, ex_yue, ex_en in items:
-            pack = lookup("yue", "vocabulary", surface) or {}
-            meaning_en = pack.get("meaning_en", "")
-            phonetic = pack.get("phonetic", jp)
-            for lesson in (v, s):
-                _add(lesson.id, lesson.kind, surface, "cantonese",
-                     phonetic=phonetic, meaning_cn=cn, meaning_en=meaning_en,
-                     example_en=ex_en, example_yue=ex_yue or ex_yue)
-
-            # 粤语单元小测：给题干（英文）+ 答案（粤语），保证 English 版可用
-            _add(q.id, "quiz", f"Choose the Cantonese for: {meaning_en or cn}",
-                 "cantonese", phonetic=phonetic, meaning_cn=surface,
-                 meaning_en=f"The Cantonese word for “{meaning_en or cn}” is “{surface}”.",
-                 example_en=f"{ex_yue} — {ex_en}", example_yue=ex_yue)
+        vocab, phrase, sentence = _yue_unit_items(u_no)
+        for l_no, (kind, l_zh, l_en) in enumerate(YUE_LESSON_PLAN, start=1):
+            lesson = Lesson(unit_id=unit.id, no=l_no, kind=kind,
+                            title_zh=l_zh, title_en=l_en)
+            db.session.add(lesson); db.session.flush()
+            _fill_cantonese_lesson(lesson, vocab, phrase, sentence)
     db.session.commit()
-    logger.info("Cantonese course seeded")
+    logger.info("Cantonese course seeded (7 lessons/unit)")
+
+
+def _upgrade_cantonese():
+    """对已存在的粤语课程做**增量**升级（绝不删除既有课时/内容，避免误伤用户复习计划）。
+
+    - 补齐缺失的课时类型（phrase/listening/practice/review），重排 no 至学习流顺序；
+    - 仅给「尚无内容」的课时补内容（已有内容的 vocabulary/sentence/quiz 原样保留）。
+    """
+    course = Course.query.filter_by(language_code="yue").first()
+    if not course:
+        return
+    target_no = {kind: i + 1 for i, (kind, _, _) in enumerate(YUE_LESSON_PLAN)}
+    have_kinds = {l.kind for l in Lesson.query.join(Unit).filter(Unit.course_id == course.id).all()}
+    need_kinds = [k for k in target_no if k not in have_kinds]
+    if not need_kinds:
+        return
+
+    units = Unit.query.filter_by(course_id=course.id).order_by(Unit.no).all()
+    for unit in units:
+        lessons = {l.kind: l for l in Lesson.query.filter_by(unit_id=unit.id).all()}
+        vocab, phrase, sentence = _yue_unit_items(unit.no)
+
+        # 1) 现有课时先挪到 +100 的临时编号，释放 1..7 以免唯一约束冲突
+        for les in lessons.values():
+            les.no = (target_no.get(les.kind) or les.no) + 100
+        db.session.commit()
+
+        # 2) 创建缺失课时（占用目标编号 1..7）
+        for kind in need_kinds:
+            _, l_zh, l_en = next(p for p in YUE_LESSON_PLAN if p[0] == kind)
+            les = Lesson(unit_id=unit.id, no=target_no[kind], kind=kind,
+                         title_zh=l_zh, title_en=l_en)
+            db.session.add(les); db.session.flush()
+            lessons[kind] = les
+
+        # 3) 现有课时落回目标编号
+        for les in lessons.values():
+            les.no = target_no[les.kind]
+        db.session.commit()
+
+        # 4) 仅给尚无内容的课时补内容
+        for les in lessons.values():
+            if ContentItem.query.filter_by(lesson_id=les.id).count():
+                continue
+            _fill_cantonese_lesson(les, vocab, phrase, sentence)
+            db.session.commit()
+    logger.info("Cantonese course upgraded: added lesson kinds %s", need_kinds)
 
 
 def _fill_lesson(lesson: Lesson, lang_code: str, topic: str,
@@ -336,23 +543,9 @@ def _fill_lesson(lesson: Lesson, lang_code: str, topic: str,
     yue_items = yue_items or []
 
     if lang_code == "yue":
-        added = 0
-        for surface, jp, cn, ex_yue, ex_en in yue_items:
-            pack = lookup("yue", kind, surface) or {}
-            meaning_en = pack.get("meaning_en", "")
-            phonetic = pack.get("phonetic", jp)
-            if kind == "quiz":
-                _add(lesson.id, "quiz",
-                     f"Choose the Cantonese for: {meaning_en or cn}", topic,
-                     phonetic=phonetic, meaning_cn=surface,
-                     meaning_en=f"The Cantonese word for “{meaning_en or cn}” is “{surface}”.",
-                     example_en=f"{ex_yue} — {ex_en}")
-            else:
-                _add(lesson.id, kind, surface, topic, phonetic=phonetic,
-                     meaning_cn=cn, meaning_en=meaning_en,
-                     example_en=ex_en, example_yue=ex_yue)
-            added += 1
-        return added
+        # 委托给粤语专用填充逻辑（按 7 类课时生成 jyutping/繁体/英文/例句）
+        vocab, phrase, sentence = _yue_unit_items(lesson.unit.no)
+        return _fill_cantonese_lesson(lesson, vocab, phrase, sentence)
 
     # English
     if kind == "vocabulary":
@@ -425,9 +618,6 @@ def fill_missing_content() -> dict:
             words = []
             if lang == "en":
                 words = _pick_words(course.cefr_level, unit.no)
-            yue_items = []
-            if lang == "yue" and 1 <= unit.no <= len(YUE_SEED):
-                yue_items = YUE_SEED[unit.no - 1][3]
 
             topic = (unit.title_en or "general").lower().replace(" ", "_")
             lessons = (Lesson.query.filter_by(unit_id=unit.id)
@@ -435,7 +625,7 @@ def fill_missing_content() -> dict:
             for lesson in lessons:
                 if ContentItem.query.filter_by(lesson_id=lesson.id).count():
                     continue
-                n = _fill_lesson(lesson, lang, topic, words, yue_items)
+                n = _fill_lesson(lesson, lang, topic, words)
                 if n:
                     filled_items += n
                     filled_lessons += 1
@@ -443,7 +633,7 @@ def fill_missing_content() -> dict:
             # 补齐**缺失的课时类型**（如 §4 新增的 reading / writing）。
             # 老库里已存在的 Unit 不会自动长出新课时，这里按需追加 ——
             # 只追加内容，不动已有课时，用户的进度与复习计划完全不受影响。
-            # 粤语课程按自己的 3 课结构走，不套用英语的 10 类模板。
+            # 粤语课程按自己的 7 课结构走（由 _upgrade_cantonese 负责补齐）。
             if lang == "en" and lessons:
                 have = {l.kind for l in lessons}
                 next_no = max(l.no for l in lessons)
@@ -455,7 +645,7 @@ def fill_missing_content() -> dict:
                                     title_zh=f"{emoji} {l_zh}", title_en=f"{emoji} {l_en}")
                     db.session.add(lesson)
                     db.session.flush()
-                    n = _fill_lesson(lesson, lang, topic, words, yue_items)
+                    n = _fill_lesson(lesson, lang, topic, words)
                     if n:
                         filled_items += n
                         filled_lessons += 1
@@ -469,3 +659,4 @@ def seed_courses():
     _seed_languages()
     _seed_english()
     _seed_cantonese()
+    _upgrade_cantonese()  # 增量补齐粤语缺失课时（phrase/listening/practice/review）

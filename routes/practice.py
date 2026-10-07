@@ -10,10 +10,12 @@ English 版面零中文原则同样适用于练习区：前端读取 <html data-
 """
 from __future__ import annotations
 
-from flask import Blueprint, jsonify, render_template, request
+from flask import Blueprint, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
+from api_response import fail, ok
 from extensions import db
+from mastery_service import record_practice
 from models import UserWordProgress, Word
 
 practice_bp = Blueprint("practice", __name__, url_prefix="/practice")
@@ -43,6 +45,84 @@ PRACTICE_TYPES = [
 @login_required
 def index():
     return render_template("practice.html", types=PRACTICE_TYPES)
+
+
+@practice_bp.route("/submit", methods=["POST"])
+def submit():
+    """练习结果上报（V5.5）：写入 ReviewItem（Leitner）+ ContentMastery（计数 / 弱项）。
+
+    请求形态兼容两种：
+    * JSON（fetch / 小程序）：``{"content_id":N,"correct":bool,"kind":..,"mode":..,"given":..,"expected":..}``
+      或批量 ``{"items":[{...},{...}]}`` → 返回 ``{ok,data}`` JSON；
+    * 表单（服务器渲染，渐进增强）：``content_id / correct / kind / csrf_token`` → 302 跳回来源页。
+
+    未登录统一返回 401 JSON（与 REST API 一致，便于多端复用）。
+    """
+    if not current_user.is_authenticated:
+        return fail("请先登录", code="unauthorized", status=401)
+
+    is_json = request.is_json
+    body = request.get_json(silent=True) if is_json else None
+    # fetch + FormData 走表单编码但带 X-Requested-With，也按 JSON 响应
+    is_ajax = (request.headers.get("X-Requested-With") == "XMLHttpRequest") or is_json
+    if body is None:
+        # 表单：用 request.form 逐个字段取值
+        body = request.form
+
+    items = body.get("items") if isinstance(body, dict) else None
+    if items:
+        results = [_record_one(it) for it in items]
+        payload = {"count": len(results), "results": results}
+        if is_ajax:
+            return ok(payload)
+        return redirect(request.referrer or url_for("main.courses"))
+
+    # 单条提交：缺 content_id 属于请求错误，返回 422 JSON（顶层 ok=False）
+    res = _record_one(body)
+    if not res.get("ok"):
+        return fail(res.get("error", "bad request"), code="bad_request", status=422)
+    if is_ajax:
+        return ok(res)
+    # 表单非 AJAX：跳回来源页（保持上下文）
+    return redirect(request.referrer or url_for("main.courses"))
+
+
+def _record_one(it) -> dict:
+    """处理单条练习结果；兼容 dict（JSON）与 ImmutableMultiDict（表单）。"""
+    if isinstance(it, dict):
+        cid = it.get("content_id") or it.get("contentId")
+        correct = bool(it.get("correct"))
+        kind = it.get("kind")
+        mode = it.get("mode")
+        given = it.get("given")
+        expected = it.get("expected")
+    else:
+        cid = (it or request.form).get("content_id", type=int)
+        correct = ((it or request.form).get("correct") or "0") == "1"
+        kind = (it or request.form).get("kind")
+        mode = (it or request.form).get("mode")
+        given = (it or request.form).get("given")
+        expected = (it or request.form).get("expected")
+
+    if not cid:
+        return {"ok": False, "error": "missing content_id"}
+    try:
+        cid = int(cid)
+    except (TypeError, ValueError):
+        return {"ok": False, "error": "invalid content_id"}
+
+    m = record_practice(current_user.id, cid, correct,
+                        kind=kind, mode=mode, given=given, expected=expected)
+    return {
+        "ok": True,
+        "content_id": cid,
+        "level": m.level,
+        "correct_count": m.correct_count,
+        "wrong_count": m.wrong_count,
+        "streak": m.streak,
+        "weak": m.weak,
+        "next_review_at": m.next_review_at.isoformat() if m.next_review_at else None,
+    }
 
 
 @practice_bp.route("/api/words")

@@ -33,6 +33,9 @@ _EXTRA_COLUMNS = {
     "is_passwordless": "bool",
     # 界面语言偏好（zh/en/yue/both，可空=双语自动）
     "preferred_lang": "str8",
+    # 邮件订阅开关（周报 / 学习提醒）。曾漏登记导致老库缺列，
+    # 任何 SELECT users 都会报 "no such column: users.notify_email"。
+    "notify_email": "bool_true",
 }
 
 # 表名 -> {列名: 类型}（V5.1：内容的多语释义，保证 English 版面零中文）
@@ -42,6 +45,10 @@ _EXTRA_COLUMNS_BY_TABLE = {
         "meaning_yue": "str512",
         "example_yue": "text",
     },
+    # V5.2：主词库的「生产就绪」标记（verified + 授权 + 字段有效 才为 True）
+    "lexicon_entries": {
+        "production_ready": "bool",
+    },
 }
 
 
@@ -49,6 +56,8 @@ def _ddl_for(col_type: str, dialect: str) -> str:
     pg = dialect == "postgresql"
     if col_type == "bool":
         return "BOOLEAN DEFAULT FALSE NOT NULL" if pg else "BOOLEAN DEFAULT 0 NOT NULL"
+    if col_type == "bool_true":
+        return "BOOLEAN DEFAULT TRUE NOT NULL" if pg else "BOOLEAN DEFAULT 1 NOT NULL"
     if col_type == "str64":
         return "VARCHAR(64)"
     if col_type == "str8":

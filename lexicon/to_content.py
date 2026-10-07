@@ -42,7 +42,14 @@ def _ensure_sandbox_lesson(session):
 
 def convert_to_content(session, *, language_code=None, cefr=None, topic=None,
                        kind=None, difficulty_max=None, limit: int = 50,
-                       dry_run: bool = False, lesson_id=None):
+                       dry_run: bool = False, lesson_id=None,
+                       only_production_ready: bool = False):
+    """把筛选后的 LexiconEntry 转成 ContentItem。
+
+    only_production_ready=True 时只挑选 production_ready 为真的词条，
+    用于正式课程内容（绝不使用 synthetic-dev / 未核实 license 的词条）。
+    默认 False 以兼容开发期 / 沙盒转换。
+    """
     q = session.query(LexiconEntry)
     if language_code:
         q = q.filter(LexiconEntry.language_code == language_code)
@@ -54,6 +61,8 @@ def convert_to_content(session, *, language_code=None, cefr=None, topic=None,
         q = q.filter(LexiconEntry.kind == kind)
     if difficulty_max is not None:
         q = q.filter(LexiconEntry.difficulty <= difficulty_max)
+    if only_production_ready:
+        q = q.filter(LexiconEntry.production_ready == True)  # noqa: E712
     # 只挑有释义的条目，避免空内容
     q = q.filter(or_(LexiconEntry.meaning_en != "", LexiconEntry.meaning_zh != ""))
     q = q.limit(limit)

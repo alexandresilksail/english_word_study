@@ -2,74 +2,175 @@
 {% extends "base.html" %}
 {% block title %}{{ lesson.title_en }} · {{ app_title_en }}{% endblock %}
 {% block content %}
-<section class="course-hero c-violet">
-  <span class="eyebrow">{{ unit.title_en }}</span>
+<section class="course-hero c-{{ course.color if course else 'violet' }}">
+  <span class="eyebrow">{{ unit.title_en if unit }}</span>
   <h1>{{ lesson.title_en }}</h1>
   <p>{{ title_of(lesson) }} · {{ items|length }} items</p>
 </section>
 
-{% if lesson.kind == 'quiz' and items %}
-  {# ---------- Quiz 课节：四选一即时判分 ---------- #}
-  <div class="quiz-practice" data-quiz>
-    {% set correct = items[0] %}
-    <div class="qp-card">
-      <span class="qp-eyebrow">{{ pick('Translate: choose the right meaning', '选择正确释义') }}</span>
-      <h2 class="qp-surface">{{ correct.surface }}</h2>
-      {% if correct.phonetic %}<i class="lc-phon">{{ correct.phonetic }}</i>{% endif %}
-      <div class="qp-options" data-answer="{{ correct.id }}">
-        {% for opt in items %}
-        <button class="qp-opt" data-correct="{{ '1' if loop.first else '0' }}">{{ meaning_of(opt) }}</button>
-        {% endfor %}
-        {% for i in range(4 - items|length) %}
-        {% endfor %}
-      </div>
-      <p class="qp-feedback" hidden></p>
-      <form method="post" action="{{ url_for('main.review_answer') }}" class="qp-record">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="hidden" name="content_id" value="{{ correct.id }}">
-        <input type="hidden" name="correct" value="1">
-      </form>
+{# ---------- 学习流导航：Learn → Practice → Quiz → Complete ---------- #}
+<nav class="flow-steps" aria-label="lesson flow">
+  <a class="flow-step is-active" href="#step-learn" data-goto="learn">{{ pick('1 · Learn', '1 · 学习') }}</a>
+  <a class="flow-step" href="#step-practice" data-goto="practice">{{ pick('2 · Practice', '2 · 练习') }}</a>
+  <a class="flow-step" href="#step-quiz" data-goto="quiz">{{ pick('3 · Quiz', '3 · 测验') }}</a>
+  <a class="flow-step" href="#step-complete" data-goto="complete">{{ pick('4 · Complete', '4 · 完成') }}</a>
+</nav>
+
+{% if not items %}
+  <p class="muted">{{ pick('This lesson is being prepared.', '内容筹备中') }}</p>
+{% else %}
+
+  {# ================= 步骤 1：Learn（闪卡被动复习） ================= #}
+  <section id="step-learn" data-step="learn" class="flow-panel">
+    <h2 class="flow-h">{{ pick('Learn', '学习') }}</h2>
+    <p class="muted">{{ pick('Tap a card to reveal its meaning, then move on to Practice.',
+                             '点击卡片查看释义，然后进入练习。') }}</p>
+    <div class="flash-deck">
+      {% for it in items %}
+      <article class="flash-card" data-flash data-id="{{ it.id }}">
+        <div class="fc-face fc-front">
+          <b class="lc-surface">{{ it.surface }}</b>
+          {% if it.phonetic %}<i class="lc-phon">{{ it.phonetic }}</i>{% endif %}
+          <span class="fc-hint">{{ pick('Tap to reveal', '点击查看') }}</span>
+        </div>
+        <div class="fc-face fc-back" hidden>
+          <p class="lc-mean">{{ meaning_of(it) }}</p>
+          {% if it.example_en %}<p class="lc-ex">{{ it.example_en }}</p>{% endif %}
+          {% if ui_lang != 'en' and it.example_cn %}<p class="lc-exc">{{ it.example_cn }}</p>{% endif %}
+        </div>
+      </article>
+      {% endfor %}
     </div>
-  </div>
-{% elif items %}
-  {# ---------- 学习课节：闪卡 + 掌握反馈 ---------- #}
-  <div class="flash-deck">
-    {% for it in items %}
-    <article class="flash-card" data-flash data-id="{{ it.id }}">
-      <div class="fc-face fc-front">
-        <b class="lc-surface">{{ it.surface }}</b>
-        {% if it.phonetic %}<i class="lc-phon">{{ it.phonetic }}</i>{% endif %}
-        <span class="fc-hint">{{ pick('Tap to reveal', '点击查看') }}</span>
+  </section>
+
+  {# ================= 步骤 2：Practice（主动回忆 + 上报掌握度） ================= #}
+  <section id="step-practice" data-step="practice" class="flow-panel" hidden>
+    <h2 class="flow-h">{{ pick('Practice', '练习') }}</h2>
+    <p class="muted">{{ pick('Try to recall before revealing. Your answer feeds spaced repetition.',
+                             '先回忆再揭晓，你的作答会进入间隔复习。') }}</p>
+    <div class="flash-deck">
+      {% for it in items %}
+      <article class="flash-card practice-card" data-flash data-id="{{ it.id }}">
+        <div class="fc-face fc-front">
+          <b class="lc-surface">{{ it.surface }}</b>
+          {% if it.phonetic %}<i class="lc-phon">{{ it.phonetic }}</i>{% endif %}
+          <span class="fc-hint">{{ pick('Tap to attempt', '点击作答') }}</span>
+        </div>
+        <div class="fc-face fc-back" hidden>
+          <p class="lc-mean">{{ meaning_of(it) }}</p>
+          {% if it.example_en %}<p class="lc-ex">{{ it.example_en }}</p>{% endif %}
+          <div class="fc-actions">
+            <form method="post" action="{{ url_for('practice.submit') }}" data-practice data-id="{{ it.id }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="content_id" value="{{ it.id }}">
+              <input type="hidden" name="kind" value="{{ lesson.kind }}">
+              <input type="hidden" name="mode" value="recall">
+              <button class="btn btn-secondary btn-sm" name="correct" value="0">{{ pick('Still learning', '还在学') }}</button>
+              <button class="btn btn-primary btn-sm" name="correct" value="1">{{ pick('Got it', '记住了') }}</button>
+            </form>
+          </div>
+          <p class="qp-feedback" hidden></p>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  {# ================= 步骤 3：Quiz（四选一自测） ================= #}
+  <section id="step-quiz" data-step="quiz" class="flow-panel" hidden>
+    <h2 class="flow-h">{{ pick('Quiz', '测验') }}</h2>
+    {% if quiz_pairs %}
+      <p class="muted">{{ pick('Pick the right meaning. Instant feedback is recorded.',
+                               '选择正确释义，即时反馈会被记录。') }}</p>
+      <div class="quiz-deck">
+        {% for q in quiz_pairs %}
+        <article class="quiz-card" data-quiz data-id="{{ q.id }}">
+          <div class="qp-card">
+            <span class="qp-eyebrow">{{ pick('Choose the meaning', '选择释义') }}</span>
+            <h3 class="qp-surface">{{ q.surface }}</h3>
+            {% if q.phonetic %}<i class="lc-phon">{{ q.phonetic }}</i>{% endif %}
+            <div class="qp-options">
+              {% for opt in q.options %}
+              <form method="post" action="{{ url_for('practice.submit') }}" data-quizopt data-id="{{ q.id }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="content_id" value="{{ q.id }}">
+                <input type="hidden" name="kind" value="{{ lesson.kind }}">
+                <input type="hidden" name="mode" value="quiz">
+                <input type="hidden" name="correct" value="{{ '1' if opt.correct else '0' }}">
+                <button type="submit" class="qp-opt" data-correct="{{ '1' if opt.correct else '0' }}">
+                  {{ pick(opt.en, opt.zh) }}
+                </button>
+              </form>
+              {% endfor %}
+            </div>
+            <p class="qp-feedback" hidden></p>
+          </div>
+        </article>
+        {% endfor %}
       </div>
-      <div class="fc-face fc-back" hidden>
-        <p class="lc-mean">{{ meaning_of(it) }}</p>
-        {% if it.example_en %}<p class="lc-ex">{{ it.example_en }}</p>{% endif %}
-        {% if ui_lang != 'en' and it.example_cn %}<p class="lc-exc">{{ it.example_cn }}</p>{% endif %}
-        <div class="fc-actions">
-          <form method="post" action="{{ url_for('main.review_answer') }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="content_id" value="{{ it.id }}">
-            <button class="btn btn-secondary btn-sm" name="correct" value="0">😅 Still learning</button>
-            <button class="btn btn-primary btn-sm" name="correct" value="1">💪 Got it</button>
-          </form>
+    {% elif lesson.kind == 'quiz' and items %}
+      {# 专门的测验课时：用现有题目做即时判分 #}
+      <div class="quiz-practice" data-quiz>
+        {% set correct = items[0] %}
+        <div class="qp-card">
+          <span class="qp-eyebrow">{{ pick('Translate: choose the right meaning', '选择正确释义') }}</span>
+          <h2 class="qp-surface">{{ correct.surface }}</h2>
+          {% if correct.phonetic %}<i class="lc-phon">{{ correct.phonetic }}</i>{% endif %}
+          <div class="qp-options">
+            {% for opt in items %}
+            <form method="post" action="{{ url_for('practice.submit') }}" data-quizopt data-id="{{ correct.id }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="content_id" value="{{ correct.id }}">
+              <input type="hidden" name="kind" value="{{ lesson.kind }}">
+              <input type="hidden" name="mode" value="quiz">
+              <input type="hidden" name="correct" value="{{ '1' if loop.first else '0' }}">
+              <button type="submit" class="qp-opt" data-correct="{{ '1' if loop.first else '0' }}">{{ meaning_of(opt) }}</button>
+            </form>
+            {% endfor %}
+          </div>
+          <p class="qp-feedback" hidden></p>
         </div>
       </div>
-    </article>
-    {% endfor %}
-  </div>
-{% else %}
-  <p class="muted">{{ pick('This lesson is being prepared.', '内容筹备中') }}</p>
+    {% else %}
+      <p class="muted">{{ pick('No quiz items for this lesson yet.', '本课暂无测验题目。') }}</p>
+    {% endif %}
+  </section>
+
+  {# ================= 步骤 4：Complete（发 XP + 排入复习） ================= #}
+  <section id="step-complete" data-step="complete" class="flow-panel" hidden>
+    <h2 class="flow-h">{{ pick('Complete', '完成') }}</h2>
+    <p class="muted">{{ pick('Finish the lesson to earn XP and schedule the content for review.',
+                             '完成课时即可获得 XP，并把内容排入复习队列。') }}</p>
+    <form method="post" action="{{ url_for('main.lesson_complete', lesson_id=lesson.id) }}" class="complete-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-primary btn-lg">{{ icon('check') }} {{ pick('Complete Lesson', '完成课时') }}</button>
+    </form>
+  </section>
+
 {% endif %}
 
 <div style="display:flex;gap:10px;margin-top:20px">
-  <a class="btn btn-secondary" href="{{ url_for('main.unit_view', unit_id=unit.id) }}">← {{ icon('book-open') }} Back to Unit</a>
-  <a class="btn btn-primary" href="{{ url_for('quiz.test_page') }}">🎯 Practice Quiz</a>
+  <a class="btn btn-secondary" href="{{ url_for('main.unit_view', unit_id=unit.id) if unit else url_for('main.courses') }}">
+    ← {{ icon('book-open') }} {{ pick('Back to Unit', '返回单元') }}</a>
+  <a class="btn btn-primary" href="{{ url_for('quiz.test_page') }}">🎯 {{ pick('Practice Quiz', '综合测验') }}</a>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-// flashcard flip
+// 学习流步骤切换
+const steps = Array.from(document.querySelectorAll('.flow-step'));
+function gotoStep(name){
+  document.querySelectorAll('.flow-panel').forEach(p => p.hidden = (p.dataset.step !== name));
+  steps.forEach(s => s.classList.toggle('is-active', s.dataset.goto === name));
+  const el = document.getElementById('step-' + name);
+  if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+steps.forEach(s => s.addEventListener('click', e => { e.preventDefault(); gotoStep(s.dataset.goto); }));
+// 初始显示 Learn
+gotoStep('learn');
+
+// 闪卡翻转（Learn / Practice）
 document.querySelectorAll('[data-flash]').forEach(card => {
   const front = card.querySelector('.fc-front'), back = card.querySelector('.fc-back');
   card.addEventListener('click', e => {
@@ -78,20 +179,47 @@ document.querySelectorAll('[data-flash]').forEach(card => {
     card.classList.add('flipped');
   });
 });
-// Quiz instant feedback
-const quiz = document.querySelector('[data-quiz]');
-if (quiz) {
-  const fb = quiz.querySelector('.qp-feedback');
-  quiz.querySelectorAll('.qp-opt').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const ok = btn.dataset.correct === '1';
-      btn.classList.add(ok ? 'right' : 'wrong');
-      fb.hidden = false;
-      fb.textContent = ok ? '🎉 Correct! +10 XP' : '❌ Not quite — review the card above.';
-      fb.style.color = ok ? '#059669' : '#e11d48';
-      if (ok) quiz.querySelector('.qp-record').submit();
-    });
+
+// Practice：提交后就地反馈（渐进增强；JS 关闭则整页跳转回课时）
+document.querySelectorAll('[data-practice]').forEach(form => {
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const fb = form.parentElement.querySelector('.qp-feedback');
+    fetch(form.action, {method:'POST', body: fd, headers:{'X-Requested-With':'XMLHttpRequest'}})
+      .then(r => r.json())
+      .then(j => {
+        if (fb){
+          const ok = (fd.get('correct') || '0') === '1';
+          fb.hidden = false;
+          fb.textContent = ok ? '🎉 ' + (j.data ? '' : '') + (window.__l ? '' : 'Correct! +mastery') : '❌ Not quite — keep reviewing';
+          fb.style.color = ok ? '#059669' : '#e11d48';
+        }
+        form.closest('.practice-card')?.classList.add(ok ? 'done' : 'weak');
+      })
+      .catch(() => form.submit());
   });
-}
+});
+
+// Quiz：即时反馈 + 上报（渐进增强）
+document.querySelectorAll('[data-quizopt]').forEach(form => {
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const btn = form.querySelector('button');
+    const ok = btn.dataset.correct === '1';
+    const fb = form.closest('.qp-card').querySelector('.qp-feedback');
+    // 锁定本题所有选项
+    form.closest('.qp-options').querySelectorAll('button').forEach(b => b.disabled = true);
+    btn.classList.add(ok ? 'right' : 'wrong');
+    if (fb){
+      fb.hidden = false;
+      fb.textContent = ok ? '🎉 Correct!' : '❌ Not quite — review the card.';
+      fb.style.color = ok ? '#059669' : '#e11d48';
+    }
+    const fd = new FormData(form);
+    fetch(form.action, {method:'POST', body: fd, headers:{'X-Requested-With':'XMLHttpRequest'}})
+      .catch(() => form.submit());
+  });
+});
 </script>
 {% endblock %}

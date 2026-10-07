@@ -681,6 +681,53 @@ class ReviewItem(db.Model):
     wrong_count = db.Column(Integer, nullable=False, default=0, server_default="0")
 
 
+class ContentMastery(db.Model):
+    """每用户 × 每内容条目的掌握度（V5.5 引入，V5.6 升级为统一 0-4 计算）。
+
+    与 ReviewItem（Leitner 抗遗忘队列）解耦：
+    - ReviewItem 负责「何时复习」（next_review_at）；
+    - ContentMastery 负责「掌握到什么程度」（level 0-4 + 计数 + 弱项）。
+
+    写路径由 services/mastery_service.py 统一收口；V5.5 仅落原始计数，
+    V5.6 的 mastery_service 扩展会纳入 quiz / unit test 分数计算统一 level。
+    """
+
+    __tablename__ = "content_mastery"
+    __table_args__ = (
+        UniqueConstraint("user_id", "content_id", name="uq_cm_user_content"),
+        Index("ix_cm_user_level", "user_id", "level"),
+        Index("ix_cm_user_weak", "user_id", "weak"),
+    )
+
+    id = db.Column(Integer, primary_key=True)
+    user_id = db.Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),
+                        nullable=False, index=True)
+    content_id = db.Column(Integer, ForeignKey("content_items.id", ondelete="CASCADE"),
+                           nullable=False, index=True)
+
+    # 统一掌握度 0-4：0 New / 1 Learning / 2 Familiar / 3 Strong / 4 Mastered
+    # （V5.5 的初步规则在 mastery_service.level_from_record；V5.6 会扩展）
+    level = db.Column(Integer, nullable=False, default=0, server_default="0")
+
+    correct_count = db.Column(Integer, nullable=False, default=0, server_default="0")
+    wrong_count = db.Column(Integer, nullable=False, default=0, server_default="0")
+    review_count = db.Column(Integer, nullable=False, default=0, server_default="0")
+    streak = db.Column(Integer, nullable=False, default=0, server_default="0")
+
+    # 最近一次测验 / 单元测试得分（百分比），供 V5.6 统一 level 计算
+    quiz_score = db.Column(Integer, nullable=False, default=0, server_default="0")
+    unit_test_score = db.Column(Integer, nullable=False, default=0, server_default="0")
+
+    # 弱项：答错或单元测验失分即标记；reasons 存 JSON 明细（kind / given / expected）
+    weak = db.Column(Boolean, nullable=False, default=False, server_default="0")
+    weak_reasons = db.Column(Text, nullable=False, default="[]")
+
+    first_learned_at = db.Column(DateTime, nullable=True)
+    last_seen_at = db.Column(DateTime, nullable=True)
+    next_review_at = db.Column(DateTime, nullable=True)
+    updated_at = db.Column(DateTime, nullable=False, default=utcnow, server_default=func.now())
+
+
 class UserOnboarding(db.Model):
     """新用户画像：年龄组 / 教育 / 当前水平 / 学习目标。"""
     __tablename__ = "user_onboarding"
@@ -967,6 +1014,13 @@ class LexiconEntry(db.Model):
     redistribution_allowed = db.Column(Boolean, nullable=False, default=False, server_default="0")
 
     verified = db.Column(Boolean, nullable=False, default=False, server_default="0")
+
+    # V5.2：是否达到「可进入生产内容」的标准。
+    # 规则（见 V5.6 / §36）：verified + commercial_allowed + 必填字段有效 三者同时成立才为 True。
+    # synthetic-dev 永远 False；legacy-2000 在许可证确认前为 False。
+    production_ready = db.Column(Boolean, nullable=False, default=False, server_default="0",
+                                index=True)
+
     created_at = db.Column(DateTime, nullable=False, default=utcnow, server_default=func.now())
 
     def __repr__(self) -> str:

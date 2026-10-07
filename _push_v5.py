@@ -126,12 +126,18 @@ def main():
     print("new_tree", new_tree_sha[:12])
 
     # 5) 新 commit
-    message = ("V5.1 词库引擎 Master Lexicon：新增 LexiconEntry 模型（4 索引+去重唯一约束）；"
-               "lexicon/ 引擎包（normalize/dedup/license_filter/cefr/validate/sources/pipeline/db_io/to_content）；"
-               "scripts/import_lexicon.py、validate_lexicon.py、lexicon_to_content.py、perf_lexicon_import.py；"
-               "data/lexicon/license_registry.json；tests/test_lexicon.py（17 用例）。"
-               "轻量化：SQLite 批量 250/commit、无常驻内存、无启动时导入、无重型依赖；"
-               "English 5000 + Cantonese 2000 合计 7000 已开发验证，peak RAM 11.5MB、DB 4.58MB。")
+    message = ("V5.2-V5.5 AI 多语学习平台（审核推送）\n\n"
+               "V5.2 遗留 2000 词审计 + 生产就绪（production_ready）判定规则（synthetic-dev 永不 True）。\n"
+               "V5.3 English Master Lexicon：LexiconEntry 模型 + lexicon/ 引擎包 + 导入/校验脚本。\n"
+               "V5.4 粤语课程：7 类课时 × 6 单元，含繁体 surface / Jyutping / 释义，language_code 恒为 yue。\n"
+               "V5.5 学习内容引擎：Learn→Practice→Quiz→Complete 四步流；新增 ContentMastery 模型（掌握度 0-4）\n"
+               "      与 mastery_service.record_practice 写入口；POST /practice/submit 支持单条与批量，\n"
+               "      未登录统一 401 JSON。\n"
+               "修复：schema_compat 补登 notify_email 增量列（老库缺列会导致 SELECT users 直接报错，属真实生产隐患）；\n"
+               "      测试改用显式 config 类，消除对 os.environ 与模块导入顺序的隐式依赖。\n\n"
+               "测试：quiz_grading + V5.3 + V5.4 + V5.5 合并运行 27 passed（此前同组合 19 passed / 8 errors）。\n"
+               "技术栈未变：Flask / SQLAlchemy / SQLite / Docker / Gunicorn / Nginx，2vCPU-2GB 可承载；\n"
+               "未引入 PostgreSQL / Redis / Celery / 大型模型。V5.6-V5.8（间隔重复 / AI Tutor / 听说）待续。")
     st4, commit = api("POST", f"/repos/{REPO}/git/commits", token, {
         "message": message,
         "tree": new_tree_sha,

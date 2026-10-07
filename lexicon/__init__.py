@@ -15,9 +15,13 @@ from .sources import get_source
 from .pipeline import build_entry, run_pipeline
 from .db_io import make_session, import_entries
 from .to_content import convert_to_content
+from .production_ready import (
+    compute_production_ready, required_fields_valid, recompute_production_ready,
+)
 
 __all__ = [
     "normalize", "dedup_key", "dedup_entries", "CEFR_ORDER", "compute_difficulty",
     "is_valid_cefr", "apply_license", "load_registry", "validate_entry", "get_source",
     "build_entry", "run_pipeline", "make_session", "import_entries", "convert_to_content",
+    "compute_production_ready", "required_fields_valid", "recompute_production_ready",
 ]

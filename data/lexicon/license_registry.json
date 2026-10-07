@@ -39,5 +39,15 @@
     "commercial_allowed": true,
     "redistribution_allowed": true,
     "notes": "由项目方自撰 / 公开可核对的小规模种子数据，可商用与再分发。"
+  },
+  "legacy-2000": {
+    "license": "UNKNOWN",
+    "license_url": "",
+    "attribution": "",
+    "commercial_allowed": false,
+    "redistribution_allowed": false,
+    "production_ready": false,
+    "verified": false,
+    "notes": "旧 2000 词库的来源无法从项目现有信息中确认，故许可证标记为 UNKNOWN。在许可证经人工核实前，commercial_allowed / redistribution_allowed / production_ready 一律为 false，绝不可当作生产内容对外分发或商用。audio 来源已记录为 Edge TTS（en-GB / British English / offline TTS），但音频文件同样需许可证确认，不得默认授权。"
   }
 }

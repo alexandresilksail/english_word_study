@@ -1,0 +1,35 @@
+{
+  "audit": "legacy-2000-audio",
+  "generated_by": "scripts/audit_legacy_audio.py",
+  "audio_source": "English / en-GB / Edge TTS / British English / offline TTS. Machine-generated, NOT human/native speaker recording.",
+  "is_human_recording": false,
+  "words_json": {
+    "path": "app\\data\\words.json",
+    "count": 2000,
+    "version": 3,
+    "declared_count": 2000
+  },
+  "audio_dir": "app\\static\\audio",
+  "mp3_count": 2000,
+  "matched": 2000,
+  "matched_percent": 100.0,
+  "missing_audio": 0,
+  "missing_examples": [],
+  "orphan_audio": 0,
+  "orphan_examples": [],
+  "invalid_filenames": [],
+  "duplicate_references": {},
+  "duplicate_references_count": 0,
+  "file_size_bytes": {
+    "min": 5184,
+    "max": 10656,
+    "mean": 6956.5,
+    "median": 6768,
+    "total_bytes": 13912992
+  },
+  "integrity": {
+    "words_consistent": true,
+    "audio_assets_present": true,
+    "note": "Read-only audit. No MP3 or words.json was modified or deleted."
+  }
+}

@@ -426,7 +426,36 @@ def lesson_view(lesson_id: int):
     lesson = Lesson.query.get_or_404(lesson_id)
     unit = Unit.query.get(lesson.unit_id)
     items = ContentItem.query.filter_by(lesson_id=lesson.id).all()
-    return render_template("lesson.html", lesson=lesson, unit=unit, items=items)
+
+    # V5.5：为「Quiz」步骤生成四选一自测（正确项 + 同课干扰项），
+    # 选项位置按题号轮转，避免正确项永远排第一。
+    quiz_pairs = []
+    n = len(items)
+    if n >= 2:
+        for idx, it in enumerate(items):
+            correct_en = it.meaning_en or it.meaning_cn
+            correct_zh = it.meaning_cn or it.meaning_en
+            distractors = []
+            for j in range(1, n):
+                d = items[(idx + j) % n]
+                de = d.meaning_en or d.meaning_cn
+                dz = d.meaning_cn or d.meaning_en
+                if (de or dz) and (de != correct_en or dz != correct_zh):
+                    distractors.append({"en": de, "zh": dz})
+                if len(distractors) >= 3:
+                    break
+            opts = [{"en": correct_en, "zh": correct_zh, "correct": True}] + [
+                {"en": d["en"], "zh": d["zh"], "correct": False} for d in distractors
+            ]
+            pos = idx % len(opts) if opts else 0
+            opts = opts[pos:] + opts[:pos]
+            quiz_pairs.append({
+                "id": it.id, "surface": it.surface, "phonetic": it.phonetic,
+                "options": opts,
+            })
+
+    return render_template("lesson.html", lesson=lesson, unit=unit, items=items,
+                           quiz_pairs=quiz_pairs)
 
 
 @main_bp.route("/lesson/<int:lesson_id>/complete", methods=["POST"])

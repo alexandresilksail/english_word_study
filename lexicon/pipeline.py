@@ -6,6 +6,7 @@ from .dedup import dedup_entries
 from .license_filter import apply_license
 from .validate import validate_entry
 from .cefr import compute_difficulty
+from .production_ready import compute_production_ready
 
 
 def build_entry(raw: dict) -> dict:
@@ -20,6 +21,9 @@ def build_entry(raw: dict) -> dict:
     e["topic"] = (e.get("topic") or "general").strip()
     e["difficulty"] = compute_difficulty(e.get("cefr", ""), e.get("frequency_rank"))
     e = apply_license(e)
+    # V5.3：依据规则（source / verified / commercial_allowed / 必填字段）计算生产就绪状态，
+    # 作为入库前的权威值；导入脚本也可显式覆盖。
+    e["production_ready"] = compute_production_ready(e)
     return e
 
 
