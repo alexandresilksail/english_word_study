@@ -5,7 +5,7 @@
 <section class="course-hero c-violet">
   <span class="eyebrow">{{ unit.title_en }}</span>
   <h1>{{ lesson.title_en }}</h1>
-  <p>{{ lesson.title_zh }} · {{ items|length }} items</p>
+  <p>{{ title_of(lesson) }} · {{ items|length }} items</p>
 </section>
 
 {% if lesson.kind == 'quiz' and items %}
@@ -13,12 +13,12 @@
   <div class="quiz-practice" data-quiz>
     {% set correct = items[0] %}
     <div class="qp-card">
-      <span class="qp-eyebrow">Translate · 选择正确释义</span>
+      <span class="qp-eyebrow">{{ pick('Translate: choose the right meaning', '选择正确释义') }}</span>
       <h2 class="qp-surface">{{ correct.surface }}</h2>
       {% if correct.phonetic %}<i class="lc-phon">{{ correct.phonetic }}</i>{% endif %}
       <div class="qp-options" data-answer="{{ correct.id }}">
         {% for opt in items %}
-        <button class="qp-opt" data-correct="{{ '1' if loop.first else '0' }}">{{ opt.meaning_cn }}</button>
+        <button class="qp-opt" data-correct="{{ '1' if loop.first else '0' }}">{{ meaning_of(opt) }}</button>
         {% endfor %}
         {% for i in range(4 - items|length) %}
         {% endfor %}
@@ -39,12 +39,12 @@
       <div class="fc-face fc-front">
         <b class="lc-surface">{{ it.surface }}</b>
         {% if it.phonetic %}<i class="lc-phon">{{ it.phonetic }}</i>{% endif %}
-        <span class="fc-hint">Tap to reveal · 点击查看</span>
+        <span class="fc-hint">{{ pick('Tap to reveal', '点击查看') }}</span>
       </div>
       <div class="fc-face fc-back" hidden>
-        <p class="lc-mean">{{ it.meaning_cn }}</p>
+        <p class="lc-mean">{{ meaning_of(it) }}</p>
         {% if it.example_en %}<p class="lc-ex">{{ it.example_en }}</p>{% endif %}
-        {% if it.example_cn %}<p class="lc-exc">{{ it.example_cn }}</p>{% endif %}
+        {% if ui_lang != 'en' and it.example_cn %}<p class="lc-exc">{{ it.example_cn }}</p>{% endif %}
         <div class="fc-actions">
           <form method="post" action="{{ url_for('main.review_answer') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -58,7 +58,7 @@
     {% endfor %}
   </div>
 {% else %}
-  <p class="muted">This lesson is being prepared. 内容筹备中。</p>
+  <p class="muted">{{ pick('This lesson is being prepared.', '内容筹备中') }}</p>
 {% endif %}
 
 <div style="display:flex;gap:10px;margin-top:20px">
@@ -69,7 +69,7 @@
 
 {% block scripts %}
 <script>
-// 闪卡翻转
+// flashcard flip
 document.querySelectorAll('[data-flash]').forEach(card => {
   const front = card.querySelector('.fc-front'), back = card.querySelector('.fc-back');
   card.addEventListener('click', e => {
@@ -78,7 +78,7 @@ document.querySelectorAll('[data-flash]').forEach(card => {
     card.classList.add('flipped');
   });
 });
-// Quiz 即时反馈
+// Quiz instant feedback
 const quiz = document.querySelector('[data-quiz]');
 if (quiz) {
   const fb = quiz.querySelector('.qp-feedback');

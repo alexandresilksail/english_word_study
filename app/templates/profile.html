@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% import "_macros.html" as mm %}
 {% from "_macros.html" import icon %}
-{% block title %}{{ bi_plain('nav.profile') }} · {{ app_title }}{% endblock %}
+{% block title %}{{ pick('Profile', '个人资料') }} · {{ app_title_en }}{% endblock %}
 
 {% block content %}
 
@@ -93,7 +93,7 @@
           {{ form.username(class="input", id="username") }}
           <div class="errs">{% for e in form.username.errors %}<div>{{ e }}</div>{% endfor %}</div>
         </div>
-        {{ form.submit(class="btn btn-primary") }}
+        <button type="submit" class="btn btn-primary">{{ pick('Save', '保存') }}</button>
       </form>
     </div>
 
@@ -118,7 +118,7 @@
           {{ pwd_form.confirm(class="input", id="confirm2", autocomplete="new-password") }}
           <div class="errs">{% for e in pwd_form.confirm.errors %}<div>{{ e }}</div>{% endfor %}</div>
         </div>
-        {{ pwd_form.submit(class="btn btn-primary") }}
+        <button type="submit" class="btn btn-primary">{{ pick('Change password', '修改密码') }}</button>
       </form>
       <div class="secure-note">{{ icon('lock') }}<span>{{ t('auth.secure_note') }}</span></div>
     </div>

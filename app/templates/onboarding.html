@@ -3,27 +3,27 @@
 {% block title %}Onboarding · {{ app_title_en }}{% endblock %}
 {% block content %}
 <section class="onb-hero">
-  <span class="eyebrow">🎯 个性化学习路径 · Personalized Path</span>
-  <h1>先认识你一下 👋</h1>
-  <p class="muted">Tell us about yourself — we'll plan the right learning path for you.</p>
+  <span class="eyebrow">🎯 {{ pick('Personalized Learning Path', '个性化学习路径') }}</span>
+  <h1>{{ pick('Let’s get to know you 👋', '先认识你一下 👋') }}</h1>
+  <p class="muted">{{ pick('Tell us about yourself — we’ll plan the right learning path for you.', '告诉我们一些关于你的情况，我们会为你规划合适的学习路径。') }}</p>
 </section>
 <form method="post" class="onb-card">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-  <h3>👤 年龄 / 身份 · Who are you?</h3>
+  <h3>{{ pick('Who are you?', '年龄 / 身份') }}</h3>
   <div class="opt-grid">
     {% for code, zh, en in age_groups %}
     <label class="opt"><input type="radio" name="age_group" value="{{ code }}"
-       {{ 'checked' if current and current.age_group==code }}><b>{{ en }}</b><small>{{ zh }}</small></label>
+       {{ 'checked' if current and current.age_group==code }}><b>{{ en }}</b>{% if ui_lang != 'en' %}<small>{{ zh }}</small>{% endif %}</label>
     {% endfor %}
   </div>
-  <h3>📚 你的目标 · Your goal?</h3>
+  <h3>{{ pick('Your goal?', '你的目标') }}</h3>
   <div class="opt-grid">
     {% for code, zh, en in goals %}
     <label class="opt"><input type="radio" name="goal" value="{{ code }}"
-       {{ 'checked' if current and current.goal==code }}><b>{{ en }}</b><small>{{ zh }}</small></label>
+       {{ 'checked' if current and current.goal==code }}><b>{{ en }}</b>{% if ui_lang != 'en' %}<small>{{ zh }}</small>{% endif %}</label>
     {% endfor %}
   </div>
-  <h3>🎚️ 当前水平 · Current level?</h3>
+  <h3>{{ pick('Current level?', '当前水平') }}</h3>
   <div class="opt-grid">
     {% for lv in levels %}
     <label class="opt"><input type="radio" name="current_level" value="{{ lv }}"
@@ -31,6 +31,6 @@
     {% endfor %}
   </div>
   <input type="hidden" name="education" value="adult">
-  <button class="btn btn-primary btn-lg" type="submit">{{ icon('route') }}生成我的学习路径 · Generate My Path</button>
+  <button class="btn btn-primary btn-lg" type="submit">{{ icon('route') }} {{ pick('Generate My Path', '生成我的学习路径') }}</button>
 </form>
 {% endblock %}

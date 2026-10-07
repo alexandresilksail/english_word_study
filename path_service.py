@@ -4,7 +4,8 @@ from __future__ import annotations
 import logging
 
 from extensions import db
-from learning_path import (LEVELS, UNITS_PER_LEVEL, UNLOCK_RATIO, cefr_from_freq)
+from learning_path import (LEVELS, LEVEL_BY_CODE, UNITS_PER_LEVEL, UNLOCK_RATIO,
+                           assign_by_quantile, cefr_from_freq)
 from models import UserWordProgress, Word, WordMeta
 
 logger = logging.getLogger(__name__)
@@ -17,22 +18,39 @@ def ensure_word_meta() -> int:
     下次启动（或测试里再次调用）会把缺失词补齐。words 表一行不动。
     """
     existing = {m.word_id for m in WordMeta.query.all()}
-    words = [w for w in Word.query.order_by(Word.freq.desc()).all() if w.id not in existing]
+    # NOTE: Word.freq 是词频**排名**（越小越常用："be"=2、"in"=6；
+    # 99999 为未知/极低频的哨兵值）。因此按 ASC 排 —— 升序才是「由常用到生僻」。
+    words = [w for w in Word.query.order_by(Word.freq.asc(), Word.id.asc()).all()
+             if w.id not in existing]
     if not words:
         return 0
+
+    # ── 分级：优先按「已入库词的词频分位」整体重算，保证分布合理 ──────────
+    # 只有在增量补齐（库里已有大量分级）时，才单独给新词按分位定档。
+    total_words = Word.query.count()
+    assigned: dict[int, str] = {}
+    if total_words == len(words):
+        # 首次全量回填：对整份词库做分位切片
+        all_words = Word.query.order_by(Word.freq.asc(), Word.id.asc()).all()
+        assigned = assign_by_quantile(all_words)
+    else:
+        assigned = assign_by_quantile(words)
+
+    # ── 单元：同等级内按词频降序均分到 UNITS_PER_LEVEL 个单元 ────────────
     buckets: dict[str, list[Word]] = {}
     for w in words:
-        buckets.setdefault(cefr_from_freq(w.freq), []).append(w)
+        buckets.setdefault(assigned.get(w.id, LEVELS[-1].code), []).append(w)
+
     rows = []
-    for lv in LEVELS:
-        bucket = buckets.get(lv.code, [])
+    for code, bucket in buckets.items():
+        lv = LEVEL_BY_CODE.get(code, LEVELS[-1])
         n = len(bucket)
         for i, w in enumerate(bucket):
             unit = min(UNITS_PER_LEVEL, (i * UNITS_PER_LEVEL // max(n, 1)) + 1)
             rows.append(WordMeta(
                 word_id=w.id,
                 learning_language="en",
-                cefr_level=lv.code,
+                cefr_level=code,
                 unit_no=unit,
                 difficulty=lv.order + 1,
                 category="general",

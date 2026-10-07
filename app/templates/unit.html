@@ -5,15 +5,30 @@
 <section class="course-hero c-{{ course.color }}">
   <span class="eyebrow">{{ course.title_en }}</span>
   <h1>{{ unit.emoji }} Unit {{ unit.no }} · {{ unit.title_en }}</h1>
-  <p>{{ unit.title_zh }}</p>
+  <p>{{ title_of(unit) }}</p>
 </section>
 <div class="lesson-grid">
   {% for l in lessons %}
   <a class="lesson-card k-{{ l.kind }}" href="{{ url_for('main.lesson_view', lesson_id=l.id) }}">
     <b>{{ l.title_en }}</b>
-    <small>{{ l.title_zh }}</small>
+    <small>{{ title_of(l) }}</small>
     <span class="lesson-go">{{ icon('play') }}</span>
   </a>
   {% endfor %}
 </div>
+
+{# 单元测验入口（规格 §5）：学完本课时的 8 类内容后进入 Unit Test #}
+<section class="card unit-test-cta">
+  <div class="card-head">
+    <h3>{{ icon('practice') }} {{ pick('Unit Test', '单元测验') }}</h3>
+  </div>
+  <div class="card-body">
+    <p class="muted">{{ pick('Finish the lessons above, then take the test. Pass to master this unit and unlock the next one.',
+                              '先学完上面的课时，再参加测验。通过即可掌握本单元并解锁下一单元。') }}</p>
+  </div>
+  <div class="card-foot">
+    <a class="btn btn-primary" href="{{ url_for('main.unit_test', unit_id=unit.id) }}">
+      {{ icon('play') }} {{ pick('Take Unit Test', '参加单元测验') }}</a>
+  </div>
+</section>
 {% endblock %}

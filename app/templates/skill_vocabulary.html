@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}词汇 · Vocabulary{% endblock %}
+{% block title %}{{ pick('Vocabulary', '词汇') }} · Learn{% endblock %}
 {% block content %}
 
 {# ============================================================ Hero（词汇=蓝紫） #}
@@ -9,8 +9,8 @@
     <span class="v3-deco-orb">{{ icon('volume-2') }}</span>
     <span class="v3-deco-orb">{{ icon('list') }}</span>
   </div>
-  <h1>词汇 <span style="font-weight:600;font-size:18px;opacity:.85">Vocabulary</span></h1>
-  <p>2000 个高频词，英式发音、例句、释义一应俱全。从下面的入口开始吧。</p>
+  <h1><span class="bi"><span class="bi-en">Vocabulary</span><span class="bi-zh">词汇</span></span></h1>
+  <p>{{ pick('Words organised by CEFR level, with UK pronunciation, examples and meanings. Pick an entry point below.', '按 CEFR 等级组织的词条，英式发音、例句、释义一应俱全。从下面的入口开始吧。') }}</p>
   {% if gamification %}
   <div class="v3-hero-actions">
     <span class="v3-btn-glass">{{ icon('zap') }} Lv {{ gamification.level or 0 }} · {{ gamification.xp or 0 }} XP</span>
@@ -22,8 +22,8 @@
 {# ============================================================ 词汇模块入口 #}
 <div class="sec-head">
   <div>
-    <h2 class="sec-title">词汇模块 Modules</h2>
-    <p class="sec-sub">听、读、测、复习，一条龙</p>
+    <h2 class="sec-title">{{ pick('Vocabulary Modules', '词汇模块') }}</h2>
+    <p class="sec-sub">{{ pick('Listen, read, test and review — all in one flow', '听、读、测、复习，一条龙') }}</p>
   </div>
 </div>
 
@@ -32,8 +32,8 @@
   <a class="skill-card c-{{ m.color or 'violet' }}" href="{{ m.url }}">
     <div class="skill-ico">{{ icon(m.icon) }}</div>
     <div class="skill-body">
-      <div class="skill-name">{{ m.zh }} <span class="bi"><span class="bi-en">{{ m.en }}</span></span></div>
-      <div class="skill-desc">{{ m.desc_zh }}</div>
+      <div class="skill-name"><span class="bi"><span class="bi-en">{{ m.en }}</span><span class="bi-zh">{{ m.zh }}</span></span></div>
+      <div class="skill-desc">{{ pick(m.desc_en, m.desc_zh) }}</div>
     </div>
     <div class="game-go">{{ icon('chevron-right') }}</div>
   </a>
@@ -47,9 +47,9 @@
   </div>
   <div class="ec-body">
     <span class="tag violet">{{ icon('practice') }} Quiz</span>
-    <h3>检验掌握度 · Take a Quiz</h3>
-    <p>英译中、中译英、听音、拼写四种模式，每次测试都能拿到 XP 并计入连续学习。</p>
-    <a class="btn btn-primary" href="{{ url_for('quiz.test_page') }}">{{ icon('play') }} 开始测试 Start Quiz</a>
+    <h3>{{ pick('Test your mastery', '检验掌握度') }}</h3>
+    <p>{{ pick('Four modes — EN→CN, CN→EN, listening and spelling — each quiz earns XP and counts toward your streak.', '英译中、中译英、听音、拼写四种模式，每次测试都能拿到 XP 并计入连续学习。') }}</p>
+    <a class="btn btn-primary" href="{{ url_for('quiz.test_page') }}">{{ icon('play') }} {{ pick('Start Quiz', '开始测试') }}</a>
   </div>
 </div>
 

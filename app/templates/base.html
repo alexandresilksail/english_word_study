@@ -4,10 +4,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="AI Language Learning Platform · AI 语言学习平台：CEFR 分级学习路径、听说读写练、抗遗忘复习、XP 与连续学习激励。">
+  <meta name="description" content="{{ pick('AI Language Learning Platform: CEFR-graded learning paths, listening, speaking, reading and writing practice, spaced review, XP and streaks.', 'AI 语言学习平台：CEFR 分级学习路径、听说读写练、抗遗忘复习、XP 与连续学习激励。') }}">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta name="theme-color" content="#6d5efc">
-  <title>{% block title %}{{ app_title }} · {{ app_title_en }}{% endblock %}</title>
+  <title>{% block title %}{{ pick(app_title_en, app_title) }}{% endblock %}</title>
   <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/v4.css') }}">
 </head>
@@ -19,7 +19,7 @@
     <a class="brand" href="{{ url_for('main.dashboard') if current_user.is_authenticated else url_for('main.index') }}">
       <span class="brand-mark">EL</span>
       <span class="brand-text">
-        <b class="bi"><span class="bi-en">AI Language Learning</span><span class="bi-zh">AI 语言学习平台</span></b>
+        <b>{{ pick('AI Language Learning', 'AI 语言学习平台') }}</b>
         <small>{{ app_title_en }}</small>
       </span>
     </a>
@@ -84,14 +84,15 @@
         <span class="gam-chip streak" title="{{ bi_plain('dash.streak') }}">{{ icon('flame') }}{{ nav_gam.streak }}</span>
       {% endif %}
 
-      {# V5：界面语言切换 中文 | English（立即生效，登录存账号，未登录存 Cookie） #}
+      {# V5.1：界面语言切换 中文 | English | 粵語（立即生效；登录存账号，未登录存 Cookie）
+          English = 纯英文版面（全站不出现中文）；中文站另有「双语同显」模式。 #}
       <div class="lang-switch" role="group" aria-label="{{ bi_plain('lang.switch') }}">
         {{ icon('globe') }}
-        <a href="{{ url_for('main.set_lang', lang='zh') }}{% if request.path and request.path != url_for('main.set_lang') %}?next={{ request.path }}{% endif %}"
-           class="{{ 'on' if ui_lang == 'zh' }}">中文</a>
-        <i class="ls-div"></i>
-        <a href="{{ url_for('main.set_lang', lang='en') }}{% if request.path %}?next={{ request.path }}{% endif %}"
-           class="{{ 'on' if ui_lang == 'en' }}">English</a>
+        {% for code in ui_langs %}
+          <a href="{{ url_for('main.set_lang', lang=code) }}{% if request.path %}?next={{ request.path }}{% endif %}"
+             class="{{ 'on' if ui_lang == code }}">{{ lang_label(code) }}</a>
+          {% if not loop.last %}<i class="ls-div"></i>{% endif %}
+        {% endfor %}
       </div>
 
       {% if current_user.is_authenticated %}
@@ -116,7 +117,7 @@
     {% if messages %}
       <div class="flashes">
         {% for cat, msg in messages %}
-          <div class="flash {{ cat }}">{{ msg }}</div>
+          <div class="flash {{ cat }}">{{ t_flash(msg) }}</div>
         {% endfor %}
       </div>
     {% endif %}
@@ -125,8 +126,9 @@
   {% block content %}{% endblock %}
 
   <footer class="footer">
-    <p><b class="bi"><span class="bi-en">AI Language Learning Platform</span><span class="bi-zh">AI 语言学习平台</span></b> <span class="muted">v{{ app_version }}</span></p>
-    <p class="muted"><span class="bi"><span class="bi-en">English · Cantonese · more languages coming · spaced review keeps your memory</span><span class="bi-zh">英语 · 粤语 · 更多语言即将上线 · 间隔复习记得更牢</span></span></p>
+    <p><b>{{ pick('AI Language Learning Platform', 'AI 语言学习平台') }}</b> <span class="muted">v{{ app_version }}</span></p>
+    <p class="muted">{{ pick('English · Cantonese · more languages coming · spaced review keeps your memory',
+                              '英语 · 粤语 · 更多语言即将上线 · 间隔复习记得更牢') }}</p>
     <p class="muted">{{ t('footer.privacy') }}</p>
   </footer>
 </main>
@@ -137,7 +139,7 @@
   <div class="tabbar-inner">
     <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('main.dashboard') }}"
        href="{{ url_for('main.dashboard') }}">{{ icon('home') }}<span>{{ bi('nav.dashboard') }}</span></a>
-    <a class="{{ 'active' if request.endpoint and (request.endpoint.startswith('learn.') or request.endpoint.startswith('words.learn') or request.endpoint.startswith('main.courses') or request.endpoint.startswith('main.unit')) }}"
+    <a class="{{ 'active' if request.endpoint and (request.endpoint.startswith('learn.') or request.endpoint.startswith('words.daily') or request.endpoint.startswith('main.courses') or request.endpoint.startswith('main.unit')) }}"
        href="{{ url_for('main.courses') }}">{{ icon('book') }}<span class="bi"><span class="bi-en">Courses</span><span class="bi-zh">课程</span></span></a>
     <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('quiz.') }}"
        href="{{ url_for('quiz.test_page') }}">{{ icon('practice') }}<span>{{ bi('nav.quiz') }}</span></a>

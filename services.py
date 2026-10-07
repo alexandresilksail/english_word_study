@@ -10,6 +10,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import case, func
 
 from extensions import db
+from localization import pick
 from models import (Favorite, StudyRecord, TestRecord, UserWordProgress, Word,
                     WrongAnswer, utcnow)
 
@@ -17,6 +18,7 @@ from models import (Favorite, StudyRecord, TestRecord, UserWordProgress, Word,
 # 辅助
 # --------------------------------------------------------------------------
 STATUS_LABELS = {"new": "未学习", "learning": "学习中", "mastered": "已掌握"}
+STATUS_LABELS_EN = {"new": "New", "learning": "Learning", "mastered": "Mastered"}
 
 
 def today_start():
@@ -48,7 +50,8 @@ def build_word_view(word: Word, user_id: int) -> dict:
         "level": word.level,
         "initial": word.initial,
         "status": prog.status if prog else "new",
-        "status_label": STATUS_LABELS.get(prog.status if prog else "new", "未学习"),
+        "status_label": pick(STATUS_LABELS_EN.get(prog.status if prog else "new", "New"),
+                              STATUS_LABELS.get(prog.status if prog else "new", "未学习")),
         "correct": prog.correct_count if prog else 0,
         "wrong": prog.wrong_count if prog else 0,
         "view_count": prog.view_count if prog else 0,
@@ -307,24 +310,35 @@ def learning_streak(user_id: int) -> int:
     return streak
 
 
+# (icon, name_zh, name_en, name_alt, test, desc_zh, desc_en)
 BADGES = [
-    ("🌱", "扬帆起航", lambda s: s["learned"] >= 1, "学习第 1 个单词"),
-    ("🔖", "小有收藏", lambda s: s["favorites"] >= 10, "收藏 10 个单词"),
-    ("🔥", "勤学苦练", lambda s: s["total_answers"] >= 50, "累计答题 50 次"),
-    ("🎯", "神射手", lambda s: s["accuracy"] >= 90 and s["total_answers"] >= 20, "正确率 ≥ 90%"),
-    ("👑", "单词之王", lambda s: s["mastered"] >= 100, "掌握 100 个单词"),
-    ("📚", "博学多才", lambda s: s["mastered"] >= 500, "掌握 500 个单词"),
-    ("🏆", "千锤百炼", lambda s: s["tests"] >= 10, "完成 10 次测试"),
-    ("💎", "持之以恒", lambda s: s.get("streak", 0) >= 3, "连续学习 3 天"),
+    ("🌱", "扬帆起航", "First Steps", "Set Sail",
+     lambda s: s["learned"] >= 1, "学习第 1 个单词", "Learned your first word"),
+    ("🔖", "小有收藏", "Bookmarker", "Collector",
+     lambda s: s["favorites"] >= 10, "收藏 10 个单词", "Saved 10 words"),
+    ("🔥", "勤学苦练", "Diligent", "Hard Worker",
+     lambda s: s["total_answers"] >= 50, "累计答题 50 次", "Answered 50 questions"),
+    ("🎯", "神射手", "Sharpshooter", "Marksman",
+     lambda s: s["accuracy"] >= 90 and s["total_answers"] >= 20, "正确率 ≥ 90%", "Accuracy ≥ 90%"),
+    ("👑", "单词之王", "Word King", "Vocabulary Monarch",
+     lambda s: s["mastered"] >= 100, "掌握 100 个单词", "Mastered 100 words"),
+    ("📚", "博学多才", "Scholar", "Learned",
+     lambda s: s["mastered"] >= 500, "掌握 500 个单词", "Mastered 500 words"),
+    ("🏆", "千锤百炼", "Iron Will", "Tempered",
+     lambda s: s["tests"] >= 10, "完成 10 次测试", "Completed 10 tests"),
+    ("💎", "持之以恒", "Perseverant", "Persistent",
+     lambda s: s.get("streak", 0) >= 3, "连续学习 3 天", "Studied 3 days in a row"),
 ]
 
 
 def unlocked_badges(stats: dict) -> list[dict]:
     out = []
-    for icon, name, test, desc in BADGES:
+    for icon, name_zh, name_en, name_alt, test, desc_zh, desc_en in BADGES:
         try:
             got = bool(test(stats))
         except Exception:
             got = False
-        out.append({"icon": icon, "name": name, "desc": desc, "unlocked": got})
+        out.append({"icon": icon, "name": name_zh, "name_en": name_en,
+                    "name_alt": name_alt, "desc": desc_zh, "desc_en": desc_en,
+                    "unlocked": got})
     return out

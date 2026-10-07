@@ -21,15 +21,19 @@ SCOPES = {
     "all": "全部单词", "new": "未学习", "learning": "学习中",
     "mastered": "已掌握", "favorites": "我的收藏", "wrong": "错题本",
 }
+SCOPES_EN = {
+    "all": "All words", "new": "Not learned", "learning": "Learning",
+    "mastered": "Mastered", "favorites": "My favorites", "wrong": "Mistakes",
+}
 
 
 def _visible_to_user():
     return current_user.is_authenticated
 
 
-@words_bp.route("/learn")
+@words_bp.route("/words/learn")
 @login_required
-def learn():
+def daily():
     uid = current_user.id
     page = request.args.get("page", 1, type=int) or 1
     scope = request.args.get("scope", "all")
@@ -88,7 +92,7 @@ def learn():
             touch_word(uid, w["id"], "view")   # 浏览即计入学习
 
     return render_template("learn.html", words=items, total=total, page=page,
-                           pages=pages, scope=scope, scopes=SCOPES, letter=letter,
+                           pages=pages, scope=scope, scopes=SCOPES, scopes_en=SCOPES_EN, letter=letter,
                            letters=LETTERS, form=EmptyForm(), labels=STATUS_LABELS)
 
 
@@ -116,7 +120,8 @@ def browse():
     rows = query.order_by(Word.word).offset((page - 1) * PAGE_SIZE).limit(PAGE_SIZE).all()
     items = [build_word_view(w, uid) for w in rows]
     return render_template("words.html", words=items, total=total, page=page, pages=pages,
-                           q=q, letter=letter, letters=LETTERS, counts=counts, form=EmptyForm())
+                           q=q, letter=letter, letters=LETTERS, counts=counts, form=EmptyForm(),
+                           scopes=SCOPES, scopes_en=SCOPES_EN)
 
 
 @words_bp.route("/word/<int:word_id>")

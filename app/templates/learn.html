@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% import "_macros.html" as mm %}
 {% from "_macros.html" import icon %}
-{% block title %}{{ bi_plain('learn.title') }} · {{ app_title }}{% endblock %}
+{% block title %}{{ pick('Learn', '学习') }} · {{ app_title_en }}{% endblock %}
 
 {% block content %}
 
@@ -12,7 +12,7 @@
     <h1>{{ bi('learn.title') }}</h1>
     <p style="color:var(--ink-2);margin:0">{{ t('learn.sub') }}</p>
     <div class="row" style="gap:6px;margin-top:12px">
-      <span class="tag violet">{{ t('learn.scope') }}: {{ scopes.get(scope, t('quiz.scope.all')) }}</span>
+      <span class="tag violet">{{ t('learn.scope') }}: {{ pick(scopes_en.get(scope, scope), scopes.get(scope, scope)) }}</span>
       <span class="tag">{{ icon('book-open') }} {{ t('learn.total') }} {{ total }} {{ t('learn.words_unit') }}</span>
     </div>
   </div>
@@ -22,11 +22,11 @@
 {# ---------------------------------------------------------- 筛选工具栏 #}
 <div class="card" style="margin-bottom:var(--ds-sp-5)">
   <div class="row" style="gap:var(--ds-sp-4);align-items:flex-end">
-    <form method="get" action="{{ url_for('words.learn') }}" class="field" style="margin:0;min-width:190px">
+    <form method="get" action="{{ url_for('words.daily') }}" class="field" style="margin:0;min-width:190px">
       <label for="scope">{{ bi('learn.scope') }}</label>
       <select name="scope" id="scope" class="input" onchange="this.form.submit()">
         {% for k, v in scopes.items() %}
-          <option value="{{ k }}" {{ 'selected' if k == scope }}>{{ v }}</option>
+          <option value="{{ k }}" {{ 'selected' if k == scope }}>{{ pick(scopes_en.get(k, v), v) }}</option>
         {% endfor %}
       </select>
       {% if letter %}<input type="hidden" name="letter" value="{{ letter }}">{% endif %}
@@ -35,10 +35,10 @@
     <div style="flex:1 1 auto;min-width:200px">
       <label class="small muted" style="display:block;margin-bottom:6px">{{ t('nav.browse') }} / A–Z</label>
       <div class="row" style="gap:4px">
-        <a class="icon-btn {{ 'on' if not letter }}" href="{{ url_for('words.learn', scope=scope) }}"
+        <a class="icon-btn {{ 'on' if not letter }}" href="{{ url_for('words.daily', scope=scope) }}"
            style="min-width:auto;padding:0 10px">{{ t('act.all') }}</a>
         {% for L in letters %}
-          <a class="icon-btn {{ 'on' if letter == L|lower }}" href="{{ url_for('words.learn', letter=L|lower, scope=scope) }}"
+          <a class="icon-btn {{ 'on' if letter == L|lower }}" href="{{ url_for('words.daily', letter=L|lower, scope=scope) }}"
              style="min-width:34px;padding:0">{{ L }}</a>
         {% endfor %}
       </div>
@@ -51,10 +51,10 @@
   <div class="word-grid">
     {% for w in words %}{{ mm.word_card(w, form) }}{% endfor %}
   </div>
-  {{ mm.pager(page, pages, 'words.learn', {'scope': scope, 'letter': letter}) }}
+  {{ mm.pager(page, pages, 'words.daily', {'scope': scope, 'letter': letter}) }}
 {% else %}
   <div class="card">
-    {{ mm.empty_box('book', t('common.empty'), t('learn.sub'), url_for('words.learn'), bi('act.all')) }}
+    {{ mm.empty_box('book', t('common.empty'), t('learn.sub'), url_for('words.daily'), bi('act.all')) }}
   </div>
 {% endif %}
 

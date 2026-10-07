@@ -51,14 +51,62 @@ class Level:
     freq_min: int
 
 LEVELS: list[Level] = [
-    Level("A1", 0, "入门", "Beginner", "violet", "🌱", 5000),
-    Level("A2", 1, "初级", "Elementary", "sky", "🌿", 2000),
-    Level("B1", 2, "中级", "Intermediate", "emerald", "🌳", 800),
-    Level("B2", 3, "中高级", "Upper Intermediate", "amber", "🏔️", 300),
-    Level("C1", 4, "高级", "Advanced", "rose", "🌋", 100),
-    Level("C2", 5, "精通", "Proficiency", "indigo", "🏆", 0),
+    Level("Pre-A1", 0, "入门预备", "Starter", "gray", "🌰", 0),
+    Level("A1", 1, "入门", "Beginner", "violet", "🌱", 0),
+    Level("A2", 2, "初级", "Elementary", "sky", "🌿", 0),
+    Level("B1", 3, "中级", "Intermediate", "emerald", "🌳", 0),
+    Level("B2", 4, "中高级", "Upper Intermediate", "amber", "🏔️", 0),
+    Level("C1", 5, "高级", "Advanced", "rose", "🌋", 0),
+    Level("C2", 6, "精通", "Proficiency", "indigo", "🏆", 0),
 ]
 LEVEL_BY_CODE = {lv.code: lv for lv in LEVELS}
+
+#: CEFR 等级沿「词频降序」的比例切片。
+#:
+#: 早期版本用的是绝对阈值（A1 ≥ 5000 分），但本库 Word.freq 的实际上限只有
+#: 三位数，结果「绝大多数词都被挤到 B1 以下、Pre-A1/A1 一个词都没有」，
+#: 课程取词时只能拿到 x/y/z 开头的低频陈列品。
+#:
+#: 改成**分位数**：把按词频降序的词库切成固定的百分比区间。
+#: 越靠前（越常用）→ 越初级，这与直觉一致，且与词频量纲无关。
+LEVEL_WEIGHTS: list[tuple[str, float]] = [
+    ("Pre-A1", 0.06),   # 最常用的 6%：入门预备
+    ("A1", 0.14),       # 6%–20%
+    ("A2", 0.20),       # 20%–40%
+    ("B1", 0.20),       # 40%–60%
+    ("B2", 0.18),       # 60%–78%
+    ("C1", 0.12),       # 78%–90%
+    ("C2", 0.10),       # 90%–100%
+]
+
+
+def assign_by_quantile(sorted_words) -> dict[int, str]:
+    """把已按词频排序好的词（**最常用的在前**），按 :data:`LEVEL_WEIGHTS` 切片成 CEFR 等级。
+
+    传入的序列应由调用方按 ``Word.freq asc`` 排好（freq 越小＝越常用）。
+    返回 ``{word_id: cefr_level}``；空列表返回空 dict。
+    """
+    out: dict[int, str] = {}
+    n = len(sorted_words)
+    if not n:
+        return out
+    cursor = 0
+    for idx, (code, weight) in enumerate(LEVEL_WEIGHTS):
+        if idx == len(LEVEL_WEIGHTS) - 1:
+            take = n - cursor          # 最后一档吃下剩余，避免取整漏词
+        else:
+            take = max(1, int(round(n * weight)))
+            take = min(take, n - cursor)
+        for w in sorted_words[cursor:cursor + take]:
+            out[w.id] = code
+        cursor += take
+        if cursor >= n:
+            break
+    # 极端小数据兜底：还有剩余就全部归到最后一档
+    if cursor < n:
+        for w in sorted_words[cursor:]:
+            out[w.id] = LEVEL_WEIGHTS[-1][0]
+    return out
 
 # 每个等级 3 个单元（Duolingo 式主题）
 UNIT_THEMES = {

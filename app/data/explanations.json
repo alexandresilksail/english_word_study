@@ -1,0 +1,1089 @@
+{
+ "en::grammar::Present Continuous": {
+  "example_en": "She is working now; they are waiting outside.",
+  "meaning_en": "Used for actions happening right now: be + verb-ing."
+ },
+ "en::grammar::Present Simple": {
+  "example_en": "I work every day; she works from home.",
+  "meaning_en": "Used for habits and facts: subject + base verb (+s for third person)."
+ },
+ "en::grammar::Verb to be": {
+  "example_en": "I am a student; she is tired.",
+  "meaning_en": "The verb 'be' links the subject to identity or state: I am / you are / he is."
+ },
+ "en::phrase::good morning": {
+  "example_en": "Good morning! Nice to see you.",
+  "meaning_en": "A standard greeting used before noon."
+ },
+ "en::phrase::how are you": {
+  "example_en": "How are you today?",
+  "meaning_en": "A casual greeting asking about someone's wellbeing."
+ },
+ "en::phrase::see you later": {
+  "example_en": "See you later at the cafe.",
+  "meaning_en": "An informal way to say goodbye for now."
+ },
+ "en::phrase::thank you very much": {
+  "example_en": "Thank you very much for your help.",
+  "meaning_en": "A polite, emphasised form of thanks."
+ },
+ "en::quiz::Fill in the blank: complete the phrase · Present Continuous": {
+  "meaning_en": "A short Present Continuous check — fill in the blank."
+ },
+ "en::quiz::Fill in the blank: complete the phrase · Present Simple": {
+  "meaning_en": "A short Present Simple check — fill in the blank."
+ },
+ "en::quiz::Fill in the blank: complete the phrase · Verb to be": {
+  "meaning_en": "A short Verb to be check — fill in the blank."
+ },
+ "en::quiz::Multiple choice: pick the right meaning · Present Continuous": {
+  "meaning_en": "A short Present Continuous check — multiple choice."
+ },
+ "en::quiz::Multiple choice: pick the right meaning · Present Simple": {
+  "meaning_en": "A short Present Simple check — multiple choice."
+ },
+ "en::quiz::Multiple choice: pick the right meaning · Verb to be": {
+  "meaning_en": "A short Verb to be check — multiple choice."
+ },
+ "en::quiz::Reorder the words into a sentence · Present Continuous": {
+  "meaning_en": "A short Present Continuous check — reorder the words into a sentence."
+ },
+ "en::quiz::Reorder the words into a sentence · Present Simple": {
+  "meaning_en": "A short Present Simple check — reorder the words into a sentence."
+ },
+ "en::quiz::Reorder the words into a sentence · Verb to be": {
+  "meaning_en": "A short Verb to be check — reorder the words into a sentence."
+ },
+ "en::review::Review this unit's grammar": {
+  "meaning_en": "Go over the grammar points covered in this unit."
+ },
+ "en::review::Review this unit's phrases & sentences": {
+  "meaning_en": "Go over the phrases and sentences from this unit."
+ },
+ "en::review::Review this unit's vocabulary": {
+  "meaning_en": "Go over the words you met in this unit."
+ },
+ "en::sentence::I would like a cup of tea.": {
+  "example_en": "I would like a cup of tea, please.",
+  "meaning_en": "Polite request pattern: subject + would like + noun."
+ },
+ "en::sentence::She is reading a book in the park.": {
+  "example_en": "She is reading a book in the park.",
+  "meaning_en": "Present continuous: be + verb-ing for actions happening now."
+ },
+ "en::sentence::Where is the nearest station?": {
+  "example_en": "Where is the nearest station?",
+  "meaning_en": "Asking for directions: Where is the + place?"
+ },
+ "en::vocabulary::achieve": {
+  "meaning_en": "to succeed in doing something through effort"
+ },
+ "en::vocabulary::actually": {
+  "meaning_en": "in fact; really"
+ },
+ "en::vocabulary::afternoon": {
+  "meaning_en": "the part of the day between midday and evening"
+ },
+ "en::vocabulary::air": {
+  "meaning_en": "the invisible gas we breathe"
+ },
+ "en::vocabulary::allow": {
+  "meaning_en": "to let someone do something; to permit"
+ },
+ "en::vocabulary::already": {
+  "meaning_en": "before now; sooner than expected"
+ },
+ "en::vocabulary::also": {
+  "meaning_en": "in addition; too"
+ },
+ "en::vocabulary::any": {
+  "meaning_en": "used for an amount that is not fixed; even one"
+ },
+ "en::vocabulary::area": {
+  "meaning_en": "a part of a place or subject"
+ },
+ "en::vocabulary::around": {
+  "meaning_en": "on all sides of something; approximately"
+ },
+ "en::vocabulary::art": {
+  "meaning_en": "creative work such as painting or music"
+ },
+ "en::vocabulary::ask": {
+  "meaning_en": "to put a question to someone; to request"
+ },
+ "en::vocabulary::attention": {
+  "meaning_en": "careful watching, listening or thinking about something"
+ },
+ "en::vocabulary::award": {
+  "meaning_en": "a prize given for something achieved"
+ },
+ "en::vocabulary::baby": {
+  "meaning_en": "a very young child or animal"
+ },
+ "en::vocabulary::back": {
+  "meaning_en": "the rear part of your body; the opposite of front"
+ },
+ "en::vocabulary::bar": {
+  "meaning_en": "a place serving drinks; a solid piece of material"
+ },
+ "en::vocabulary::be": {
+  "meaning_en": "to exist; used to link a subject to a description (I am, you are, he is)"
+ },
+ "en::vocabulary::beautiful": {
+  "meaning_en": "very pleasant to look at"
+ },
+ "en::vocabulary::begin": {
+  "meaning_en": "to start doing something; to start to happen"
+ },
+ "en::vocabulary::big": {
+  "meaning_en": "of large size; grown up"
+ },
+ "en::vocabulary::block": {
+  "meaning_en": "a solid piece; a group of buildings; to stop movement"
+ },
+ "en::vocabulary::bloody": {
+  "meaning_en": "covered with blood; also used informally for emphasis in British English"
+ },
+ "en::vocabulary::body": {
+  "meaning_en": "the physical structure of a person or animal"
+ },
+ "en::vocabulary::book": {
+  "meaning_en": "a set of printed pages bound together"
+ },
+ "en::vocabulary::bother": {
+  "meaning_en": "to annoy someone; to take trouble to do something"
+ },
+ "en::vocabulary::bottom": {
+  "meaning_en": "the lowest part of something"
+ },
+ "en::vocabulary::brown": {
+  "meaning_en": "a colour like earth or coffee"
+ },
+ "en::vocabulary::business": {
+  "meaning_en": "the activity of buying and selling"
+ },
+ "en::vocabulary::buy": {
+  "meaning_en": "to get something by paying money for it"
+ },
+ "en::vocabulary::call": {
+  "meaning_en": "to give someone a name; to telephone; to shout"
+ },
+ "en::vocabulary::car": {
+  "meaning_en": "a road vehicle with four wheels"
+ },
+ "en::vocabulary::case": {
+  "meaning_en": "a particular situation or example of something"
+ },
+ "en::vocabulary::catch": {
+  "meaning_en": "to take hold of something moving; to be in time for"
+ },
+ "en::vocabulary::certain": {
+  "meaning_en": "confident about something; some particular but not named"
+ },
+ "en::vocabulary::change": {
+  "meaning_en": "to make or become different"
+ },
+ "en::vocabulary::check": {
+  "meaning_en": "to look at something to make sure it is correct"
+ },
+ "en::vocabulary::child": {
+  "meaning_en": "a young human being; a boy or girl"
+ },
+ "en::vocabulary::city": {
+  "meaning_en": "a large and permanent town"
+ },
+ "en::vocabulary::community": {
+  "meaning_en": "a group of people living in the same area"
+ },
+ "en::vocabulary::company": {
+  "meaning_en": "a business that sells goods or services"
+ },
+ "en::vocabulary::competition": {
+  "meaning_en": "an event in which people try to win; rivalry"
+ },
+ "en::vocabulary::concern": {
+  "meaning_en": "a worry; to be about something"
+ },
+ "en::vocabulary::country": {
+  "meaning_en": "a nation with its own land, people and government"
+ },
+ "en::vocabulary::course": {
+  "meaning_en": "a series of lessons; a direction that is taken"
+ },
+ "en::vocabulary::dark": {
+  "meaning_en": "with little or no light"
+ },
+ "en::vocabulary::day": {
+  "meaning_en": "the period from sunrise to sunset; 24 hours"
+ },
+ "en::vocabulary::debt": {
+  "meaning_en": "money that you owe to someone"
+ },
+ "en::vocabulary::democracy": {
+  "meaning_en": "a system in which people vote to choose their government"
+ },
+ "en::vocabulary::democratic": {
+  "meaning_en": "based on everyone having a say in decisions"
+ },
+ "en::vocabulary::depend": {
+  "meaning_en": "to rely on someone; to be decided by something"
+ },
+ "en::vocabulary::device": {
+  "meaning_en": "a tool or machine made for a particular purpose"
+ },
+ "en::vocabulary::discussion": {
+  "meaning_en": "a talk in which people exchange ideas"
+ },
+ "en::vocabulary::do": {
+  "meaning_en": "to perform an action; used to form questions and negatives"
+ },
+ "en::vocabulary::door": {
+  "meaning_en": "a movable barrier used to enter a room"
+ },
+ "en::vocabulary::dream": {
+  "meaning_en": "images and thoughts during sleep; a strong wish"
+ },
+ "en::vocabulary::eastern": {
+  "meaning_en": "in or from the east"
+ },
+ "en::vocabulary::education": {
+  "meaning_en": "the process of teaching and learning"
+ },
+ "en::vocabulary::effect": {
+  "meaning_en": "a change caused by something; result"
+ },
+ "en::vocabulary::else": {
+  "meaning_en": "besides; different or other"
+ },
+ "en::vocabulary::employer": {
+  "meaning_en": "a person or company that pays people to work"
+ },
+ "en::vocabulary::enable": {
+  "meaning_en": "to make something possible"
+ },
+ "en::vocabulary::end": {
+  "meaning_en": "the final part of something"
+ },
+ "en::vocabulary::equipment": {
+  "meaning_en": "the tools and machines needed for an activity"
+ },
+ "en::vocabulary::extent": {
+  "meaning_en": "the size or degree of something"
+ },
+ "en::vocabulary::eye": {
+  "meaning_en": "the organ used for seeing"
+ },
+ "en::vocabulary::face": {
+  "meaning_en": "the front part of your head"
+ },
+ "en::vocabulary::fact": {
+  "meaning_en": "something known to be true"
+ },
+ "en::vocabulary::factory": {
+  "meaning_en": "a building where goods are made by machine"
+ },
+ "en::vocabulary::faith": {
+  "meaning_en": "strong belief or trust in someone or something"
+ },
+ "en::vocabulary::family": {
+  "meaning_en": "a group of parents and children living together"
+ },
+ "en::vocabulary::father": {
+  "meaning_en": "a male parent"
+ },
+ "en::vocabulary::field": {
+  "meaning_en": "an area of land; an area of study or activity"
+ },
+ "en::vocabulary::finance": {
+  "meaning_en": "the management of money; to pay for something"
+ },
+ "en::vocabulary::first": {
+  "meaning_en": "coming before all others; for the first time"
+ },
+ "en::vocabulary::flow": {
+  "meaning_en": "to move steadily in one direction, like water"
+ },
+ "en::vocabulary::food": {
+  "meaning_en": "anything that people or animals eat"
+ },
+ "en::vocabulary::force": {
+  "meaning_en": "strength or power used against something"
+ },
+ "en::vocabulary::former": {
+  "meaning_en": "of an earlier time; the first of two mentioned"
+ },
+ "en::vocabulary::friend": {
+  "meaning_en": "a person you like and trust"
+ },
+ "en::vocabulary::gain": {
+  "meaning_en": "to get something useful; to increase in amount"
+ },
+ "en::vocabulary::game": {
+  "meaning_en": "an activity played for fun, usually with rules"
+ },
+ "en::vocabulary::gear": {
+  "meaning_en": "equipment; the mechanism that makes a machine work"
+ },
+ "en::vocabulary::gene": {
+  "meaning_en": "the part of a cell that carries inherited information"
+ },
+ "en::vocabulary::girl": {
+  "meaning_en": "a female child"
+ },
+ "en::vocabulary::give": {
+  "meaning_en": "to hand something to someone; to provide"
+ },
+ "en::vocabulary::glove": {
+  "meaning_en": "a covering worn on the hand"
+ },
+ "en::vocabulary::good": {
+  "meaning_en": "of high quality; pleasant; morally right"
+ },
+ "en::vocabulary::govern": {
+  "meaning_en": "to rule and control a country or organisation"
+ },
+ "en::vocabulary::government": {
+  "meaning_en": "the group of people who control and make laws for a country"
+ },
+ "en::vocabulary::graduate": {
+  "meaning_en": "to complete a degree; a person who has completed one"
+ },
+ "en::vocabulary::graphics": {
+  "meaning_en": "pictures and images, especially made on a computer"
+ },
+ "en::vocabulary::great": {
+  "meaning_en": "very large or important; very good"
+ },
+ "en::vocabulary::group": {
+  "meaning_en": "several people or things together"
+ },
+ "en::vocabulary::grow": {
+  "meaning_en": "to become bigger; to develop"
+ },
+ "en::vocabulary::guidance": {
+  "meaning_en": "help and advice about how to do something"
+ },
+ "en::vocabulary::guy": {
+  "meaning_en": "informal word for a man"
+ },
+ "en::vocabulary::hand": {
+  "meaning_en": "the part of the arm used to hold and touch things"
+ },
+ "en::vocabulary::have": {
+  "meaning_en": "to own or hold something; used to form perfect tenses"
+ },
+ "en::vocabulary::he": {
+  "meaning_en": "used to refer to a male person or animal already mentioned"
+ },
+ "en::vocabulary::head": {
+  "meaning_en": "the top part of your body"
+ },
+ "en::vocabulary::health": {
+  "meaning_en": "the condition of your body and mind"
+ },
+ "en::vocabulary::heavily": {
+  "meaning_en": "with great weight or force; to a great degree"
+ },
+ "en::vocabulary::heel": {
+  "meaning_en": "the back part of the foot; the back part of a shoe"
+ },
+ "en::vocabulary::help": {
+  "meaning_en": "to do something for someone; assistance"
+ },
+ "en::vocabulary::helpful": {
+  "meaning_en": "willing to help; useful"
+ },
+ "en::vocabulary::highway": {
+  "meaning_en": "a large public road for fast traffic"
+ },
+ "en::vocabulary::hip": {
+  "meaning_en": "the part of the body at the side below the waist"
+ },
+ "en::vocabulary::history": {
+  "meaning_en": "the study of things that happened in the past"
+ },
+ "en::vocabulary::home": {
+  "meaning_en": "the place where you live"
+ },
+ "en::vocabulary::hope": {
+  "meaning_en": "to want something to happen; a feeling of expectation"
+ },
+ "en::vocabulary::hot": {
+  "meaning_en": "having a high temperature"
+ },
+ "en::vocabulary::hour": {
+  "meaning_en": "sixty minutes"
+ },
+ "en::vocabulary::house": {
+  "meaning_en": "a building where people live"
+ },
+ "en::vocabulary::how": {
+  "meaning_en": "in what way; used to ask about manner or condition"
+ },
+ "en::vocabulary::humor": {
+  "meaning_en": "the quality of being funny or amusing"
+ },
+ "en::vocabulary::hurry": {
+  "meaning_en": "to move or do something quickly"
+ },
+ "en::vocabulary::idea": {
+  "meaning_en": "a thought or suggestion"
+ },
+ "en::vocabulary::identity": {
+  "meaning_en": "who or what someone is"
+ },
+ "en::vocabulary::implement": {
+  "meaning_en": "to put a plan or decision into action"
+ },
+ "en::vocabulary::impose": {
+  "meaning_en": "to force something on someone"
+ },
+ "en::vocabulary::in": {
+  "meaning_en": "inside something; within a place, time or state"
+ },
+ "en::vocabulary::inch": {
+  "meaning_en": "a unit of length equal to 2.54 centimetres"
+ },
+ "en::vocabulary::invite": {
+  "meaning_en": "to ask someone to come somewhere or do something"
+ },
+ "en::vocabulary::issue": {
+  "meaning_en": "an important topic or problem"
+ },
+ "en::vocabulary::jewel": {
+  "meaning_en": "a precious stone used in jewellery"
+ },
+ "en::vocabulary::jewellery": {
+  "meaning_en": "decorative objects worn on the body, often made of metal or gems"
+ },
+ "en::vocabulary::job": {
+  "meaning_en": "regular paid work"
+ },
+ "en::vocabulary::judge": {
+  "meaning_en": "a person who decides cases in court; to form an opinion"
+ },
+ "en::vocabulary::judicial": {
+  "meaning_en": "relating to courts of law and judges"
+ },
+ "en::vocabulary::kid": {
+  "meaning_en": "informal word for a child"
+ },
+ "en::vocabulary::kind": {
+  "meaning_en": "a type or sort of something"
+ },
+ "en::vocabulary::kindergarten": {
+  "meaning_en": "a school or class for very young children"
+ },
+ "en::vocabulary::labor": {
+  "meaning_en": "work, especially physical work"
+ },
+ "en::vocabulary::lane": {
+  "meaning_en": "a narrow road; a marked strip of a wider road"
+ },
+ "en::vocabulary::largely": {
+  "meaning_en": "mostly; to a great degree"
+ },
+ "en::vocabulary::law": {
+  "meaning_en": "a rule made by a government"
+ },
+ "en::vocabulary::leave": {
+  "meaning_en": "to go away from a place; to let something stay"
+ },
+ "en::vocabulary::lecture": {
+  "meaning_en": "a formal talk given to teach people"
+ },
+ "en::vocabulary::lesson": {
+  "meaning_en": "a period of teaching; something learned"
+ },
+ "en::vocabulary::level": {
+  "meaning_en": "a position on a scale of amount or difficulty"
+ },
+ "en::vocabulary::life": {
+  "meaning_en": "the state of being alive; the way someone lives"
+ },
+ "en::vocabulary::like": {
+  "meaning_en": "to enjoy or find pleasant; similar to"
+ },
+ "en::vocabulary::line": {
+  "meaning_en": "a long thin mark; a row of words"
+ },
+ "en::vocabulary::list": {
+  "meaning_en": "a set of items written one after another"
+ },
+ "en::vocabulary::little": {
+  "meaning_en": "small in size or amount; not much"
+ },
+ "en::vocabulary::lot": {
+  "meaning_en": "a large amount or number"
+ },
+ "en::vocabulary::lucky": {
+  "meaning_en": "having good fortune"
+ },
+ "en::vocabulary::majority": {
+  "meaning_en": "the greater number or part of people or things"
+ },
+ "en::vocabulary::man": {
+  "meaning_en": "an adult male human being"
+ },
+ "en::vocabulary::management": {
+  "meaning_en": "the control and organisation of a business or group"
+ },
+ "en::vocabulary::mean": {
+  "meaning_en": "to have as its sense; to intend"
+ },
+ "en::vocabulary::meet": {
+  "meaning_en": "to come together with someone; to be introduced"
+ },
+ "en::vocabulary::member": {
+  "meaning_en": "a person belonging to a group"
+ },
+ "en::vocabulary::middle": {
+  "meaning_en": "the centre point; between the beginning and end"
+ },
+ "en::vocabulary::minute": {
+  "meaning_en": "sixty seconds"
+ },
+ "en::vocabulary::mix": {
+  "meaning_en": "to combine different things together"
+ },
+ "en::vocabulary::moment": {
+  "meaning_en": "a very short period of time"
+ },
+ "en::vocabulary::money": {
+  "meaning_en": "coins or notes used to buy things"
+ },
+ "en::vocabulary::month": {
+  "meaning_en": "one of the twelve periods in a year"
+ },
+ "en::vocabulary::more": {
+  "meaning_en": "a larger amount or number; to a greater degree"
+ },
+ "en::vocabulary::morning": {
+  "meaning_en": "the early part of the day, before midday"
+ },
+ "en::vocabulary::mostly": {
+  "meaning_en": "in most cases; mainly"
+ },
+ "en::vocabulary::mother": {
+  "meaning_en": "a female parent"
+ },
+ "en::vocabulary::motion": {
+  "meaning_en": "the act or process of moving"
+ },
+ "en::vocabulary::name": {
+  "meaning_en": "the word someone or something is called by"
+ },
+ "en::vocabulary::night": {
+  "meaning_en": "the dark part of a 24-hour day"
+ },
+ "en::vocabulary::nightmare": {
+  "meaning_en": "a frightening dream; a very unpleasant experience"
+ },
+ "en::vocabulary::not": {
+  "meaning_en": "used to make a statement negative"
+ },
+ "en::vocabulary::nothing": {
+  "meaning_en": "no thing; not anything"
+ },
+ "en::vocabulary::number": {
+  "meaning_en": "a symbol or word used to count or measure"
+ },
+ "en::vocabulary::objective": {
+  "meaning_en": "a goal; based on facts rather than feelings"
+ },
+ "en::vocabulary::obstacle": {
+  "meaning_en": "something that blocks your way or stops progress"
+ },
+ "en::vocabulary::occupation": {
+  "meaning_en": "a person's job; the act of occupying a place"
+ },
+ "en::vocabulary::office": {
+  "meaning_en": "a room or building where people work"
+ },
+ "en::vocabulary::old": {
+  "meaning_en": "having lived or existed for a long time; no longer young"
+ },
+ "en::vocabulary::on": {
+  "meaning_en": "on top of; touching the surface of something"
+ },
+ "en::vocabulary::only": {
+  "meaning_en": "nothing more than; just"
+ },
+ "en::vocabulary::open": {
+  "meaning_en": "not closed; to move something so that it is not closed"
+ },
+ "en::vocabulary::organic": {
+  "meaning_en": "produced without artificial chemicals; relating to living things"
+ },
+ "en::vocabulary::other": {
+  "meaning_en": "different from the one mentioned; the second of two"
+ },
+ "en::vocabulary::outdoor": {
+  "meaning_en": "done, used or happening outside a building"
+ },
+ "en::vocabulary::parent": {
+  "meaning_en": "a mother or father"
+ },
+ "en::vocabulary::park": {
+  "meaning_en": "a public area with trees and grass; to leave a car"
+ },
+ "en::vocabulary::part": {
+  "meaning_en": "one piece of a whole"
+ },
+ "en::vocabulary::particularly": {
+  "meaning_en": "especially; more than usual"
+ },
+ "en::vocabulary::party": {
+  "meaning_en": "a social event; a political group"
+ },
+ "en::vocabulary::pass": {
+  "meaning_en": "to go past; to succeed in a test"
+ },
+ "en::vocabulary::people": {
+  "meaning_en": "human beings in general; more than one person"
+ },
+ "en::vocabulary::person": {
+  "meaning_en": "a human being"
+ },
+ "en::vocabulary::place": {
+  "meaning_en": "a particular point, area or position"
+ },
+ "en::vocabulary::point": {
+  "meaning_en": "an idea, place, or moment in time"
+ },
+ "en::vocabulary::possible": {
+  "meaning_en": "able to be done or to happen"
+ },
+ "en::vocabulary::power": {
+  "meaning_en": "the ability or authority to do something"
+ },
+ "en::vocabulary::principle": {
+  "meaning_en": "a basic rule or belief about how to behave"
+ },
+ "en::vocabulary::problem": {
+  "meaning_en": "something difficult that needs to be solved"
+ },
+ "en::vocabulary::program": {
+  "meaning_en": "a plan of activities; a computer application"
+ },
+ "en::vocabulary::question": {
+  "meaning_en": "a sentence that asks for information"
+ },
+ "en::vocabulary::questionnaire": {
+  "meaning_en": "a written list of questions used to collect information"
+ },
+ "en::vocabulary::quilt": {
+  "meaning_en": "a warm bed covering made of layers of fabric"
+ },
+ "en::vocabulary::race": {
+  "meaning_en": "a competition of speed; a group sharing an origin"
+ },
+ "en::vocabulary::reason": {
+  "meaning_en": "the cause or explanation for something"
+ },
+ "en::vocabulary::reform": {
+  "meaning_en": "a change made to improve something"
+ },
+ "en::vocabulary::region": {
+  "meaning_en": "an area of a country or of the world"
+ },
+ "en::vocabulary::relation": {
+  "meaning_en": "the way two things are connected; a family member"
+ },
+ "en::vocabulary::release": {
+  "meaning_en": "to let someone or something go; to make available"
+ },
+ "en::vocabulary::research": {
+  "meaning_en": "careful study to discover facts"
+ },
+ "en::vocabulary::restaurant": {
+  "meaning_en": "a place where you pay for and eat a meal"
+ },
+ "en::vocabulary::result": {
+  "meaning_en": "something that happens because of something else"
+ },
+ "en::vocabulary::right": {
+  "meaning_en": "correct; or the opposite of left"
+ },
+ "en::vocabulary::room": {
+  "meaning_en": "a space inside a building, separated by walls"
+ },
+ "en::vocabulary::say": {
+  "meaning_en": "to speak words; to express something in words"
+ },
+ "en::vocabulary::scale": {
+  "meaning_en": "the size of something; marks used for measuring weight"
+ },
+ "en::vocabulary::scheme": {
+  "meaning_en": "a plan or system for doing something"
+ },
+ "en::vocabulary::school": {
+  "meaning_en": "a place where children go to be taught"
+ },
+ "en::vocabulary::sea": {
+  "meaning_en": "the large area of salt water covering most of the earth"
+ },
+ "en::vocabulary::seek": {
+  "meaning_en": "to look for something; to try to obtain"
+ },
+ "en::vocabulary::sell": {
+  "meaning_en": "to give something in exchange for money"
+ },
+ "en::vocabulary::service": {
+  "meaning_en": "help or work that is provided for other people"
+ },
+ "en::vocabulary::side": {
+  "meaning_en": "one of the two halves of something"
+ },
+ "en::vocabulary::significant": {
+  "meaning_en": "important or noticeable; large enough to matter"
+ },
+ "en::vocabulary::since": {
+  "meaning_en": "from a time in the past until now; because"
+ },
+ "en::vocabulary::slightly": {
+  "meaning_en": "to a small degree; a little"
+ },
+ "en::vocabulary::small": {
+  "meaning_en": "little in size or amount"
+ },
+ "en::vocabulary::sometimes": {
+  "meaning_en": "on some occasions but not always"
+ },
+ "en::vocabulary::song": {
+  "meaning_en": "a short piece of music with words that are sung"
+ },
+ "en::vocabulary::state": {
+  "meaning_en": "a condition someone or something is in"
+ },
+ "en::vocabulary::statement": {
+  "meaning_en": "something said or written officially"
+ },
+ "en::vocabulary::step": {
+  "meaning_en": "a movement made by lifting one foot; a stage in a process"
+ },
+ "en::vocabulary::story": {
+  "meaning_en": "an account of events, real or imagined"
+ },
+ "en::vocabulary::student": {
+  "meaning_en": "a person who studies at a school or university"
+ },
+ "en::vocabulary::study": {
+  "meaning_en": "the activity of learning about a subject"
+ },
+ "en::vocabulary::suddenly": {
+  "meaning_en": "quickly and unexpectedly"
+ },
+ "en::vocabulary::sure": {
+  "meaning_en": "certain and confident; without doubt"
+ },
+ "en::vocabulary::system": {
+  "meaning_en": "a set of connected parts working together"
+ },
+ "en::vocabulary::teacher": {
+  "meaning_en": "a person who teaches"
+ },
+ "en::vocabulary::team": {
+  "meaning_en": "a group working together towards a goal"
+ },
+ "en::vocabulary::technology": {
+  "meaning_en": "scientific knowledge used for practical purposes"
+ },
+ "en::vocabulary::telephone": {
+  "meaning_en": "a device for speaking to someone far away"
+ },
+ "en::vocabulary::that": {
+  "meaning_en": "used to point to a specific thing; introduces a clause"
+ },
+ "en::vocabulary::thing": {
+  "meaning_en": "an object or idea that is not named exactly"
+ },
+ "en::vocabulary::throughout": {
+  "meaning_en": "in every part of; during the whole time"
+ },
+ "en::vocabulary::time": {
+  "meaning_en": "what we measure in minutes and hours; the moment when something happens"
+ },
+ "en::vocabulary::title": {
+  "meaning_en": "the name of a book, film or work; a position someone holds"
+ },
+ "en::vocabulary::to": {
+  "meaning_en": "towards a place or direction; used before the base form of a verb"
+ },
+ "en::vocabulary::treat": {
+  "meaning_en": "to behave towards someone in a stated way; to try to cure"
+ },
+ "en::vocabulary::try": {
+  "meaning_en": "to attempt something; to make an effort"
+ },
+ "en::vocabulary::type": {
+  "meaning_en": "a kind or sort; to write using a keyboard"
+ },
+ "en::vocabulary::ultimate": {
+  "meaning_en": "final; the greatest or best possible"
+ },
+ "en::vocabulary::unbelievable": {
+  "meaning_en": "too surprising or extreme to be believed"
+ },
+ "en::vocabulary::undergo": {
+  "meaning_en": "to experience something, often something difficult"
+ },
+ "en::vocabulary::undergraduate": {
+  "meaning_en": "a student who has not yet taken a first degree"
+ },
+ "en::vocabulary::underline": {
+  "meaning_en": "to draw a line under words; to emphasise something"
+ },
+ "en::vocabulary::unfair": {
+  "meaning_en": "not fair or just"
+ },
+ "en::vocabulary::unhappy": {
+  "meaning_en": "not happy; sad or dissatisfied"
+ },
+ "en::vocabulary::unite": {
+  "meaning_en": "to join together as one group"
+ },
+ "en::vocabulary::universe": {
+  "meaning_en": "everything that exists, including stars and planets"
+ },
+ "en::vocabulary::unpleasant": {
+  "meaning_en": "not pleasant; causing discomfort or dislike"
+ },
+ "en::vocabulary::upgrade": {
+  "meaning_en": "to improve something to a better standard"
+ },
+ "en::vocabulary::upstairs": {
+  "meaning_en": "on or towards a higher floor of a building"
+ },
+ "en::vocabulary::urgency": {
+  "meaning_en": "the need to act or deal with something quickly"
+ },
+ "en::vocabulary::usage": {
+  "meaning_en": "the way in which a word or thing is used"
+ },
+ "en::vocabulary::useful": {
+  "meaning_en": "able to be used for a purpose; helpful"
+ },
+ "en::vocabulary::useless": {
+  "meaning_en": "not useful; serving no purpose"
+ },
+ "en::vocabulary::utility": {
+  "meaning_en": "usefulness; a public service such as water or power"
+ },
+ "en::vocabulary::utter": {
+  "meaning_en": "to speak or say something; complete (as in 'utter confusion')"
+ },
+ "en::vocabulary::utterly": {
+  "meaning_en": "completely; totally"
+ },
+ "en::vocabulary::valuation": {
+  "meaning_en": "an estimate of how much something is worth"
+ },
+ "en::vocabulary::variation": {
+  "meaning_en": "a difference from the usual or standard form"
+ },
+ "en::vocabulary::vary": {
+  "meaning_en": "to change; to be different in different situations"
+ },
+ "en::vocabulary::verb": {
+  "meaning_en": "a word that describes an action, event or state"
+ },
+ "en::vocabulary::vicious": {
+  "meaning_en": "deliberately violent or cruel; severe"
+ },
+ "en::vocabulary::villager": {
+  "meaning_en": "a person who lives in a village"
+ },
+ "en::vocabulary::violent": {
+  "meaning_en": "using force to hurt people or damage things"
+ },
+ "en::vocabulary::visual": {
+  "meaning_en": "relating to seeing or sight"
+ },
+ "en::vocabulary::vocabulary": {
+  "meaning_en": "all the words known by a person or used in a language"
+ },
+ "en::vocabulary::wake": {
+  "meaning_en": "to stop sleeping and become conscious"
+ },
+ "en::vocabulary::war": {
+  "meaning_en": "armed fighting between groups or countries"
+ },
+ "en::vocabulary::warn": {
+  "meaning_en": "to tell someone about possible danger"
+ },
+ "en::vocabulary::water": {
+  "meaning_en": "the clear liquid that falls as rain"
+ },
+ "en::vocabulary::way": {
+  "meaning_en": "a method, road or direction"
+ },
+ "en::vocabulary::week": {
+  "meaning_en": "seven days"
+ },
+ "en::vocabulary::why": {
+  "meaning_en": "for what reason"
+ },
+ "en::vocabulary::wildlife": {
+  "meaning_en": "wild animals and plants living in their natural environment"
+ },
+ "en::vocabulary::wing": {
+  "meaning_en": "the part of a bird used for flying; a part of a building"
+ },
+ "en::vocabulary::wise": {
+  "meaning_en": "having good judgement because of experience"
+ },
+ "en::vocabulary::wish": {
+  "meaning_en": "to want something, often something unlikely; a desire"
+ },
+ "en::vocabulary::woman": {
+  "meaning_en": "an adult female human being"
+ },
+ "en::vocabulary::word": {
+  "meaning_en": "a unit of language with meaning"
+ },
+ "en::vocabulary::work": {
+  "meaning_en": "activity involving effort, usually for payment"
+ },
+ "en::vocabulary::workshop": {
+  "meaning_en": "a room where things are made; a practical training session"
+ },
+ "en::vocabulary::world": {
+  "meaning_en": "the earth and all people, places and things on it"
+ },
+ "en::vocabulary::wright": {
+  "meaning_en": "a maker or builder (old use, as in shipwright)"
+ },
+ "en::vocabulary::year": {
+  "meaning_en": "a period of 365 days; twelve months"
+ },
+ "en::vocabulary::yet": {
+  "meaning_en": "up to now (used in negatives and questions); still"
+ },
+ "en::vocabulary::zone": {
+  "meaning_en": "an area used for a particular purpose"
+ },
+ "en::vocabulary::zoo": {
+  "meaning_en": "a place where wild animals are kept for the public to see"
+ },
+ "yue::一": {
+  "example": "Yat go",
+  "example_en": "one (item)",
+  "meaning_en": "one",
+  "phonetic": "yāt"
+ },
+ "yue::三": {
+  "example": "Saam go",
+  "example_en": "three (items)",
+  "meaning_en": "three",
+  "phonetic": "sāam"
+ },
+ "yue::二": {
+  "example": "Yih go",
+  "example_en": "two (items)",
+  "meaning_en": "two",
+  "phonetic": "yih"
+ },
+ "yue::五": {
+  "example": "Ngh go",
+  "example_en": "five (items)",
+  "meaning_en": "five",
+  "phonetic": "ńgh"
+ },
+ "yue::今日": {
+  "example": "Gam yaht",
+  "example_en": "today",
+  "meaning_en": "today",
+  "phonetic": "gām yaht"
+ },
+ "yue::你好": {
+  "example": "Neih hou!",
+  "example_en": "Hello!",
+  "meaning_en": "Hello",
+  "phonetic": "néih hóu"
+ },
+ "yue::你系边个": {
+  "example": "Neih haih bin-go?",
+  "example_en": "Who are you?",
+  "meaning_en": "Who are you?",
+  "phonetic": "néih haih bīn-go"
+ },
+ "yue::再见": {
+  "example": "Zoi gin!",
+  "example_en": "Goodbye!",
+  "meaning_en": "Goodbye; see you again",
+  "phonetic": "zoi gin"
+ },
+ "yue::听日": {
+  "example": "Ting yaht",
+  "example_en": "tomorrow",
+  "meaning_en": "tomorrow",
+  "phonetic": "tīng yaht"
+ },
+ "yue::唔识听": {
+  "example": "Mh sik teng.",
+  "example_en": "I can't follow what you say.",
+  "meaning_en": "I don't understand (spoken Cantonese)",
+  "phonetic": "m̀h sīk téng"
+ },
+ "yue::唔该": {
+  "example": "Mh goi!",
+  "example_en": "Thanks!",
+  "meaning_en": "Thank you / Excuse me",
+  "phonetic": "m̀h gōi"
+ },
+ "yue::妈妈": {
+  "example": "Mah-ma hou!",
+  "example_en": "Hi, Mum!",
+  "meaning_en": "mum; mother",
+  "phonetic": "màh-mà"
+ },
+ "yue::我系学生": {
+  "example": "Ngo haih hohk saang.",
+  "example_en": "I am a student.",
+  "meaning_en": "I am a student",
+  "phonetic": "ngóh haih hohk sāang"
+ },
+ "yue::我阿妹": {
+  "example": "Ngo aa mui",
+  "example_en": "my younger sister",
+  "meaning_en": "my younger sister",
+  "phonetic": "ngóh ā mui"
+ },
+ "yue::早晨": {
+  "example": "Zou sahn!",
+  "example_en": "Good morning!",
+  "meaning_en": "Good morning",
+  "phonetic": "zóu sàhn"
+ },
+ "yue::爸爸": {
+  "example": "Bah-ba hou!",
+  "example_en": "Hi, Dad!",
+  "meaning_en": "dad; father",
+  "phonetic": "bàh-bà"
+ },
+ "yue::而家几点": {
+  "example": "Yih ga gei dim?",
+  "example_en": "What time is it now?",
+  "meaning_en": "What time is it now?",
+  "phonetic": "yìh gā géi dím"
+ },
+ "yue::行街": {
+  "example": "Haang gaai",
+  "example_en": "go shopping",
+  "meaning_en": "to go shopping; to walk around town",
+  "phonetic": "hàhng gaai"
+ },
+ "yue::食饭未": {
+  "example": "Sihk faahn meih?",
+  "example_en": "Have you eaten yet?",
+  "meaning_en": "Have you eaten? (common greeting)",
+  "phonetic": "sihk faahn meih"
+ },
+ "yue::饮茶": {
+  "example": "Yam cha",
+  "example_en": "go for yum cha",
+  "meaning_en": "to drink tea; to go for dim sum",
+  "phonetic": "yám chàh"
+ }
+}

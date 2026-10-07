@@ -88,12 +88,12 @@ def main():
         pages = {
             "/dashboard": ["词汇", "听力"],                       # 游戏化 + 技能卡
             "/learn": ["词汇", "听力", "阅读", "语法", "口语", "写作"],
-            "/learn/vocabulary": ["今日学习", "单词本", "测试", "错题本", "我的收藏"],
-            "/learn/listening": ["Coming soon", "精听播客"],
-            "/learn/reading": ["Coming soon", "分级短文"],
-            "/learn/grammar": ["Coming soon", "情景语法"],
-            "/learn/speaking": ["Coming soon", "跟读打分"],
-            "/learn/writing": ["Coming soon", "句型练习"],
+            "/learn/skill/vocabulary": ["今日学习", "单词本", "测试", "错题本", "我的收藏"],
+            "/learn/skill/listening": ["Coming soon", "精听播客"],
+            "/learn/skill/reading": ["Coming soon", "分级短文"],
+            "/learn/skill/grammar": ["Coming soon", "情景语法"],
+            "/learn/skill/speaking": ["Coming soon", "跟读打分"],
+            "/learn/skill/writing": ["Coming soon", "句型练习"],
             "/games/": ["单词配对", "限时抢答", "听音挑战", "字母拼词"],
             "/games/word_match": ["单词配对", "怎么玩"],
             "/games/speed_quiz": ["限时抢答", "怎么玩"],

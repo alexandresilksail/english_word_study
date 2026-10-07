@@ -26,17 +26,18 @@
   {# 2) Pronunciation #}
   <div class="wc-pron">
     <span class="wc-ipa">{{ w.phonetic_uk }}</span>
-    {% if w.pos %}<span class="wc-pos">{{ w.pos|pos_text }}</span>{% endif %}
+    {% if w.pos %}<span class="wc-pos">{{ pos_label(w.pos) }}</span>{% endif %}
   </div>
 
-  {# 3) Meaning #}
-  <p class="wc-meaning">{{ w.meaning_cn }}</p>
+  {# 3) Meaning —— English 版面不输出中文释义：Word 表没有 meaning_en，
+        此时改用词性 / 单词替代，保证页面零中文（meaning_of 按 UI 语言取值） #}
+  <p class="wc-meaning">{{ meaning_of(w) or pos_label(w.pos) or w.word }}</p>
 
   {# 4) Example #}
   {% if w.example_en %}
     <div class="wc-example">
       <p class="en">{{ w.example_en }}</p>
-      {% if w.example_cn %}<p class="zh">{{ w.example_cn }}</p>{% endif %}
+      {% if not is_english() and w.example_cn %}<p class="zh">{{ w.example_cn }}</p>{% endif %}
     </div>
   {% endif %}
 
@@ -217,8 +218,8 @@
   {% for b in badges %}
     <div class="badge-item {{ 'on' if b.unlocked }}">
       <span class="badge-ico">{{ b.icon }}</span>
-      <b><span class="bi-en">{{ b.name_en or b.name }}</span><span class="bi-zh">{{ b.name }}</span></b>
-      <small>{{ b.desc }}</small>
+      <b>{{ pick(b.name_en, b.name) }}</b>
+      <small>{{ pick(b.desc_en, b.desc) }}</small>
     </div>
   {% endfor %}
 </div>

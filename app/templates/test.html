@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from "_macros.html" import icon %}
-{% block title %}{{ bi_plain('quiz.title') }} · {{ app_title }}{% endblock %}
+{% block title %}{{ pick('Quiz', '测试') }} · {{ app_title_en }}{% endblock %}
 
 {% block content %}
 
@@ -27,7 +27,7 @@
 {% block scripts %}
 <script>
 (function () {
-  // 把 URL 预选参数透传给主脚本（mode / scope）
+  // pass URL pre-selected params (mode / scope) to the main script
   var root = document.getElementById('quiz-root');
   if (root && "{{ preset_scope }}") {
     root.setAttribute('data-scope', "{{ preset_scope }}");

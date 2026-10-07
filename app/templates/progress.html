@@ -94,8 +94,8 @@
               {{ icon('check-circle' if b.unlocked else 'info') }}
             </span>
             <div>
-              <b style="font-size:13px">{{ b.name }}</b>
-              <div class="small muted">{{ b.desc }}</div>
+              <b style="font-size:13px">{{ pick(b.name_en, b.name) }}</b>
+              <div class="small muted">{{ pick(b.desc_en, b.desc) }}</div>
             </div>
           </div>
         {% endfor %}

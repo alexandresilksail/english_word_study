@@ -1,13 +1,14 @@
 {% extends "base.html" %}
-{% block title %}404 · 页面不存在{% endblock %}
+{% block title %}{{ pick('404 · Page not found', '404 · 页面不存在') }}{% endblock %}
 {% block content %}
 <div class="card" style="max-width:640px;margin:4vh auto">
   <div class="empty">
     <img class="ill" src="{{ url_for('static', filename='img/ill-search.svg') }}" alt="404">
-    <b>页面走丢了（404）</b>
-    <p>你要找的页面不存在，可能被移动或删除了。</p>
-    <a class="btn btn-primary" href="{{ url_for('main.index') }}">回到首页</a>
-    <a class="btn btn-outline" href="{{ url_for('words.browse') }}">浏览单词</a>
+    <b>{{ pick('This page got lost (404)', '页面走丢了（404）') }}</b>
+    <p>{{ pick('The page you are looking for does not exist — it may have been moved or deleted.',
+                '你要找的页面不存在，可能被移动或删除了。') }}</p>
+    <a class="btn btn-primary" href="{{ url_for('main.index') }}">{{ pick('Back to home', '回到首页') }}</a>
+    <a class="btn btn-outline" href="{{ url_for('words.browse') }}">{{ pick('Browse words', '浏览单词') }}</a>
   </div>
 </div>
 {% endblock %}

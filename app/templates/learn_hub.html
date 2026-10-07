@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}学习中心 · Learn{% endblock %}
+{% block title %}{{ pick('Learning Hub', '学习中心') }} · Learn{% endblock %}
 {% block content %}
 <div class="v3-hero">
   <div class="v3-hero-deco">
@@ -7,22 +7,22 @@
     <span class="v3-deco-orb">{{ icon('headphones') }}</span>
     <span class="v3-deco-orb">{{ icon('sparkles') }}</span>
   </div>
-  <h1>学习中心 <span class="bi"><span class="bi-en">Learn</span></span></h1>
-  <p>六大技能，循序渐进。当前可从「词汇」开始，其余模块正在建设中。</p>
+  <h1>{{ pick('Learning Hub', '学习中心') }}</h1>
+  <p>{{ pick('Six skills, step by step. Start with Vocabulary — the rest are coming soon.', '六大技能，循序渐进。当前可从「词汇」开始，其余模块正在建设中。') }}</p>
   {% if gamification %}
   <div class="v3-hero-actions">
     <span class="v3-btn-glass">{{ icon('star') }} Lv {{ gamification.level or 0 }} · {{ gamification.xp or 0 }} XP</span>
-    <span class="v3-btn-ghost-w">{{ icon('flame') }} {{ gamification.streak or 0 }} 天连续</span>
+    <span class="v3-btn-ghost-w">{{ icon('flame') }} {{ gamification.streak or 0 }} {{ pick('day streak', '天连续') }}</span>
   </div>
   {% endif %}
 </div>
 
 <div class="sec-head">
   <div>
-    <h2 class="sec-title">六大技能 Skills</h2>
-    <p class="sec-sub">每个技能独立累积 XP 与进度</p>
+    <h2 class="sec-title">{{ pick('Six Skills', '六大技能') }} Skills</h2>
+    <p class="sec-sub">{{ pick('Each skill earns XP and progress independently', '每个技能独立累积 XP 与进度') }}</p>
   </div>
-  <a class="sec-more" href="{{ url_for('games.index') }}">去玩游戏 {{ icon('chevron-right') }}</a>
+  <a class="sec-more" href="{{ url_for('games.index') }}">{{ pick('Play games', '去玩游戏') }} {{ icon('chevron-right') }}</a>
 </div>
 
 <div class="skill-grid">
@@ -30,12 +30,12 @@
   <a class="skill-card c-{{ s.color or 'violet' }}{% if not s.ready %} is-locked{% endif %}" href="{{ s.url }}">
     <div class="skill-ico">{{ icon(s.icon) }}</div>
     <div class="skill-body">
-      <div class="skill-name">{{ s.zh }} <span class="bi"><span class="bi-en">{{ s.en }}</span></span></div>
-      <div class="skill-desc">{{ s.desc_zh or '' }}</div>
+      <div class="skill-name"><span class="bi"><span class="bi-en">{{ s.en }}</span><span class="bi-zh">{{ s.zh }}</span></span></div>
+      <div class="skill-desc">{{ pick(s.desc_en, s.desc_zh) }}</div>
       <div class="skill-bar"><i style="width:{{ s.percent or 0 }}%"></i></div>
     </div>
     <div class="skill-xp">{{ s.xp or 0 }} XP</div>
-    {% if not s.ready %}<span class="skill-soon">即将上线</span>{% endif %}
+    {% if not s.ready %}<span class="skill-soon">{{ pick('Coming soon', '即将上线') }}</span>{% endif %}
   </a>
   {% endfor %}
 </div>
@@ -43,9 +43,9 @@
 <div class="challenge" style="margin-top:22px">
   <div class="challenge-ico">{{ icon('target') }}</div>
   <div class="challenge-body">
-    <b>今日推荐 Daily Challenge</b>
-    <p>完成一组词汇测试，巩固今天学到的单词，连续学习还能点亮连续天数。</p>
+    <b>{{ pick('Daily Challenge', '今日推荐') }}</b>
+    <p>{{ pick('Take a vocabulary quiz to lock in today’s words — keep your streak alive.', '完成一组词汇测试，巩固今天学到的单词，连续学习还能点亮连续天数。') }}</p>
   </div>
-  <a class="btn btn-primary" href="{{ url_for('quiz.test_page') }}">去做测试 Take a Quiz</a>
+  <a class="btn btn-primary" href="{{ url_for('quiz.test_page') }}">{{ pick('Take a Quiz', '去做测试') }}</a>
 </div>
 {% endblock %}

@@ -3,9 +3,10 @@
 {% block title %}Review · {{ app_title_en }}{% endblock %}
 {% block content %}
 <section class="path-hero">
-  <span class="eyebrow">🔁 抗遗忘复习 · Spaced Review</span>
-  <h1>Today's Review · 今日复习</h1>
-  <p class="muted">You have {{ total }} items due. 按记忆曲线复习，记得更牢。</p>
+  <span class="eyebrow">🔁 {{ pick('Spaced Review', '抗遗忘复习') }}</span>
+  <h1>{{ pick("Today's Review", '今日复习') }}</h1>
+  <p class="muted">{{ pick('You have %d items due. Reviewing on schedule keeps your memory strong.' % total,
+                            '你有 %d 项待复习。按记忆曲线复习，记得更牢。' % total) }}</p>
 </section>
 <div class="review-summary">
   <div class="rs-card">{{ icon('book-open') }}<b>{{ counts.vocabulary }}</b><span>Vocabulary</span></div>
@@ -17,7 +18,7 @@
 <div class="review-list">
   {% for it in items %}
   <article class="review-card">
-    <div><b>{{ it.ContentItem.surface }}</b><small>{{ it.ContentItem.meaning_cn }}</small></div>
+    <div><b>{{ it.ContentItem.surface }}</b><small>{{ meaning_of(it.ContentItem) }}</small></div>
     <form method="post" action="{{ url_for('main.review_answer') }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="content_id" value="{{ it.content_id }}">
@@ -31,7 +32,8 @@
 <div class="empty-card" style="text-align:center;padding:50px">
   <div class="empty-ill c-emerald">🎉</div>
   <h2>All caught up!</h2>
-  <p class="muted">没有到期的复习项了。去学一课，或稍后回来。</p>
+  <p class="muted">{{ pick('Nothing is due right now. Learn a lesson, or come back later.',
+                            '没有到期的复习项了。去学一课，或稍后回来。') }}</p>
 </div>
 {% endif %}
 {% endblock %}

@@ -31,8 +31,17 @@ _EXTRA_COLUMNS = {
     "reset_token_exp": "datetime",
     # 无密码账号标记（邮箱验证码注册）
     "is_passwordless": "bool",
-    # V5：界面语言偏好（zh/en，可空=双语自动）
+    # 界面语言偏好（zh/en/yue/both，可空=双语自动）
     "preferred_lang": "str8",
+}
+
+# 表名 -> {列名: 类型}（V5.1：内容的多语释义，保证 English 版面零中文）
+_EXTRA_COLUMNS_BY_TABLE = {
+    "content_items": {
+        "meaning_en": "str512",
+        "meaning_yue": "str512",
+        "example_yue": "text",
+    },
 }
 
 
@@ -46,6 +55,10 @@ def _ddl_for(col_type: str, dialect: str) -> str:
         return "VARCHAR(8)"
     if col_type == "str255":
         return "VARCHAR(255)"
+    if col_type == "str512":
+        return "VARCHAR(512)"
+    if col_type == "text":
+        return "TEXT"
     if col_type == "str16":
         return "VARCHAR(16)"
     if col_type == "int":
@@ -77,4 +90,33 @@ def ensure_user_columns(app) -> int:
         except Exception as exc:  # pragma: no cover - 迁移失败不应阻断启动
             db.session.rollback()
             logger.warning("users 列补齐跳过（%s）", exc)
+    return added
+
+
+def ensure_content_columns(app) -> int:
+    """补齐 content_items 的多语释义列（meaning_en / meaning_yue / example_yue）。
+
+    这是「English 版面零中文」的数据前提：没有 ``meaning_en`` 就无法在英文
+    界面给出释义。幂等，老数据不受影响。
+    """
+    added = 0
+    with app.app_context():
+        for table, cols in _EXTRA_COLUMNS_BY_TABLE.items():
+            try:
+                insp = inspect(db.engine)
+                if table not in insp.get_table_names():
+                    continue
+                existing = {c["name"] for c in insp.get_columns(table)}
+                dialect = db.engine.dialect.name
+                for col, kind in cols.items():
+                    if col in existing:
+                        continue
+                    db.session.execute(
+                        text(f"ALTER TABLE {table} ADD COLUMN {col} {_ddl_for(kind, dialect)}"))
+                    added += 1
+                if added:
+                    db.session.commit()
+            except Exception as exc:  # pragma: no cover
+                db.session.rollback()
+                logger.warning("%s 列补齐跳过（%s）", table, exc)
     return added

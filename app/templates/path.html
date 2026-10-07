@@ -14,7 +14,7 @@
          href="{{ url_for('main.learning_path', lang_code=l.code) }}">
         <span class="flag">{{ l.flag }}</span>
         <b>{{ l.name_en }}</b>
-        <small>{{ l.name_zh }}</small>
+        <small>{{ lang_label(l.code) }}</small>
         {% if not l.ready %}<em>{{ t('path.coming_soon') }}</em>{% endif %}
       </a>
     {% endfor %}
@@ -30,7 +30,7 @@
         {% if lv.done %}{{ icon('check') }}{% elif not lv.unlocked %}{{ icon('lock') }}{% else %}{{ lv.emoji }}{% endif %}
       </div>
       <div class="lvl-meta">
-        <h2>{{ lv.code }} <span>{{ lv.name_en }}</span><em>{{ lv.name_zh }}</em></h2>
+        <h2>{{ lv.code }} {{ pick(lv.name_en, lv.name_zh) }}</h2>
         <p class="muted">{{ lv.mastered }}/{{ lv.total }} {{ t('path.words') }}
           · {{ (lv.ratio*100)|round|int }}%
           {% if lv.done %}<b class="tag ok">{{ t('path.done') }}</b>
@@ -47,7 +47,7 @@
         {% set unit_done = lv.done %}
         {% set node_on = lv.unlocked %}
         <a class="node n-{{ u }} {{ 'done' if unit_done }} {{ 'off' if not node_on }}"
-           href="{{ url_for('words.learn') }}?cefr={{ lv.code }}&unit={{ u }}"
+           href="{{ url_for('words.daily') }}?cefr={{ lv.code }}&unit={{ u }}"
            {{ 'tabindex=-1 aria-disabled=true' if not node_on }}>
           <span class="node-ico">{{ icon('check' if unit_done else ('lock' if not node_on else 'book-open')) }}</span>
           <b>{{ lv.code }}-{{ u }}</b>

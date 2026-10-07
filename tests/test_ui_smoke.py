@@ -98,7 +98,8 @@ def main():
 
     # ---------------------------------------------------------- 单词卡五段结构
     print("\n[5] 单词卡结构 Word → Pronunciation → Meaning → Example → Action")
-    learn = c.get("/learn").get_data(as_text=True)
+    # 词表页已迁移到 /words/learn（/learn 现为学习总入口，见规格 §24 / 修复 #7）
+    learn = c.get("/words/learn").get_data(as_text=True)
     for cls, label in [("wc-word", "Word 单词"),
                        ("wc-pron", "Pronunciation 发音"),
                        ("wc-meaning", "Meaning 释义"),

@@ -50,7 +50,7 @@
         <div class="mp-units">
           {% for u in range(1, lv.units + 1) %}
             <a class="mp-unit {{ 'done' if lv.done }} {{ 'off' if not lv.unlocked }}"
-               href="{{ url_for('words.learn') }}?cefr={{ lv.code }}&unit={{ u }}">U{{ u }}</a>
+               href="{{ url_for('words.daily') }}?cefr={{ lv.code }}&unit={{ u }}">U{{ u }}</a>
           {% endfor %}
         </div>
       </div>
@@ -80,10 +80,10 @@
       <h2 class="sec-title">{{ icon('play-circle') }} Continue Learning</h2>
       <p class="sec-sub bi"><span class="bi-en">Pick up where you left off</span><span class="bi-zh">从上次停下的地方继续</span></p>
     </div>
-    <a class="sec-more" href="{{ url_for('words.learn') }}">{{ bi('act.continue') }} {{ icon('chevron-right') }}</a>
+    <a class="sec-more" href="{{ url_for('words.daily') }}">{{ bi('act.continue') }} {{ icon('chevron-right') }}</a>
   </div>
 
-  <a class="continue-card" href="{{ url_for('words.learn') }}">
+  <a class="continue-card" href="{{ url_for('words.daily') }}">
     <div class="cont-cover" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">
       <img src="{{ url_for('static', filename='img/ill-continue.svg') }}" alt="">
       <span class="play-dot">{{ icon('play') }}</span>
@@ -114,8 +114,8 @@
   <div class="challenge">
     <span class="challenge-ico">{{ icon('target') }}</span>
     <div class="challenge-body">
-      <b>{{ challenge.title_en }} · {{ challenge.title_zh }}</b>
-      <p>{{ challenge.desc_en }} · {{ challenge.desc_zh }}</p>
+      <b>{{ pick(challenge.title_en, challenge.title_zh) }}</b>
+      <p>{{ pick(challenge.desc_en, challenge.desc_zh) }}</p>
       {% if not challenge.done %}
         <div class="streak-row">
           {% for i in range(challenge.goal) %}
@@ -145,24 +145,24 @@
     <a class="rec-card" href="{{ url_for('quiz.test_page', mode='choice') }}">
       <div class="rec-cover"><img src="{{ url_for('static', filename='img/ill-quiz.svg') }}" alt=""><span class="rec-level">A1–B1</span></div>
       <div class="rec-body">
-        <h3>{{ icon('practice') }} {{ bi('nav.quiz') }} · 英译中</h3>
-        <p>看英文选中文，检验掌握度</p>
+        <h3>{{ icon('practice') }} {{ bi('nav.quiz') }} · {{ pick('EN → CN', '英译中') }}</h3>
+        <p>{{ pick('Read the English, choose the meaning', '看英文选中文，检验掌握度') }}</p>
         <span class="rec-cta btn btn-secondary btn-sm">{{ bi('act.start') }} {{ icon('arrow-right') }}</span>
       </div>
     </a>
     <a class="rec-card" href="{{ url_for('quiz.test_page', mode='listen') }}">
       <div class="rec-cover"><img src="{{ url_for('static', filename='img/ill-listening.svg') }}" alt=""><span class="rec-level">A2</span></div>
       <div class="rec-body">
-        <h3>{{ icon('headphones') }} 听音测试</h3>
-        <p>听英式发音，选出正确的单词</p>
+        <h3>{{ icon('headphones') }} {{ pick('Listening Quiz', '听音测试') }}</h3>
+        <p>{{ pick('Hear the UK pronunciation, pick the right word', '听英式发音，选出正确的单词') }}</p>
         <span class="rec-cta btn btn-secondary btn-sm">{{ bi('act.start') }} {{ icon('arrow-right') }}</span>
       </div>
     </a>
     <a class="rec-card" href="{{ url_for('games.index') }}">
       <div class="rec-cover"><img src="{{ url_for('static', filename='img/ill-games.svg') }}" alt=""><span class="rec-level">+XP</span></div>
       <div class="rec-body">
-        <h3>{{ icon('gamepad-2') }} {{ bi('nav.games') }} · 边玩边学</h3>
-        <p>配对、抢答、听音、拼词，玩着就把分拿了</p>
+        <h3>{{ icon('gamepad-2') }} {{ bi('nav.games') }} · {{ pick('Learn by playing', '边玩边学') }}</h3>
+        <p>{{ pick('Match, sprint, listen, build — earn XP as you play', '配对、抢答、听音、拼词，玩着就把分拿了') }}</p>
         <span class="rec-cta btn btn-secondary btn-sm">{{ bi('act.start') }} {{ icon('arrow-right') }}</span>
       </div>
     </a>
@@ -178,8 +178,8 @@
     </div>
   </div>
   <div class="stat-grid">
-    {{ mm.stat_card('book', stats.learned, '已学单词', 'Learned', 'vocab', url_for('words.learn', scope='new')) }}
-    {{ mm.stat_card('check-circle', stats.mastered, '已掌握', 'Mastered', 'speak', url_for('words.learn', scope='mastered')) }}
+    {{ mm.stat_card('book', stats.learned, '已学单词', 'Learned', 'vocab', url_for('words.daily', scope='new')) }}
+    {{ mm.stat_card('check-circle', stats.mastered, '已掌握', 'Mastered', 'speak', url_for('words.daily', scope='mastered')) }}
     {{ mm.stat_card('practice', (stats.accuracy ~ '%'), '正确率', 'Accuracy', 'listen') }}
     {{ mm.stat_card('flame', gam.streak, '连续学习', 'Streak', 'read') }}
     {{ mm.stat_card('review', stats.wrong, '错题', 'Mistakes', 'grammar', url_for('words.wrong')) }}

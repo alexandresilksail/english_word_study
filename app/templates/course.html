@@ -10,7 +10,7 @@
   {% for u in units %}
   <a class="unit-row" href="{{ url_for('main.unit_view', unit_id=u.id) }}">
     <span class="unit-emoji">{{ u.emoji }}</span>
-    <span class="unit-info"><b>Unit {{ u.no }} · {{ u.title_en }}</b><small>{{ u.title_zh }} · {{ u.lessons|length }} lessons</small></span>
+    <span class="unit-info"><b>Unit {{ u.no }} · {{ title_of(u) }}</b><small>{{ u.lessons|length }} lessons</small></span>
     <span class="unit-cta">{{ icon('chevron-right') }}</span>
   </a>
   {% endfor %}

@@ -52,6 +52,7 @@ class User(UserMixin, db.Model):
 
     # V5：界面语言偏好（zh / en / None=双语自动）。登录用户存这里，未登录走 Cookie
     preferred_lang = db.Column(String(8), nullable=True)
+    notify_email = db.Column(Boolean, nullable=False, default=True, server_default="1")
 
     # 关系
     favorites = relationship("Favorite", back_populates="user", cascade="all, delete-orphan", lazy="dynamic")
@@ -647,8 +648,12 @@ class ContentItem(db.Model):
     phonetic = db.Column(String(128), nullable=False, default="")       # IPA / 粤拼 jyutping
     pos = db.Column(String(16), nullable=False, default="")
     meaning_cn = db.Column(String(512), nullable=False, default="")
+    # V5.1：English 版面必须能给出英文释义，绝不把中文端给英文用户
+    meaning_en = db.Column(String(512), nullable=False, default="")
+    meaning_yue = db.Column(String(512), nullable=False, default="")
     example_en = db.Column(Text, nullable=False, default="")
     example_cn = db.Column(Text, nullable=False, default="")
+    example_yue = db.Column(Text, nullable=False, default="")
     topic = db.Column(String(32), nullable=False, default="general")
     difficulty = db.Column(Integer, nullable=False, default=1, server_default="1")
     audio = db.Column(String(128), nullable=False, default="")
@@ -698,6 +703,175 @@ class Subscription(db.Model):
     status = db.Column(String(16), nullable=False, default="active", server_default="active")
     started_at = db.Column(DateTime, nullable=True)
     expires_at = db.Column(DateTime, nullable=True)
+
+
+# ==========================================================================
+# V5.2：单元测验（Unit Test）—— 规格 §5
+#
+#   Language → Course → Unit → Lesson → **Quiz → QuizQuestion** → Attempt → Unlock
+#
+# 与项目既有约定一致：只新增表、不改旧表；字段只用通用类型，
+# SQLite → PostgreSQL 无需改模型。题目由该 Unit 的 ContentItem 自动生成，
+# 新增内容后重建测验即可，无��手写题库。
+# ==========================================================================
+
+class Quiz(db.Model):
+    """一个 Unit 一套单元测验（幂等生成）。"""
+    __tablename__ = "quizzes"
+
+    id = db.Column(Integer, primary_key=True)
+    unit_id = db.Column(Integer, ForeignKey("units.id", ondelete="CASCADE"),
+                        nullable=False, unique=True, index=True)
+    title_zh = db.Column(String(128), nullable=False, default="单元测验")
+    title_en = db.Column(String(128), nullable=False, default="Unit Test")
+    #: 及格线（正确率百分比）；达到即判定 Mastered 并解锁下一单元
+    pass_score = db.Column(Integer, nullable=False, default=70, server_default="70")
+    question_count = db.Column(Integer, nullable=False, default=0, server_default="0")
+    created_at = db.Column(DateTime, nullable=False, default=utcnow, server_default=func.now())
+
+    questions = relationship("QuizQuestion", back_populates="quiz",
+                             cascade="all, delete-orphan", order_by="QuizQuestion.no")
+
+
+class QuizQuestion(db.Model):
+    """单元测验题目：题干 + 4 个选项（中英双语）+ 正确下标 + 错题讲解。
+
+    ``options`` 存 JSON：``[{"en": "...", "zh": "..."}, ...]``。
+    English 版面只渲染 ``en`` 侧 —— 由 ``localization.pick`` 保证绝不把中文端给英文用户。
+    """
+    __tablename__ = "quiz_questions"
+    __table_args__ = (Index("ix_qq_quiz_no", "quiz_id", "no"),)
+
+    id = db.Column(Integer, primary_key=True)
+    quiz_id = db.Column(Integer, ForeignKey("quizzes.id", ondelete="CASCADE"),
+                        nullable=False, index=True)
+    no = db.Column(Integer, nullable=False, default=0, server_default="0")
+    kind = db.Column(String(16), nullable=False, default="vocabulary")
+    # vocabulary / grammar / listening / sentence
+    prompt_en = db.Column(Text, nullable=False, default="")
+    prompt_zh = db.Column(Text, nullable=False, default="")
+    options = db.Column(Text, nullable=False, default="[]")
+    answer_index = db.Column(Integer, nullable=False, default=0, server_default="0")
+    explanation_en = db.Column(Text, nullable=False, default="")
+    explanation_zh = db.Column(Text, nullable=False, default="")
+    content_id = db.Column(Integer, ForeignKey("content_items.id", ondelete="SET NULL"),
+                           nullable=True, index=True)
+
+    quiz = relationship("Quiz", back_populates="questions")
+
+
+class UnitTestAttempt(db.Model):
+    """一次单元测验的作答结果（§5 要求的 score / accuracy / time / mistakes / weak_areas）。"""
+    __tablename__ = "unit_test_attempts"
+    __table_args__ = (Index("ix_attempt_user_unit", "user_id", "unit_id"),
+                      Index("ix_attempt_user_done", "user_id", "completed_at"))
+
+    id = db.Column(Integer, primary_key=True)
+    user_id = db.Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),
+                        nullable=False, index=True)
+    unit_id = db.Column(Integer, ForeignKey("units.id", ondelete="CASCADE"),
+                        nullable=False, index=True)
+    quiz_id = db.Column(Integer, ForeignKey("quizzes.id", ondelete="SET NULL"), nullable=True)
+
+    score = db.Column(Integer, nullable=False, default=0, server_default="0")        # 答对题数
+    total = db.Column(Integer, nullable=False, default=0, server_default="0")
+    accuracy = db.Column(Integer, nullable=False, default=0, server_default="0")      # 正确率 %
+    duration_sec = db.Column(Integer, nullable=False, default=0, server_default="0")
+    mistakes = db.Column(Text, nullable=False, default="[]")     # JSON [{question_id, kind, given, correct}]
+    weak_areas = db.Column(Text, nullable=False, default="[]")   # JSON ["vocabulary", …]
+    passed = db.Column(Boolean, nullable=False, default=False, server_default="0")
+    completed_at = db.Column(DateTime, nullable=False, default=utcnow, server_default=func.now())
+
+
+class UnitProgress(db.Model):
+    """单元掌握状态 —— 承载「通过 → 解锁下一单元」的联动（§5）。"""
+    __tablename__ = "unit_progress"
+    __table_args__ = (UniqueConstraint("user_id", "unit_id", name="uq_unitprog_user_unit"),)
+
+    id = db.Column(Integer, primary_key=True)
+    user_id = db.Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),
+                        nullable=False, index=True)
+    unit_id = db.Column(Integer, ForeignKey("units.id", ondelete="CASCADE"),
+                        nullable=False, index=True)
+    status = db.Column(String(16), nullable=False, default="available")  # locked/available/mastered
+    best_score = db.Column(Integer, nullable=False, default=0, server_default="0")
+    attempts = db.Column(Integer, nullable=False, default=0, server_default="0")
+    passed_at = db.Column(DateTime, nullable=True)
+    updated_at = db.Column(DateTime, nullable=False, default=utcnow, server_default=func.now())
+
+
+# ==========================================================================
+# V5.2：等级主数据 + 商业化链路 —— 规格 §17 / §19
+#
+# 商业化原先只剩 subscriptions 一张表，无法承载「下单 → 支付 → 开通」的链路，
+# 因此补齐 levels / products / orders / payments 四张表。
+# 支付本身为 **Mock**（第一阶段不接真实网关），但表结构与状态机按真实链路设计，
+# 将来接支付宝/微信时只需替换 payment_service 的 provider 实现。
+# ==========================================================================
+
+class Level(db.Model):
+    """CEFR 等级主数据 —— 等级目录的唯一来源（此前只存在于 learning_path 的常量里）。"""
+    __tablename__ = "levels"
+
+    id = db.Column(Integer, primary_key=True)
+    code = db.Column(String(8), nullable=False, unique=True, index=True)   # Pre-A1 … C2
+    order = db.Column(Integer, nullable=False, default=0, server_default="0")
+    name_zh = db.Column(String(64), nullable=False, default="")
+    name_en = db.Column(String(64), nullable=False, default="")
+    color = db.Column(String(16), nullable=False, default="violet")
+    emoji = db.Column(String(8), nullable=False, default="🌱")
+    units = db.Column(Integer, nullable=False, default=3, server_default="3")
+
+
+class Product(db.Model):
+    """商品（订阅套餐）。价格一律以**最小货币单位**存整数，避免浮点误差。"""
+    __tablename__ = "products"
+
+    id = db.Column(Integer, primary_key=True)
+    code = db.Column(String(32), nullable=False, unique=True, index=True)  # monthly/yearly/lifetime
+    name_zh = db.Column(String(64), nullable=False, default="")
+    name_en = db.Column(String(64), nullable=False, default="")
+    description = db.Column(Text, nullable=False, default="")
+    price_cents = db.Column(Integer, nullable=False, default=0, server_default="0")
+    currency = db.Column(String(8), nullable=False, default="CNY")
+    period = db.Column(String(16), nullable=False, default="month")        # month/year/once
+    active = db.Column(Boolean, nullable=False, default=True, server_default="1")
+    sort = db.Column(Integer, nullable=False, default=0, server_default="0")
+
+
+class Order(db.Model):
+    """订单：一次购买意图。status 走 pending → paid / cancelled / refunded。"""
+    __tablename__ = "orders"
+    __table_args__ = (Index("ix_order_user_created", "user_id", "created_at"),)
+
+    id = db.Column(Integer, primary_key=True)
+    user_id = db.Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),
+                        nullable=False, index=True)
+    product_id = db.Column(Integer, ForeignKey("products.id", ondelete="SET NULL"), nullable=True)
+    order_no = db.Column(String(32), nullable=False, unique=True, index=True)
+    plan = db.Column(String(16), nullable=False, default="premium")        # premium / pro
+    amount_cents = db.Column(Integer, nullable=False, default=0, server_default="0")
+    currency = db.Column(String(8), nullable=False, default="CNY")
+    status = db.Column(String(16), nullable=False, default="pending", server_default="pending")
+    created_at = db.Column(DateTime, nullable=False, default=utcnow, server_default=func.now())
+    paid_at = db.Column(DateTime, nullable=True)
+
+
+class Payment(db.Model):
+    """支付流水（Mock 支付同样落库，保证可对账、可重放）。"""
+    __tablename__ = "payments"
+    __table_args__ = (Index("ix_payment_order", "order_id"),)
+
+    id = db.Column(Integer, primary_key=True)
+    order_id = db.Column(Integer, ForeignKey("orders.id", ondelete="CASCADE"),
+                         nullable=False, index=True)
+    provider = db.Column(String(16), nullable=False, default="mock")       # mock/alipay/wechat
+    transaction_id = db.Column(String(64), nullable=True, index=True)
+    amount_cents = db.Column(Integer, nullable=False, default=0, server_default="0")
+    currency = db.Column(String(8), nullable=False, default="CNY")
+    status = db.Column(String(16), nullable=False, default="pending", server_default="pending")
+    raw = db.Column(Text, nullable=False, default="{}")                    # 网关回执 JSON
+    created_at = db.Column(DateTime, nullable=False, default=utcnow, server_default=func.now())
 
 
 # Onboarding 选项（与模板共用，单一来源）

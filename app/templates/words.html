@@ -1,14 +1,15 @@
 {% extends "base.html" %}
 {% import "_macros.html" as mm %}
 {% from "_macros.html" import icon %}
-{% block title %}单词本 · {{ app_title }}{% endblock %}
+{% block title %}{{ pick('Word Bank', '单词本') }} · {{ app_title_en }}{% endblock %}
 
 {% block content %}
 <div class="page-head">
   <div>
     <span class="eyebrow">{{ icon('search') }} A–Z Browse</span>
-    <h2>{{ icon('book') }} 单词本 <span class="small muted" style="font-weight:700">Word Bank</span></h2>
-    <p>A-Z 浏览与全文检索：支持按英文单词、中文释义或英文例句搜索</p>
+    <h2>{{ icon('book') }} {{ pick('Word Bank', '单词本') }} <span class="small muted" style="font-weight:700">Word Bank</span></h2>
+    <p>{{ pick('Browse A–Z and full-text search: search by English word, Chinese meaning or English example.',
+                'A-Z 浏览与全文检索：支持按英文单词、中文释义或英文例句搜索') }}</p>
   </div>
   <span class="tag violet">{{ icon('book-open') }} {{ t('learn.total') }} {{ total }} {{ t('learn.words_unit') }}</span>
 </div>
@@ -16,18 +17,18 @@
 <div class="toolbar">
   <form method="get" action="{{ url_for('words.browse') }}" class="field" style="flex:1">
     <div class="row" style="gap:8px;align-items:stretch">
-      <input class="input" style="flex:1;min-width:260px" name="q" placeholder="例如：water / 能力 / time is…" value="{{ q }}">
-      <button class="btn btn-primary btn-sm" type="submit">{{ icon('search') }} 搜索</button>
-      {% if q %}<a class="btn btn-ghost btn-sm" href="{{ url_for('words.browse') }}">清空</a>{% endif %}
+      <input class="input" style="flex:1;min-width:260px" name="q" placeholder="{{ pick('e.g. water / ability / time is…', '例如：water / 能力 / time is…') }}" value="{{ q }}">
+      <button class="btn btn-primary btn-sm" type="submit">{{ icon('search') }} {{ pick('Search', '搜索') }}</button>
+      {% if q %}<a class="btn btn-ghost btn-sm" href="{{ url_for('words.browse') }}">{{ pick('Clear', '清空') }}</a>{% endif %}
     </div>
   </form>
 </div>
 
 <div class="letter-row">
-  <a class="letter all {{ 'on' if not letter and not q }}" href="{{ url_for('words.browse') }}">全部</a>
+  <a class="letter all {{ 'on' if not letter and not q }}" href="{{ url_for('words.browse') }}">{{ pick('All', '全部') }}</a>
   {% for L in letters %}
     {% set c = counts.get(L|lower, 0) %}
-    <a class="letter {{ 'on' if letter == L|lower }} {{ 'off' if c == 0 }}" title="{{ L }}：{{ c }} 个"
+    <a class="letter {{ 'on' if letter == L|lower }} {{ 'off' if c == 0 }}" title="{{ L }}: {{ c }}"
        href="{{ url_for('words.browse', letter=L|lower) }}">{{ L }}</a>
   {% endfor %}
 </div>
@@ -39,11 +40,11 @@
   {{ mm.pager(page, pages, 'words.browse', {'q': q, 'letter': letter}) }}
 {% elif q %}
   <div class="card">
-    {{ mm.empty_box('ill-search.svg', '没有找到「' ~ q ~ '」', '换个更短的关键词试试，比如 book 或 时间') }}
+    {{ mm.empty_box('ill-search.svg', pick('No results for “' ~ q ~ '”', '没有找到「' ~ q ~ '」'), pick('Try a shorter keyword, like book or time', '换个更短的关键词试试，比如 book 或 时间')) }}
   </div>
 {% else %}
   <div class="card">
-    {{ mm.empty_box('ill-search.svg', '这个字母下暂无单词', '切换到其它字母开始浏览') }}
+    {{ mm.empty_box('ill-search.svg', pick('No words under this letter', '这个字母下暂无单词'), pick('Switch to another letter to start browsing', '切换到其它字母开始浏览')) }}
   </div>
 {% endif %}
 {% endblock %}

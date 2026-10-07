@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from "_macros.html" import icon %}
-{% block title %}AI 导师 · AI Tutor{% endblock %}
+{% block title %}{{ pick('AI Tutor', 'AI 导师') }}{% endblock %}
 {% block content %}
 
 {# ============================================================ AI Tutor（深色渐变） #}
@@ -10,13 +10,59 @@
     <span class="v3-deco-orb">{{ icon('bot') }}</span>
     <span class="v3-deco-orb">{{ icon('mic') }}</span>
   </div>
-  <h1>AI 导师 <span style="font-weight:600;font-size:18px;opacity:.85">AI Tutor</span></h1>
-  <p>未来的智能陪练：口语对练、写作批改、个性复习计划。当前为规划页，尚未接入任何模型。</p>
+  <h1>{{ pick('AI Tutor', 'AI 导师') }}</h1>
+  <p>{{ pick('Your future smart practice partner: speaking drills, writing feedback and a personalized review plan. This is a planning page — no model is connected yet.',
+              '未来的智能陪练：口语对练、写作批改、个性复习计划。当前为规划页，尚未接入任何模型。') }}</p>
   <div class="v3-hero-actions">
-    <a class="v3-btn-glass" href="{{ url_for('words.learn') }}">{{ icon('book-open') }} 先去背单词</a>
-    <a class="v3-btn-ghost-w" href="{{ url_for('learn.hub') }}">{{ icon('compass') }} 返回学习中心</a>
+    <a class="v3-btn-glass" href="{{ url_for('words.daily') }}">{{ icon('book-open') }} {{ pick('Start learning words', '先去背单词') }}</a>
+    <a class="v3-btn-ghost-w" href="{{ url_for('learn.hub') }}">{{ icon('compass') }} {{ pick('Back to learning hub', '返回学习中心') }}</a>
   </div>
 </div>
+
+{# ============================================================ 用户画像（真实数据，规格 §14） #}
+<section style="margin-top:26px">
+  <div class="sec-head">
+    <div>
+      <h2 class="sec-title">{{ pick('Your learning profile', '你的学习画像') }}</h2>
+      <p class="sec-sub">{{ pick('Auto-generated from your activity — no model required.',
+                                  '基于你的真实学习数据自动生成，无需模型也能看清当前位置。') }}</p>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:14px">
+    <div style="border:1px solid #e5e7eb;border-radius:14px;padding:16px;background:#fff">
+      <div style="font-size:13px;color:#6b7280">{{ pick('Current level', '当前等级') }}</div>
+      <div style="font-size:24px;font-weight:700;margin-top:4px">{{ profile.level }}</div>
+      <div style="font-size:12px;color:#9ca3af;margin-top:4px">{{ pick('from placement & progress', '测评与进度') }}</div>
+    </div>
+    <div style="border:1px solid #e5e7eb;border-radius:14px;padding:16px;background:#fff">
+      <div style="font-size:13px;color:#6b7280">{{ pick('Learning path', '学习路径') }}</div>
+      <div style="font-size:24px;font-weight:700;margin-top:4px">{% if profile.path_current %}{{ profile.path_current.code }}{% else %}A1{% endif %}</div>
+      <div style="font-size:12px;color:#9ca3af;margin-top:4px">{% if profile.path_current %}{{ pick(profile.path_current.name_en, profile.path_current.name_zh) }}{% else %}{{ pick('Beginner', '入门') }}{% endif %}</div>
+    </div>
+    <div style="border:1px solid #e5e7eb;border-radius:14px;padding:16px;background:#fff">
+      <div style="font-size:13px;color:#6b7280">{{ pick('Weak areas', '薄弱项') }}</div>
+      {% if profile.weak_areas %}
+        <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px">
+          {% for w in profile.weak_areas %}
+            <span style="background:#fef3c7;color:#92400e;border-radius:999px;padding:2px 10px;font-size:12px">{{ pick(w.label_en, w.label_zh) }} · {{ w.count }}</span>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="font-size:14px;margin-top:6px;color:#9ca3af">{{ pick('No test data yet', '暂无测验数据') }}</div>
+      {% endif %}
+      {% if profile.review_total %}
+        <div style="font-size:12px;color:#9ca3af;margin-top:8px">{{ pick('Due for review:', '待复习：') }} {{ profile.review_total }}</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div style="margin-top:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:linear-gradient(135deg,#eef2ff,#f5f3ff);border-radius:14px;padding:14px 18px">
+    <span style="font-size:18px">{{ icon('sparkles') }}</span>
+    <span style="flex:1;min-width:200px">{{ pick('Recommended focus:', '建议优先攻克：') }} <strong>{{ pick(profile.focus_label_en, profile.focus_label_zh) }}</strong></span>
+    <a class="btn btn-primary btn-sm" href="{{ profile.focus_url }}">{{ pick('Start now', '立即开始') }} →</a>
+  </div>
+</section>
 
 {# ============================================================ 空态：插画 + 能力清单 #}
 <div class="empty-card" style="--ec1:#eef2ff;--ec2:#f5f3ff">
@@ -24,12 +70,13 @@
     <img src="{{ url_for('static', filename='img/ill-tutor.svg') }}" alt="AI Tutor illustration">
   </div>
   <div class="ec-body">
-    <span class="tag" style="background:#f5f3ff;color:#6d28d9">{{ icon('clock') }} Coming soon · 规划中</span>
-    <h3>AI Tutor 正在训练中</h3>
-    <p>本页面如实说明方向，不假装有 AI 功能。接入大模型后，下方能力会自动开启，无需改代码。</p>
+    <span class="tag" style="background:#f5f3ff;color:#6d28d9">{{ icon('clock') }} {{ pick('Coming soon · Planned', '规划中 · 即将上线') }}</span>
+    <h3>{{ pick('AI Tutor is in training', 'AI Tutor 正在训练中') }}</h3>
+    <p>{{ pick('This page honestly describes the direction — it does not pretend AI features already exist. Once a model is connected, the capabilities below turn on automatically, no code changes needed.',
+              '本页面如实说明方向，不假装有 AI 功能。接入大模型后，下方能力会自动开启，无需改代码。') }}</p>
     <div class="row">
-      <a class="btn btn-primary" href="{{ url_for('quiz.test_page', mode='spell') }}">{{ icon('edit') }} 先做拼写测试</a>
-      <a class="btn btn-secondary" href="{{ url_for('games.index') }}">{{ icon('gamepad-2') }} 去玩游戏</a>
+      <a class="btn btn-primary" href="{{ url_for('quiz.test_page', mode='spell') }}">{{ icon('edit') }} {{ pick('Take a spelling quiz', '先做拼写测试') }}</a>
+      <a class="btn btn-secondary" href="{{ url_for('games.index') }}">{{ icon('gamepad-2') }} {{ pick('Play a game', '去玩游戏') }}</a>
     </div>
   </div>
 </div>
@@ -38,24 +85,24 @@
 <section style="margin-top:26px">
   <div class="sec-head">
     <div>
-      <h2 class="sec-title">规划中的 AI 能力</h2>
-      <p class="sec-sub">上线后自动出现在这里</p>
+      <h2 class="sec-title">{{ pick('Planned AI capabilities', '规划中的 AI 能力') }}</h2>
+      <p class="sec-sub">{{ pick('These will appear here automatically once launched', '上线后自动出现在这里') }}</p>
     </div>
   </div>
   <div class="skill-grid">
     {% set plans = [
-      ('口语对练','Speaking','录音对比原音，给出流利度与发音反馈'),
-      ('写作批改','Writing','提交短文获得结构与用词建议'),
-      ('个性复习','Review','根据错题与遗忘曲线自动生成复习计划'),
-      ('语法讲解','Grammar','从真实语料中抽取例句讲解规则')] %}
-    {% for zh, en, desc in plans %}
+      ('口语对练','Speaking','录音对比原音，给出流利度与发音反馈', 'Record and compare with the original audio, with fluency and pronunciation feedback'),
+      ('写作批改','Writing','提交短文获得结构与用词建议', 'Submit a short text and get structure and word-choice suggestions'),
+      ('个性复习','Review','根据错题与遗忘曲线自动生成复习计划', 'Auto-generate a review plan from mistakes and the forgetting curve'),
+      ('语法讲解','Grammar','从真实语料中抽取例句讲解规则', 'Extract example sentences from real corpus to explain the rules')] %}
+    {% for zh, en, desc_zh, desc_en in plans %}
     <div class="skill-card c-indigo is-locked">
       <div class="skill-ico">{{ icon('wand-sparkles') }}</div>
       <div class="skill-body">
-        <div class="skill-name">{{ zh }} <span class="bi"><span class="bi-en">{{ en }}</span></span></div>
-        <div class="skill-desc">{{ desc }}</div>
+        <div class="skill-name">{{ pick(en, zh) }}</div>
+        <div class="skill-desc">{{ pick(desc_en, desc_zh) }}</div>
       </div>
-      <span class="skill-soon">{{ icon('clock') }} Soon</span>
+      <span class="skill-soon">{{ icon('clock') }} {{ pick('Soon', '敬请期待') }}</span>
     </div>
     {% endfor %}
   </div>

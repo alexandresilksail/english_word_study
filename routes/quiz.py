@@ -72,6 +72,7 @@ def _as_option_index(answer) -> int | None:
 
 
 @quiz_bp.route("/test")
+@quiz_bp.route("/quiz")
 @login_required
 def test_page():
     preset_mode = (request.args.get("mode") or "").strip()

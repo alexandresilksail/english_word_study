@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from "_macros.html" import icon %}
-{% block title %}{{ app_title }} · {{ app_title_en }}{% endblock %}
+{% block title %}{{ pick(app_title_en, app_title) }}{% endblock %}
 
 {% block content %}
 
@@ -9,7 +9,8 @@
   <div>
     <span class="eyebrow">{{ icon('sparkles') }}{{ t('brand.name') }} · Learn English</span>
     <h1>Learn English.<br>Every day.</h1>
-    <p class="sub">CEFR Pre-A1 → C2 分级学习路径 · 听说读写练 · 抗遗忘复习 · XP 与连续学习激励。按你的水平开始，每天进步一点点。</p>
+    <p class="sub">{{ pick('CEFR Pre-A1 → C2 graded learning paths · listening, speaking, reading and writing · spaced review · XP and streaks. Start at your level and improve a little every day.',
+                            'CEFR Pre-A1 → C2 分级学习路径 · 听说读写练 · 抗遗忘复习 · XP 与连续学习激励。按你的水平开始，每天进步一点点。') }}</p>
 
     <div class="hero-actions">
       <a class="btn btn-cta btn-lg" href="{{ url_for('auth.register') }}">{{ icon('rocket') }}<span>Start Learning</span></a>
@@ -37,23 +38,24 @@
   <div class="sec-head">
     <div>
       <h2 class="sec-title">Choose your learning path</h2>
-      <p class="sec-sub">六条路径，六种颜色，按你的目标开始</p>
+      <p class="sec-sub">{{ pick('Six paths, six colours — start with the goal that fits you',
+                                  '六条路径，六种颜色，按你的目标开始') }}</p>
     </div>
   </div>
 
   {% set paths = [
-    ('vocabulary', 'Vocabulary', '词汇', 'vocab', 'book-open', '📚',
-     'CEFR 分级词汇 · A1-C2 循序渐进', url_for('main.courses'), True),
-    ('listening', 'Listening', '听力', 'listen', 'headphones', '🎧',
-     '播客精听 · 听写 · 变速训练', url_for('learn.skill', key='listening'), False),
-    ('reading', 'Reading', '阅读', 'read', 'book-open', '📖',
-     '分级短文 · 生词即点即查', url_for('learn.skill', key='reading'), False),
-    ('grammar', 'Grammar', '语法', 'grammar', 'puzzle', '✏️',
-     '情景语法 · 例句驱动规则讲解', url_for('learn.skill', key='grammar'), False),
-    ('speaking', 'Speaking', '口语', 'speak', 'mic', '🎤',
-     '跟读打分 · 情景对话', url_for('learn.skill', key='speaking'), False),
-    ('writing', 'Writing', '写作', 'write', 'square-pen', '📝',
-     '句型练习 · 短文批改', url_for('learn.skill', key='writing'), False),
+    ('vocabulary', 'Vocabulary', 'Vocabulary', 'vocab', 'book-open', '📚',
+     'CEFR-graded vocabulary · A1-C2 step by step', url_for('main.courses'), True),
+    ('listening', 'Listening', 'Listening', 'listen', 'headphones', '🎧',
+     'Podcast study · dictation · speed control', url_for('learn.skill', key='listening'), False),
+    ('reading', 'Reading', 'Reading', 'read', 'book-open', '📖',
+     'Levelled passages · tap-to-lookup', url_for('learn.skill', key='reading'), False),
+    ('grammar', 'Grammar', 'Grammar', 'grammar', 'puzzle', '✏️',
+     'Grammar in context · rules through examples', url_for('learn.skill', key='grammar'), False),
+    ('speaking', 'Speaking', 'Speaking', 'speak', 'mic', '🎤',
+     'Shadow & score · role play', url_for('learn.skill', key='speaking'), False),
+    ('writing', 'Writing', 'Writing', 'write', 'square-pen', '📝',
+     'Sentence drills · essay feedback', url_for('learn.skill', key='writing'), False),
   ] %}
 
   <div class="path-grid stagger">
@@ -63,7 +65,7 @@
         <span class="path-ico" style="background:linear-gradient(135deg,var(--c-{{ key }}) 0%,var(--c-{{ key }}-2) 100%)">{{ icon(ic) }}</span>
         {% if not ready %}<span class="path-lock">{{ icon('lock') }}Soon</span>{% endif %}
       </div>
-      <h3>{{ emoji }} {{ en }} <span class="muted" style="font-weight:700;font-size:13px">· {{ zh }}</span></h3>
+      <h3>{{ emoji }} {{ pick(en, zh) }}</h3>
       <p class="path-desc">{{ desc }}</p>
       <div class="path-bar"><i style="width:0%;background:linear-gradient(90deg,var(--c-{{ key }}),var(--c-{{ key }}-2))"></i></div>
       <span class="path-cta">{{ 'Start' if ready else 'Preview' }} {{ icon('arrow-right') }}</span>
@@ -98,7 +100,7 @@
   <div>
     <span class="eyebrow">{{ icon('route') }}推荐单元 · Recommended Unit</span>
     <div class="dw-word" style="margin-top:8px">{{ rec_unit.emoji }} A1 · Unit {{ rec_unit.no }} {{ rec_unit.title_en }}</div>
-    <div class="wc-ipa">{{ rec_unit.title_zh }}</div>
+    <div class="wc-ipa">{{ title_of(rec_unit) }}</div>
     <p style="margin:8px 0 0;color:var(--ink-2)">{{ rec_lessons|length }} lessons:
       {% for l in rec_lessons %}<span class="tag" style="margin-right:6px">{{ l.title_en }}</span>{% endfor %}</p>
   </div>

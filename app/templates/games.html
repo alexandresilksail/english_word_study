@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}小游戏 · Mini Games{% endblock %}
+{% block title %}{{ pick('Mini Games', '小游戏') }} · Learn{% endblock %}
 {% block content %}
 
 {# ============================================================ 多彩游戏 Hero #}
@@ -10,8 +10,8 @@
     <span class="v3-deco-orb">{{ icon('trophy') }}</span>
     <span class="v3-deco-orb">{{ icon('headphones') }}</span>
   </div>
-  <h1>小游戏 <span style="font-weight:600;font-size:18px;opacity:.85">Mini Games</span></h1>
-  <p>边玩边记：四款小游戏覆盖听、选、拼，玩得越久 XP 越多，连续学习天数也不会掉。</p>
+  <h1><span class="bi"><span class="bi-en">Mini Games</span><span class="bi-zh">小游戏</span></span></h1>
+  <p>{{ pick('Learn while you play: four mini-games cover listening, choice and spelling. The longer you play, the more XP you earn — and your streak stays alive.', '边玩边记：四款小游戏覆盖听、选、拼，玩得越久 XP 越多，连续学习天数也不会掉。') }}</p>
   {% if gamification %}
   <div class="v3-hero-actions">
     <span class="v3-btn-glass">{{ icon('star') }} Lv {{ gamification.level or 0 }} · {{ gamification.xp or 0 }} XP</span>
@@ -23,8 +23,8 @@
 
 <div class="sec-head">
   <div>
-    <h2 class="sec-title">全部游戏 All games</h2>
-    <p class="sec-sub">选择一款开始，成绩会自动记录到你的账号</p>
+    <h2 class="sec-title">{{ pick('All Games', '全部游戏') }}</h2>
+    <p class="sec-sub">{{ pick('Pick one to start — your score is saved to your account automatically', '选择一款开始，成绩会自动记录到你的账号') }}</p>
   </div>
 </div>
 
@@ -33,8 +33,8 @@
   <a class="game-card c-{{ g.color or 'violet' }}" href="{{ g.url }}">
     <div class="game-ico">{{ icon(g.icon or 'gamepad') }}</div>
     <div class="game-body">
-      <div class="game-name">{{ g.zh }} <span class="bi"><span class="bi-en">{{ g.en }}</span></span></div>
-      <div class="game-desc">{{ g.desc_zh }}</div>
+      <div class="game-name"><span class="bi"><span class="bi-en">{{ g.en }}</span><span class="bi-zh">{{ g.zh }}</span></span></div>
+      <div class="game-desc">{{ pick(g.desc_en, g.desc_zh) }}</div>
       <div class="game-meta">
         <span class="pill">🏆 <span class="bi-en">Best</span><span class="bi-zh">最高</span> {{ g.best or 0 }}</span>
         <span class="pill">🎮 {{ g.plays or 0 }}</span>
@@ -47,20 +47,23 @@
 </div>
 
 {% set gnames = {
-  'word_match':'单词配对','speed_quiz':'限时抢答',
-  'listening_challenge':'听音挑战','word_builder':'字母拼词'} %}
+  'word_match': ('Word Match','单词配对'),
+  'speed_quiz': ('Speed Quiz','限时抢答'),
+  'listening_challenge': ('Listening Challenge','听音挑战'),
+  'word_builder': ('Word Builder','字母拼词')} %}
 {% if recent %}
 <div class="sec-head">
   <div>
-    <h2 class="sec-title">最近成绩 Recent</h2>
-    <p class="sec-sub">每局都会记录，输赢都有 XP</p>
+    <h2 class="sec-title">{{ pick('Recent Results', '最近成绩') }}</h2>
+    <p class="sec-sub">{{ pick('Every round is recorded — win or lose, you earn XP', '每局都会记录，输赢都有 XP') }}</p>
   </div>
 </div>
 <div class="card" style="padding:6px 18px">
   {% for r in recent %}
+  {% set _g = gnames.get(r.game_key) %}
   <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--v3-line)">
-    <span class="tag violet" style="min-width:92px">{{ gnames.get(r.game_key, r.game_key) }}</span>
-    <span style="flex:1;font-weight:700">{{ r.score }} <span class="small muted">分</span></span>
+    <span class="tag violet" style="min-width:92px"><span class="bi"><span class="bi-en">{{ _g[0] if _g else r.game_key }}</span><span class="bi-zh">{{ _g[1] if _g else r.game_key }}</span></span></span>
+    <span style="flex:1;font-weight:700">{{ r.score }} <span class="small muted">{{ pick('pts', '分') }}</span></span>
     <span class="score-pill {{ 'hi' if (r.correct and r.total and r.correct/r.total >= 0.8) else ('mid' if (r.correct and r.total and r.correct/r.total >= 0.5) else 'lo') }}">{{ r.correct }}/{{ r.total }}</span>
     <span class="small muted">{{ r.created_at|dt }}</span>
   </div>
