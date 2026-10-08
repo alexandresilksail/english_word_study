@@ -11,8 +11,8 @@ import secrets
 from datetime import timedelta
 from functools import wraps
 
-from flask import (Blueprint, abort, flash, jsonify, redirect, render_template,
-                   request, session, url_for)
+from flask import (Blueprint, abort, current_app, flash, jsonify, redirect,
+                   render_template, request, session, url_for)
 from flask_login import current_user, login_required, login_user, logout_user
 
 from email_code import issue_code, verify_code
@@ -21,13 +21,47 @@ from forms import (CodeLoginForm, CodeRegisterForm, ForgotPasswordForm,
                    LoginForm, RegistrationForm, ResetPasswordForm)
 from mailer import send_email
 from models import User, utcnow
-from utils.ratelimit import clear_login_failures, register_login_failure
+from utils.ratelimit import (clear_login_failures, ip_too_many_requests,
+                             register_login_failure)
 from localization import flash_l
 
 # 重置链接有效期
 RESET_TOKEN_TTL_MINUTES = 60
 
 auth_bp = Blueprint("auth", __name__, url_prefix="")
+
+# V5.9 安全：把 utils.ratelimit.ip_too_many_requests() 真正接入高频爆破面。
+# 账户级锁定（register_login_failure）已覆盖密码爆破，这里再加一道 IP 维度闸门，
+# 防止同一 IP 对登录/注册/验证码接口做无差别刷接口（含邮箱枚举、验证码轰炸）。
+_RATE_LIMITED = {
+    "auth.login", "auth.register", "auth.request_code",
+    "auth.code_login", "auth.code_register",
+}
+
+
+@auth_bp.before_request
+def _ip_rate_limit():
+    # 限流是生产加固项；测试环境（同一进程共用 127.0.0.1）会快速耗尽计数，
+    # 导致整批登录被误拦。由 IP_RATELIMIT_ENABLED 显式控制：测试配置统一关闭，
+    # 专门验证限流的用例显式开启（配合独立 TEST-NET IP 隔离），互不影响。
+    if not current_app.config.get("IP_RATELIMIT_ENABLED", True):
+        return
+    if request.method != "POST":
+        return
+    if request.endpoint not in _RATE_LIMITED:
+        return
+    if not ip_too_many_requests():
+        return
+    # 超限：AJAX 接口（含验证码申请）返回 429 JSON；表单提交则返回登录页并 flash
+    is_ajax = (request.is_json
+               or request.headers.get("X-Requested-With") == "XMLHttpRequest"
+               or request.endpoint == "auth.request_code")
+    if is_ajax:
+        return jsonify({"ok": False,
+                        "message": "请求过于频繁，请稍后再试 / Too many requests, please try later"}), 429
+    flash_l("请求过于频繁，请稍后再试", "Too many requests — please try again later", "error")
+    return redirect(url_for("auth.login"))
+
 
 
 def _safe_next(target: str | None) -> str | None:

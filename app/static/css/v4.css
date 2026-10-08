@@ -1396,3 +1396,33 @@ td { padding: 12px; border-bottom: 1px solid var(--line); }
 /* 答案区：Reveal 之前不占位，避免卡片高度参差 */
 .listen-answer{font-weight:700;margin-top:8px;font-size:15px;}
 .listen-answer .small{font-weight:400;}
+
+/* ===== V6.0.1 AI Assessment ===== */
+.assess-wrap{max-width:760px;margin:0 auto;padding:24px 16px 48px;}
+.assess-wrap h1{font-size:24px;margin-bottom:6px;}
+.assess-lang{display:flex;gap:20px;flex-wrap:wrap;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:16px 0;}
+.assess-q{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:14px 0;background:#fff;}
+.assess-q .opt{display:block;padding:4px 0;cursor:pointer;}
+.assess-q audio{margin:6px 0;}
+.assess-pref{display:block;margin:16px 0;}
+.assess-pref textarea{width:100%;max-width:520px;margin-top:6px;}
+.overall-badge{font-size:18px;margin:18px 0;padding:12px 16px;background:var(--surface-2,#f6f7fb);border-radius:12px;}
+.skill-list{list-style:none;padding:0;display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:16px 0;}
+.skill-list li{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:#fff;}
+.skill-key{font-weight:700;text-transform:capitalize;}
+.skill-level{border-radius:999px;padding:2px 12px;font-weight:700;color:#fff;font-size:13px;}
+.weak-note{margin:12px 0;padding:10px 14px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;}
+
+/* ===== V6.0.3 个性化学习路径 / V6.0.4 自适应复习 ===== */
+.plan-wrap{max-width:820px;margin:22px auto 0;padding:0 16px;}
+.plan-h{font-size:18px;margin-bottom:12px;}
+.plan-cta{display:inline-block;margin-top:6px;padding:12px 18px;background:var(--primary,#4f46e5);color:#fff;border-radius:12px;font-weight:700;text-decoration:none;}
+.plan-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;}
+.plan-step{display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+.plan-dot{width:14px;height:14px;border-radius:50%;margin-top:4px;flex:0 0 auto;background:#cbd5e1;}
+.plan-step b{font-size:15px;}
+.plan-step .muted{margin:4px 0 8px;}
+.plan-go{font-size:13px;font-weight:700;text-decoration:none;color:var(--primary,#4f46e5);}
+.adaptive-badge{display:inline-flex;align-items:center;gap:8px;margin:14px 0 0 16px;padding:6px 12px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;font-size:13px;font-weight:600;color:#3730a3;}
+.adaptive-badge a{margin-left:6px;font-weight:600;color:#4f46e5;text-decoration:underline;}
+.assess-actions{display:flex;gap:12px;margin-top:18px;flex-wrap:wrap;}

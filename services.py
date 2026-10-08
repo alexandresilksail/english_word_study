@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import random
+import time
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import case, func
@@ -236,7 +237,20 @@ def judge(question: dict, user_answer: str) -> bool:
 # --------------------------------------------------------------------------
 # 统计
 # --------------------------------------------------------------------------
+# V5.9 性能：dashboard_stats 在上下文处理器中随每个认证请求触发，
+# 其内部是十余条独立 count 查询。加一层 30s TTL 的内存缓存（按 user_id），
+# 在不引入 Redis 的前提下把高频面板查询压到每分钟最多 2 次落库。
+# 非线程安全字典用于缓存是可接受的（最坏情况只是多算一次）。
+_STATS_CACHE: dict[int, tuple[float, dict]] = {}
+_STATS_TTL = 30.0
+
+
 def dashboard_stats(user_id: int) -> dict:
+    now = time.time()
+    cached = _STATS_CACHE.get(user_id)
+    if cached is not None and now - cached[0] < _STATS_TTL:
+        return cached[1]
+
     total_words = Word.query.count()
     prog = UserWordProgress.query.filter_by(user_id=user_id)
     learned = prog.filter(UserWordProgress.status.in_(["learning", "mastered"])).count()
@@ -258,7 +272,7 @@ def dashboard_stats(user_id: int) -> dict:
     percent = round(learned * 100 / total_words) if total_words else 0
     accuracy = round(total_correct * 100 / total_answers) if total_answers else 0
 
-    return {
+    result = {
         "total_words": total_words, "learned": learned, "mastered": mastered,
         "new_words": total_words - learned, "favorites": favorites, "wrong": wrong,
         "total_answers": total_answers, "total_correct": total_correct,
@@ -268,6 +282,8 @@ def dashboard_stats(user_id: int) -> dict:
         "progress_percent": percent, "accuracy": accuracy,
         "mastered_percent": round(mastered * 100 / total_words) if total_words else 0,
     }
+    _STATS_CACHE[user_id] = (now, result)
+    return result
 
 
 def daily_trend(user_id: int, days: int = 7) -> list[dict]:

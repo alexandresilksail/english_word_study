@@ -111,17 +111,18 @@ def set_lang():
 @main_bp.route("/path/<lang_code>")
 @login_required
 def learning_path(lang_code: str = "en"):
-    """Duolingo 式学习路径：CEFR 阶梯 + 单元节点 + 解锁状态。"""
+    """Duolingo 式学习路径：CEFR 阶梯 + 单元节点 + 解锁状态 + V6.0.3 个性化下一步。"""
     from learning_path import LEARNING_LANGUAGES
-    from path_service import level_progress
+    from path_service import level_progress, personalized_plan
     langs = LEARNING_LANGUAGES
     if lang_code != "en":
         # 其他课程（粤语/日语…）尚未开放内容
         target = next((l for l in langs if l["code"] == lang_code), None)
         return render_template("path_coming.html", langs=langs, target=target)
     levels, current = level_progress(current_user.id)
+    plan = personalized_plan(current_user.id)
     return render_template("path.html", langs=langs, levels=levels,
-                           current=current, lang_code=lang_code)
+                           current=current, lang_code=lang_code, plan=plan)
 
 
 @main_bp.route("/dashboard")
@@ -520,12 +521,20 @@ def lesson_complete(lesson_id: int):
 @main_bp.route("/review")
 @login_required
 def review():
-    from review_service import due_count_by_kind, due_items
+    from review_service import due_count_by_kind, due_items, adaptive_due_items
     uid = current_user.id
+    classic = request.args.get("mode") == "classic"
     counts = due_count_by_kind(uid)
-    items = due_items(uid, limit=20)
+    if classic:
+        items = due_items(uid, limit=20)
+        adaptive_on = False
+    else:
+        # V6.0.4：默认按弱项优先级自适应排序
+        items = adaptive_due_items(uid, limit=20)
+        adaptive_on = True
     total = sum(counts.values())
-    return render_template("review.html", counts=counts, items=items, total=total)
+    return render_template("review.html", counts=counts, items=items, total=total,
+                           adaptive_on=adaptive_on)
 
 
 @main_bp.route("/review/answer", methods=["POST"])

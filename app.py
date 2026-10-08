@@ -178,6 +178,7 @@ def _register_blueprints(app: Flask) -> None:
     from auth import auth_bp
     from routes.admin import admin_bp
     from routes.ai_tutor import ai_tutor_bp
+    from routes.assessment import assessment_bp
     from routes.api import api_bp
     from routes.speaking import speaking_bp
     from routes.games import games_bp
@@ -201,6 +202,7 @@ def _register_blueprints(app: Flask) -> None:
     app.register_blueprint(api_bp)      # REST API v1（未来多端共用）
     app.register_blueprint(ai_tutor_bp)  # V5.7 AI Tutor JSON API
     app.register_blueprint(speaking_bp)  # V5.8 Speaking / Listening API
+    app.register_blueprint(assessment_bp)  # V6.0.1 AI Assessment
     app.register_blueprint(admin_bp)
 
 

@@ -65,3 +65,45 @@ def record_result(uid: int, content_id: int, correct: bool) -> ReviewItem:
     item.review_count += 1
     db.session.commit()
     return item
+
+
+# --------------------------------------------------------------------------
+# V6.0.4 自适应复习：在到期集合内，按「弱项优先 + 逾期程度」重排
+# --------------------------------------------------------------------------
+#: 技能 key → ContentItem.kind 的映射（内容库只覆盖可机评维度）
+_SKILL_TO_KIND = {
+    "vocab": "vocabulary",
+    "grammar": "grammar",
+    "reading": "sentence",
+    "listening": "phrase",
+}
+
+
+def adaptive_due_items(uid: int, limit: int = 20):
+    """返回到期复习项，但优先排布用户弱项相关的内容。
+
+    弱项来自 ``LearnerProfile.weak_areas``（V6.0.2 评估产出）；
+    与弱项无关的内容按逾期时长自然排序，保证不漏复习。
+    返回结构与 :func:`due_items` 一致（Row：``.ReviewItem`` / ``.ContentItem``）。
+    """
+    from models import LearnerProfile
+
+    prof = LearnerProfile.query.get(uid)
+    weak = set(a for a in (prof.weak_areas or "").split(",") if a) if prof else set()
+    weak_kinds = {_SKILL_TO_KIND[s] for s in weak if s in _SKILL_TO_KIND}
+
+    rows = due_items(uid, limit=limit * 4)
+    if not weak_kinds:
+        return rows[:limit]
+
+    def _score(row):
+        ci = row.ContentItem
+        s = 0
+        if ci.kind in weak_kinds:
+            s += 1000
+        overdue_h = (utcnow() - row.ReviewItem.next_review_at).total_seconds() / 3600.0
+        s += min(int(overdue_h), 72)
+        return s
+
+    return sorted(rows, key=_score, reverse=True)[:limit]
+

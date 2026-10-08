@@ -37,6 +37,7 @@ from models import ContentItem, ContentMastery, ReviewItem, User  # noqa: E402
 class _V55Config(DevelopmentConfig):
     DATABASE_URL = f"sqlite:///{_PATH}"
     WTF_CSRF_ENABLED = False
+    IP_RATELIMIT_ENABLED = False          # 测试共用 127.0.0.1，关闭以免误拦整批登录
 
 
 EMAIL = "v55student@example.com"

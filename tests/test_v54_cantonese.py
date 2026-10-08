@@ -33,6 +33,7 @@ from seed_courses import YUE_UNITS, YUE_VOCAB, YUE_PHRASE, YUE_SENTENCE  # noqa:
 
 class _V54Config(DevelopmentConfig):
     DATABASE_URL = f"sqlite:///{_PATH}"
+    IP_RATELIMIT_ENABLED = False          # 测试共用 127.0.0.1，关闭以免误拦整批登录
 
 
 EXPECTED = {

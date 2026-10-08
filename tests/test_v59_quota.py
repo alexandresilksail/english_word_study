@@ -38,6 +38,8 @@ PW = "QuotaTest123456"
 class _QuotaConfig(DevelopmentConfig):
     DATABASE_URL = f"sqlite:///{_PATH}"
     WTF_CSRF_ENABLED = False
+    # 配额用例只验证配额逻辑，关闭 IP 限流以免共用 127.0.0.1 把登录计数打满而误拦
+    IP_RATELIMIT_ENABLED = False
 
 
 @pytest.fixture(scope="module")

@@ -60,6 +60,12 @@ class User(UserMixin, db.Model):
     progress = relationship("UserWordProgress", back_populates="user", cascade="all, delete-orphan", lazy="dynamic")
     test_records = relationship("TestRecord", back_populates="user", cascade="all, delete-orphan", lazy="dynamic")
     study_records = relationship("StudyRecord", back_populates="user", cascade="all, delete-orphan", lazy="dynamic")
+    # V6.0.1/2：学习者画像与评估快照
+    learner_profile = relationship("LearnerProfile", back_populates="user", uselist=False,
+                                   cascade="all, delete-orphan")
+    assessments = relationship("Assessment", back_populates="user",
+                              cascade="all, delete-orphan",
+                              order_by="Assessment.created_at.desc()")
 
     def set_password(self, raw: str) -> None:
         from werkzeug.security import generate_password_hash
@@ -773,6 +779,95 @@ class UserOnboarding(db.Model):
     current_level = db.Column(String(8), nullable=False, default="A1")
     goal = db.Column(String(32), nullable=False, default="daily")
     completed_at = db.Column(DateTime, nullable=True)
+
+
+# ==========================================================================
+# V6.0.1 / V6.0.2：学习者模型与能力评估
+#
+# 设计：UserOnboarding 只承载「注册向导」的粗粒度字段（年龄/教育/自报水平/目标），
+# 不满足 V6.0「六维技能画像 + 弱项 + 偏好」的需求，因此**不重复改造它**，
+# 而是新增两张结构化的表：
+#   - LearnerProfile：当前最新的六维技能等级（vocab/grammar/reading/listening/
+#     speaking/writing）+ 母语/目标语 + 弱项 + 偏好，是个性化学习路径的单一真源。
+#   - Assessment：每一次评估的快照（六维结果 + 作答历史 JSON），可回看进步曲线。
+# 两者解耦：Assessment 是"事件"，LearnerProfile 是"状态"。
+# 字段只用通用类型，SQLite → PostgreSQL 迁移无需改模型。
+# ==========================================================================
+SKILL_KEYS = ("vocab", "grammar", "reading", "listening", "speaking", "writing")
+SKILL_LABELS_ZH = {
+    "vocab": "词汇", "grammar": "语法", "reading": "阅读",
+    "listening": "听力", "speaking": "口语", "writing": "写作",
+}
+SKILL_LABELS_EN = {
+    "vocab": "Vocabulary", "grammar": "Grammar", "reading": "Reading",
+    "listening": "Listening", "speaking": "Speaking", "writing": "Writing",
+}
+# 六维技能 → 评估时使用的题目内容类型（从既有 ContentItem / Word 取数）
+SKILL_CONTENT_KIND = {
+    "vocab": "vocabulary",
+    "reading": "reading",
+    "listening": "listening",
+    "grammar": "grammar",
+    "speaking": "speaking",
+    "writing": "writing",
+}
+
+
+class LearnerProfile(db.Model):
+    """学习者当前画像：六维技能等级 + 母语/目标语 + 弱项 + 偏好。"""
+    __tablename__ = "learner_profiles"
+
+    user_id = db.Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),
+                        primary_key=True)
+    native_language = db.Column(String(8), nullable=False, default="zh")
+    target_language = db.Column(String(8), nullable=False, default="en")
+    vocab_level = db.Column(String(8), nullable=False, default="A1")
+    grammar_level = db.Column(String(8), nullable=False, default="A1")
+    reading_level = db.Column(String(8), nullable=False, default="A1")
+    listening_level = db.Column(String(8), nullable=False, default="A1")
+    speaking_level = db.Column(String(8), nullable=False, default="A1")
+    writing_level = db.Column(String(8), nullable=False, default="A1")
+    overall_level = db.Column(String(8), nullable=False, default="A1")
+    weak_areas = db.Column(Text, nullable=False, default="")      # 逗号分隔技能 key
+    learning_preferences = db.Column(Text, nullable=False, default="")
+    updated_at = db.Column(DateTime, nullable=False, default=utcnow,
+                           server_default=func.now())
+
+    user = relationship("User", back_populates="learner_profile")
+
+    def level_of(self, skill: str) -> str:
+        return getattr(self, f"{skill}_level", "A1")
+
+    def to_dict(self) -> dict:
+        return {
+            "native_language": self.native_language,
+            "target_language": self.target_language,
+            "overall_level": self.overall_level,
+            "skills": {s: self.level_of(s) for s in SKILL_KEYS},
+            "weak_areas": [a for a in (self.weak_areas or "").split(",") if a],
+            "learning_preferences": self.learning_preferences or "",
+        }
+
+
+class Assessment(db.Model):
+    """一次能力评估的快照：六维结果 + 作答历史（JSON）。"""
+    __tablename__ = "assessments"
+
+    id = db.Column(Integer, primary_key=True)
+    user_id = db.Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),
+                        nullable=False, index=True)
+    overall_level = db.Column(String(8), nullable=False, default="A1")
+    vocab_level = db.Column(String(8), nullable=False, default="A1")
+    grammar_level = db.Column(String(8), nullable=False, default="A1")
+    reading_level = db.Column(String(8), nullable=False, default="A1")
+    listening_level = db.Column(String(8), nullable=False, default="A1")
+    speaking_level = db.Column(String(8), nullable=False, default="A1")
+    writing_level = db.Column(String(8), nullable=False, default="A1")
+    answers = db.Column(Text, nullable=False, default="[]")   # JSON 作答历史
+    created_at = db.Column(DateTime, nullable=False, default=utcnow,
+                           server_default=func.now())
+
+    user = relationship("User", back_populates="assessments")
 
 
 class Subscription(db.Model):

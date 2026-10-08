@@ -100,3 +100,70 @@ def learn_filters(cefr: str = "", unit: str = "") -> dict:
         q = q.filter_by(unit_no=int(unit))
     ids = [m.word_id for m in q.all()]
     return {"word_ids": ids}
+
+
+# --------------------------------------------------------------------------
+# V6.0.3 个性化学习路径：基于 LearnerProfile（评估得出的等级 + 弱项）生成下一步
+# --------------------------------------------------------------------------
+def personalized_plan(user_id: int) -> dict:
+    """返回用户专属的下一步学习序列。
+
+    - 无画像：引导先做能力评估（Assessment → Learner Model 闭环入口）。
+    - 有画像：弱项专项优先 → 当前 CEFR 等级主题单元 → 间隔复习。
+    纯函数式推导，不落新表；画像本身已持久化在 learner_profiles。
+    """
+    from flask import url_for
+    from models import LearnerProfile, SKILL_LABELS_ZH
+
+    prof = LearnerProfile.query.get(user_id)
+    if not prof:
+        return {
+            "has_profile": False,
+            "overall_level": "A1",
+            "weak_areas": [],
+            "steps": [{
+                "type": "assess", "priority": 0,
+                "title": "先做一次能力评估",
+                "description": "完成 AI 能力评估，系统会据此生成专属学习路径与弱项训练。",
+                "href": url_for("assessment.index"),
+            }],
+        }
+
+    overall = prof.overall_level or "A1"
+    weak = [a for a in (prof.weak_areas or "").split(",") if a]
+
+    steps = []
+    for skill in weak:
+        label = SKILL_LABELS_ZH.get(skill, skill)
+        steps.append({
+            "type": "focus", "skill": skill, "priority": 1,
+            "title": f"强化弱项：{label}",
+            "description": f"当前 {label} 等级 {prof.level_of(skill)}，建议专项训练以拉平短板。",
+            "href": url_for("practice.index") + f"?skill={skill}",
+        })
+
+    from learning_path import LEVEL_BY_CODE, UNIT_THEMES
+    lv = LEVEL_BY_CODE.get(overall, LEVEL_BY_CODE["A1"])
+    for i, (zh, en) in enumerate(UNIT_THEMES.get(lv.code, []), start=1):
+        steps.append({
+            "type": "unit", "level": lv.code, "priority": 2,
+            "title": f"{lv.code} · {zh} ({en})",
+            "description": f"按 CEFR {lv.code} 主题有序推进学习。",
+            "href": url_for("learn.hub") + f"?cefr={lv.code}&unit={i}",
+        })
+
+    steps.append({
+        "type": "review", "priority": 3,
+        "title": "间隔复习（抗遗忘）",
+        "description": "按遗忘曲线与弱项优先级安排复习。",
+        "href": url_for("main.review"),
+    })
+
+    steps.sort(key=lambda s: s["priority"])
+    return {
+        "has_profile": True,
+        "overall_level": overall,
+        "weak_areas": weak,
+        "steps": steps,
+    }
+

@@ -6,8 +6,13 @@
   <span class="eyebrow">🔁 {{ pick('Spaced Review', '抗遗忘复习') }}</span>
   <h1>{{ pick("Today's Review", '今日复习') }}</h1>
   <p class="muted">{{ pick('You have %d items due. Reviewing on schedule keeps your memory strong.' % total,
-                            '你有 %d 项待复习。按记忆曲线复习，记得更牢。' % total) }}</p>
+                            '你有 %d 项待复习。按记忆曲线复习，记得更牢。' % total) }}  </p>
 </section>
+{% if adaptive_on %}
+<div class="adaptive-badge">{{ icon('sparkles') }} {{ pick('Adaptive: weak areas first', '自适应：弱项优先') }}
+  <a href="{{ url_for('main.review', mode='classic') }}">{{ pick('classic order', '经典顺序') }}</a>
+</div>
+{% endif %}
 <div class="review-summary">
   <div class="rs-card">{{ icon('book-open') }}<b>{{ counts.vocabulary }}</b><span>Vocabulary</span></div>
   <div class="rs-card">{{ icon('chat') }}<b>{{ counts.phrase }}</b><span>Phrases</span></div>

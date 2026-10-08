@@ -45,6 +45,8 @@
 
         <a class="{{ 'active' if request.endpoint and request.endpoint == 'main.learning_path' }}"
            href="{{ url_for('main.learning_path') }}">{{ icon('route') }}{{ bi('nav.path') }}</a>
+        <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('assessment.') }}"
+           href="{{ url_for('assessment.index') }}">{{ icon('chart') }}<span class="bi"><span class="bi-en">Assessment</span><span class="bi-zh">能力评估</span></span></a>
         <a class="{{ 'active' if request.endpoint and request.endpoint == 'main.review' }}"
            href="{{ url_for('main.review') }}">{{ icon('rotate-ccw') }}<span>Review</span></a>
         <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('quiz.') }}"

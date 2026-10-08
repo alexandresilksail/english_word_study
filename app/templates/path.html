@@ -21,6 +21,29 @@
   </div>
 </section>
 
+{# ---------------- V6.0.3 个性化下一步（基于能力评估画像） ---------------- #}
+{% if plan %}
+<section class="plan-wrap">
+  <h2 class="plan-h">{{ pick('Your personalized next steps', '你的专属下一步') }}</h2>
+  {% if not plan.has_profile %}
+    <a class="plan-cta" href="{{ plan.steps[0].href }}">{{ plan.steps[0].title }} →</a>
+  {% else %}
+  <ol class="plan-list">
+    {% for s in plan.steps %}
+      <li class="plan-step type-{{ s.type }}">
+        <span class="plan-dot c-{{ 'rose' if s.type == 'focus' else ('violet' if s.type == 'unit' else 'emerald') }}"></span>
+        <div>
+          <b>{{ s.title }}</b>
+          <p class="muted">{{ s.description }}</p>
+          <a class="plan-go" href="{{ s.href }}">{{ pick('Open', '前往') }} →</a>
+        </div>
+      </li>
+    {% endfor %}
+  </ol>
+  {% endif %}
+</section>
+{% endif %}
+
 {# ---------------- 学习阶梯 ---------------- #}
 <div class="path-ladder">
   {% for lv in levels %}

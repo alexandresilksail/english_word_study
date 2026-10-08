@@ -41,6 +41,7 @@ PW = "PlanTest123456"
 class _PlanConfig(DevelopmentConfig):
     DATABASE_URL = f"sqlite:///{_PATH}"
     WTF_CSRF_ENABLED = False
+    IP_RATELIMIT_ENABLED = False          # 测试共用 127.0.0.1，关闭以免误拦整批登录
 
 
 @pytest.fixture(scope="module")

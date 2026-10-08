@@ -19,7 +19,30 @@
 | **V5.6** | 统一掌握度 **Mastery 0-4** + 间隔重复（复习时刻单一真源） |
 | **V5.7** | **AI Tutor**：讲解 / 例句 / 对话 / 批改 / 翻译 / 练习 |
 | **V5.8** | **口语**（STT / TTS / 词级评分）+ **听力**（复用既有 2000 MP3）+ 套餐权限 |
-| **V5.9** | **遗留项收口**：每日配额 + 运维 CLI + 录音降级与麦克风释放 + 听力卡片缺陷修复 |
+| **V5.9** | **遗留项收口**：每日配额 + 运维 CLI + 录音降级与麦克风释放 + 听力卡片缺陷修复 + 安全限流接入 + 性能 N+1 修复 |
+
+## 零·壹、V6 版本特性（V6.0 进行中）
+
+V6.0 的核心是把平台从「单词网站」升级为 **AI 个性化多语学习平台**，闭环：
+
+```
+Assessment → Learner Model → Learning Path → Learning → Practice
+   → AI Tutor / Conversation → Skill Analysis → Adaptive Review → Learner Model ↺
+```
+
+| 版本 | 能力 | 状态 |
+|---|---|---|
+| **V6.0.1** | **AI Assessment**：六维（词汇/语法/阅读/听力/口语/写作）能力评估，产出 Skill Profile | ✅ 已落地 |
+| **V6.0.2** | **Learner Model**：`LearnerProfile`（六维等级 + 母语/目标语 + 弱项 + 偏好）与 `Assessment` 快照 | ✅ 已落地 |
+| **V6.0.3** | **AI Learning Path**：规则引擎 + 可选 AI 推荐，产出每日个性化计划（弱项专项 / CEFR 单元 / 间隔复习） | ✅ 已落地 |
+| **V6.0.4** | **Adaptive Review**：综合弱项优先级 + 逾期程度重排到期复习队列 | ✅ 已落地 |
+| V6.0.5 | AI Tutor 2.0：读取 LearnerProfile，新增 Hint / Correct Me / Role Play / Review Mistakes | 🚧 待开发 |
+| V6.0.6 | AI Conversation：场景对话，按 CEFR 控难度 | 🚧 待开发 |
+| V6.0.7 | Speaking Coach：六维语音分析（Mock 可切换真实 STT） | 🚧 待开发 |
+| V6.0.8 | AI Content Engine：词库→内容生成→质量校验→发布 | 🚧 待开发 |
+| V6.0.9 | Multilingual：架构支持 8 语，首期开放 en/yue/ja/es | 🚧 待开发 |
+| V6.0.10 | Dashboard 2.0：围绕 Continue/Today's Goal/Path/Skill Profile | 🚧 待开发 |
+| V6.0.11 | Subscription：FREE/PREMIUM/PRO（Mock Payment）收口 | 🚧 待开发 |
 
 ### 统一掌握度 0-4
 `New → Learning → Familiar → Strong → Mastered`，由三类证据综合判定：
