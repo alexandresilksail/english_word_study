@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}{{ pick(pick(quiz.title_en, quiz.title_zh), 'Unit Test') }} · {{ app_title_en }}{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <span class="eyebrow">{{ icon('practice') }} {{ pick('Unit Test', '单元测验') }}</span>
+    <h2>{{ icon('practice') }} {{ pick(quiz.title_en, quiz.title_zh) }}</h2>
+    <p class="muted">
+      {{ icon('book') }} {{ pick(course.title_en, course.title_zh) }}
+      · {{ icon('layers') }} {{ pick(unit.title_en, unit.title_zh) }}
+    </p>
+    {% if state.mastered %}
+      <p class="badge-ok">{{ icon('check') }} {{ pick('Mastered', '已掌握') }}</p>
+    {% endif %}
+  </div>
+</section>
+
+{% if show_result and result %}
+{# ============================ 判分结果 ============================ #}
+<div class="card ut-result stagger">
+  <div class="card-head">
+    <h3>{{ icon('chart') }} {{ pick('Your result', '测验结果') }}</h3>
+  </div>
+  <div class="card-body">
+    <div class="ut-score">
+      <div class="ut-ring c-{{ 'emerald' if result.passed else 'amber' }}">
+        <b>{{ result.accuracy }}<i>%</i></b>
+        <small>{{ result.score }}/{{ result.total }}</small>
+      </div>
+      <div class="ut-meta">
+        <p class="ut-verdict">
+          {% if result.passed %}
+            {{ icon('check') }} {{ pick('Mastered — next unit unlocked!', '已掌握——下一单元已解锁！') }}
+          {% else %}
+            {{ icon('target') }} {{ pick('Not yet — review your weak areas and try again.',
+                                          '还没通过——先复习薄弱项，再来一次。') }}
+          {% endif %}
+        </p>
+        <p class="muted">
+          {{ pick('Time', '用时') }}: {{ result.duration_sec }}s
+          · {{ pick('Pass mark', '及格线') }}: {{ quiz.pass_score }}%
+        </p>
+      </div>
+    </div>
+
+    {% if result.weak_areas %}
+      <div class="ut-block">
+        <h4>{{ icon('alert') }} {{ pick('Weak areas', '薄弱项') }}</h4>
+        <div class="chip-row">
+          {% for w in result.weak_areas %}
+            <span class="chip c-amber">{{ w }}</span>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if result.mistakes %}
+      <div class="ut-block">
+        <h4>{{ icon('review') }} {{ pick('Mistakes', '错题') }} ({{ result.mistakes|length }})</h4>
+        <ul class="ut-mistakes">
+          {% for m in result.mistakes %}
+            <li>
+              <b>{{ m.prompt }}</b>
+              <span class="wrong">{{ icon('close') }} {{ m.given or pick('(no answer)', '（未作答）') }}</span>
+              <span class="right">{{ icon('check') }} {{ m.correct }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    {% if not result.passed and practice %}
+      <div class="ut-block">
+        <h4>{{ icon('book') }} {{ pick('Targeted practice', '针对性练习') }}</h4>
+        <p class="muted">{{ pick('Review these before you retake the test.',
+                                  '重测前先过一遍这些内容。') }}</p>
+        <ul class="ut-practice">
+          {% for it in practice %}
+            <li><b>{{ it.surface }}</b>
+              <span class="muted">{{ meaning_of(it) }}</span></li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  </div>
+  <div class="card-foot">
+    {% if result.passed and next_unit %}
+      <a class="btn btn-primary" href="{{ url_for('main.unit_view', unit_id=next_unit.id) }}">
+        {{ icon('arrow-right') }} {{ pick('Next unit', '下一单元') }}</a>
+    {% endif %}
+    <a class="btn btn-secondary" href="{{ url_for('main.unit_test', unit_id=unit.id) }}">
+      {{ icon('rotate-ccw') }} {{ pick('Retake test', '重新测试') }}</a>
+    <a class="btn btn-ghost" href="{{ url_for('main.unit_view', unit_id=unit.id) }}">
+      {{ pick('Back to unit', '返回单元') }}</a>
+  </div>
+</div>
+
+{% else %}
+{# ============================ 测验题目 ============================ #}
+<form class="card ut-quiz stagger" method="post" action="{{ url_for('main.unit_test', unit_id=unit.id) }}">
+  {{ form.csrf_token }}
+  <input type="hidden" name="started_at" value="{{ started_at }}">
+  <div class="card-head">
+    <h3>{{ icon('help') }} {{ pick('Answer all questions', '回答全部题目') }}</h3>
+    <span class="muted">{{ questions|length }} {{ pick('questions', '题') }}
+      · {{ pick('Pass mark', '及格线') }} {{ quiz.pass_score }}%</span>
+  </div>
+  <div class="card-body">
+    {% if result %}
+      <p class="muted ut-last">
+        {{ icon('rotate-ccw') }} {{ pick('Last attempt', '上次成绩') }}:
+        <b>{{ result.accuracy }}%</b> ({{ result.score }}/{{ result.total }})
+      </p>
+    {% endif %}
+
+    {% if not questions %}
+      <p class="muted">{{ pick('No questions yet — this unit has no content.', '暂无题目——本单元还没有内容。') }}</p>
+    {% endif %}
+
+    {% for q in questions %}
+    <fieldset class="ut-q">
+      <legend>
+        <span class="ut-q-no">{{ q.no }}</span>
+        {{ pick(q.prompt_en, q.prompt_zh) }}
+      </legend>
+      <div class="ut-opts">
+        {% for o in q.options %}
+        <label class="ut-opt">
+          <input type="radio" name="{{ q.id }}" value="{{ loop.index0 }}" required>
+          <span>{{ pick(o.en, o.zh) }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </fieldset>
+    {% endfor %}
+  </div>
+  <div class="card-foot">
+    <button type="submit" class="btn btn-primary">
+      {{ icon('check') }} {{ pick('Submit answers', '提交答案') }}</button>
+    <a class="btn btn-ghost" href="{{ url_for('main.unit_view', unit_id=unit.id) }}">
+      {{ pick('Back to unit', '返回单元') }}</a>
+  </div>
+</form>
+{% endif %}
+{% endblock %}

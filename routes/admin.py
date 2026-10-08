@@ -74,20 +74,45 @@ def users():
     rows = (User.query.order_by(User.created_at.desc())
             .offset((page - 1) * per).limit(per).all())
 
+    # V5.9 性能：避免「逐用户查一次」的 N+1。改为按当前页 user_id 批量聚合，
+    # 用 7 条查询代替 7×N 条，用户规模增长时不再线性放大。
+    ids = [u.id for u in rows]
+    _answers = dict(
+        db.session.query(StudyRecord.user_id, func.count(StudyRecord.id))
+        .filter(StudyRecord.user_id.in_(ids), StudyRecord.action == "answer")
+        .group_by(StudyRecord.user_id).all())
+    _correct = dict(
+        db.session.query(StudyRecord.user_id, func.count(StudyRecord.id))
+        .filter(StudyRecord.user_id.in_(ids), StudyRecord.action == "answer",
+                StudyRecord.is_correct.is_(True))
+        .group_by(StudyRecord.user_id).all())
+    _tests = dict(
+        db.session.query(TestRecord.user_id, func.count(TestRecord.id))
+        .filter(TestRecord.user_id.in_(ids)).group_by(TestRecord.user_id).all())
+    _favs = dict(
+        db.session.query(Favorite.user_id, func.count(Favorite.id))
+        .filter(Favorite.user_id.in_(ids)).group_by(Favorite.user_id).all())
+    _mastered = dict(
+        db.session.query(UserWordProgress.user_id, func.count(UserWordProgress.id))
+        .filter(UserWordProgress.user_id.in_(ids), UserWordProgress.status == "mastered")
+        .group_by(UserWordProgress.user_id).all())
+    _wrong = dict(
+        db.session.query(WrongAnswer.user_id, func.count(WrongAnswer.id))
+        .filter(WrongAnswer.user_id.in_(ids)).group_by(WrongAnswer.user_id).all())
+
     data = []
     for u in rows:
-        answers = StudyRecord.query.filter_by(user_id=u.id, action="answer").count()
-        correct = StudyRecord.query.filter_by(user_id=u.id, action="answer",
-                                              is_correct=True).count()
+        answers = _answers.get(u.id, 0)
+        correct = _correct.get(u.id, 0)
         data.append({
             "id": u.id, "email": u.email, "username": u.username,
             "is_admin": u.is_admin, "created_at": u.created_at,
             "last_login_at": u.last_login_at, "login_count": u.login_count or 0,
             "answers": answers, "accuracy": round(correct * 100 / answers) if answers else 0,
-            "tests": TestRecord.query.filter_by(user_id=u.id).count(),
-            "favs": Favorite.query.filter_by(user_id=u.id).count(),
-            "mastered": UserWordProgress.query.filter_by(user_id=u.id, status="mastered").count(),
-            "wrong": WrongAnswer.query.filter_by(user_id=u.id).count(),
+            "tests": _tests.get(u.id, 0),
+            "favs": _favs.get(u.id, 0),
+            "mastered": _mastered.get(u.id, 0),
+            "wrong": _wrong.get(u.id, 0),
         })
     return render_template("admin_users.html", users=data, page=page, pages=pages, total=total)
 

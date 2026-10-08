@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ pick('Assessment Result', '评估结果') }}{% endblock %}
+{% block content %}
+<section class="container assess-wrap">
+  <h1>{{ pick('Your Skill Profile', '你的技能画像') }}</h1>
+
+  <div class="overall-badge">
+    {{ pick('Overall level', '综合等级') }}: <b>{{ a.overall_level }}</b>
+  </div>
+
+  <ul class="skill-list">
+    {% for s in skills %}
+    <li>
+      <span class="skill-key">{{ s }}</span>
+      <span class="skill-level c-{{ loop.cycle('violet','sky','emerald','amber','rose','indigo') }}">{{ levels[s] }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+
+  {% if weak %}
+  <p class="weak-note">{{ pick('Areas to focus on', '建议优先强化') }}: <b>{{ weak | join(', ') }}</b></p>
+  {% endif %}
+
+  <div class="assess-actions">
+    <a class="btn btn-primary" href="{{ url_for('main.learning_path') }}">{{ pick('View Learning Path', '查看学习路径') }}</a>
+    <a class="btn" href="{{ url_for('assessment.index') }}">{{ pick('Retake', '重新评估') }}</a>
+  </div>
+</section>
+{% endblock %}

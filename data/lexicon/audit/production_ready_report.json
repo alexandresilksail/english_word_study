@@ -1,0 +1,12 @@
+{
+  "total": 2000,
+  "changed": 0,
+  "by_source": {
+    "legacy-2000": {
+      "total": 2000,
+      "production_ready": 0,
+      "changed": 0
+    }
+  },
+  "dry_run": false
+}

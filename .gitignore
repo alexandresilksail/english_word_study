@@ -13,11 +13,22 @@ venv/
 #    从而误伤源码资源 app/data/（2000 词库 words.json），导致部署后词表为空。
 instance/*.db
 instance/*.db-journal
-/data/
+*.db
+*.sqlite
+*.sqlite3
+# 词库大体积导入产物（raw/normalized/master）不入库；
+# 但保留注册表与审计报告（license_registry.json / audit/*.json）作为版本化交付物。
+/data/lexicon/raw/
+/data/lexicon/normalized/
+/data/lexicon/master/
 /logs/
 /backups/
 /certbot/
 nginx/conf.d/app.conf
+# 本地预览/推送辅助脚本（含本地路径，不入库）
+/preview_server.py
+# 运行时语音资产（2000 MP3，二进制，留存磁盘但不入库，避免仓库膨胀）
+/app/static/audio/
 
 # 测试
 .pytest_cache/

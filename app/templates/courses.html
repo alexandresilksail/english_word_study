@@ -1,0 +1,26 @@
+{% from "_icons.html" import icon %}
+{% extends "base.html" %}
+{% block title %}Courses · {{ app_title_en }}{% endblock %}
+{% block content %}
+<section class="path-hero">
+  <span class="eyebrow">{{ icon('book-open') }} {{ pick('Courses', '课程') }}</span>
+  <h1>{{ pick('Choose a language to start learning', '选择一门语言开始学习') }}</h1>
+  <p class="muted">{{ pick('Pick a language — your path unlocks level by level.',
+                           '选择一门语言 —— 你的学习路径会逐级解锁。') }}</p>
+</section>
+{% for lang, courses in by_lang.values() %}
+<section class="lang-block">
+  <h2>{{ lang.flag }} {{ pick(lang.name_en, lang.name_zh) }}</h2>
+  <div class="course-grid">
+    {% for c in courses %}
+    <a class="course-card c-{{ c.color }}" href="{{ url_for('main.course_view', course_id=c.id) }}">
+      <b>{{ c.cefr_level }}</b>
+      <span>{{ c.title_en }}</span>
+      <small>{{ title_of(c) }}</small>
+      <em>{{ c.units|length if c.units else '' }} Units →</em>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endfor %}
+{% endblock %}

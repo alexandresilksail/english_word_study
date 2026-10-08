@@ -74,6 +74,12 @@ class Config:
     MAX_LOGIN_ATTEMPTS = _env_int("MAX_LOGIN_ATTEMPTS", 5)        # 连续失败次数上限
     LOGIN_LOCK_MINUTES = _env_int("LOGIN_LOCK_MINUTES", 15)       # 锁定时长（分钟）
 
+    # ---------------- 防爆破：IP 维度限流（V5.9 HIGH-1） ----------------
+    # 默认开启（开发 / 生产都生效）。测试环境共用 127.0.0.1，会把计数迅速打满，
+    # 导致整批登录被误拦，因此测试配置统一关闭；专门验证限流的用例再用
+    # 显式开启的私有配置（配合独立 TEST-NET IP）隔离。
+    IP_RATELIMIT_ENABLED = True
+
     # ---------------- 密码强度 ----------------
     PASSWORD_MIN_LENGTH = 8
 
@@ -113,6 +119,7 @@ class TestingConfig(Config):
     DEBUG = False
     WTF_CSRF_ENABLED = False
     DATABASE_URL = "sqlite:///:memory:"
+    IP_RATELIMIT_ENABLED = False          # 测试共用 127.0.0.1，关闭以免误拦整批登录
 
 
 CONFIGS = {

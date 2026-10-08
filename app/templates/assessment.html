@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ pick('AI Assessment', '能力评估') }}{% endblock %}
+{% block content %}
+<section class="container assess-wrap">
+  <h1>{{ pick('AI Assessment', 'AI 能力评估') }}</h1>
+  <p class="muted">{{ pick('Answer to build your 6-dimension skill profile (vocabulary / grammar / reading / listening / speaking / writing).',
+                           '完成评估，系统将生成你的六维技能画像（词汇 / 语法 / 阅读 / 听力 / 口语 / 写作）。') }}</p>
+
+  <form method="post" action="{{ url_for('assessment.index') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="questions" value='{{ questions | tojson }}'>
+
+    <fieldset class="assess-lang">
+      <legend>{{ pick('Languages', '语言') }}</legend>
+      <label>{{ pick('Native', '母语') }}
+        <select name="native_language">
+          <option value="zh" selected>中文</option>
+          <option value="en">English</option>
+          <option value="ja">日本語</option>
+          <option value="es">Español</option>
+        </select>
+      </label>
+      <label>{{ pick('Target', '目标语') }}
+        <select name="target_language">
+          <option value="en" selected>English</option>
+          <option value="yue">粤语</option>
+          <option value="ja">日本語</option>
+          <option value="es">Español</option>
+        </select>
+      </label>
+    </fieldset>
+
+    {% for q in questions %}
+    <div class="assess-q">
+      <p><b>{{ loop.index }}. [{{ q.skill }}]</b> {{ q.prompt }}</p>
+      {% if q.kind == 'mcq' %}
+        {% if q.audio_url %}<audio controls preload="none" src="{{ q.audio_url }}"></audio>{% endif %}
+        {% for opt in q.options %}
+        <label class="opt"><input type="radio" name="{{ q.id }}" value="{{ loop.index0 }}" required> {{ opt }}</label>
+        {% endfor %}
+      {% else %}
+        <select name="{{ q.id }}">
+          {% for i in range(1, q.max + 1) %}
+          <option value="{{ i }}">{{ i }}</option>
+          {% endfor %}
+        </select>
+        <span class="muted small">{{ pick('(self-rated — not auto-graded)', '（自评，不自动判分）') }}</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+    <label class="assess-pref">{{ pick('Learning preferences (optional)', '学习偏好（可选）') }}
+      <textarea name="preferences" rows="2"></textarea>
+    </label>
+
+    <button type="submit" class="btn btn-primary">{{ pick('Submit Assessment', '提交评估') }}</button>
+  </form>
+</section>
+{% endblock %}

@@ -11,8 +11,8 @@ import secrets
 from datetime import timedelta
 from functools import wraps
 
-from flask import (Blueprint, abort, flash, jsonify, redirect, render_template,
-                   request, session, url_for)
+from flask import (Blueprint, abort, current_app, flash, jsonify, redirect,
+                   render_template, request, session, url_for)
 from flask_login import current_user, login_required, login_user, logout_user
 
 from email_code import issue_code, verify_code
@@ -21,12 +21,47 @@ from forms import (CodeLoginForm, CodeRegisterForm, ForgotPasswordForm,
                    LoginForm, RegistrationForm, ResetPasswordForm)
 from mailer import send_email
 from models import User, utcnow
-from utils.ratelimit import clear_login_failures, register_login_failure
+from utils.ratelimit import (clear_login_failures, ip_too_many_requests,
+                             register_login_failure)
+from localization import flash_l
 
 # 重置链接有效期
 RESET_TOKEN_TTL_MINUTES = 60
 
 auth_bp = Blueprint("auth", __name__, url_prefix="")
+
+# V5.9 安全：把 utils.ratelimit.ip_too_many_requests() 真正接入高频爆破面。
+# 账户级锁定（register_login_failure）已覆盖密码爆破，这里再加一道 IP 维度闸门，
+# 防止同一 IP 对登录/注册/验证码接口做无差别刷接口（含邮箱枚举、验证码轰炸）。
+_RATE_LIMITED = {
+    "auth.login", "auth.register", "auth.request_code",
+    "auth.code_login", "auth.code_register",
+}
+
+
+@auth_bp.before_request
+def _ip_rate_limit():
+    # 限流是生产加固项；测试环境（同一进程共用 127.0.0.1）会快速耗尽计数，
+    # 导致整批登录被误拦。由 IP_RATELIMIT_ENABLED 显式控制：测试配置统一关闭，
+    # 专门验证限流的用例显式开启（配合独立 TEST-NET IP 隔离），互不影响。
+    if not current_app.config.get("IP_RATELIMIT_ENABLED", True):
+        return
+    if request.method != "POST":
+        return
+    if request.endpoint not in _RATE_LIMITED:
+        return
+    if not ip_too_many_requests():
+        return
+    # 超限：AJAX 接口（含验证码申请）返回 429 JSON；表单提交则返回登录页并 flash
+    is_ajax = (request.is_json
+               or request.headers.get("X-Requested-With") == "XMLHttpRequest"
+               or request.endpoint == "auth.request_code")
+    if is_ajax:
+        return jsonify({"ok": False,
+                        "message": "请求过于频繁，请稍后再试 / Too many requests, please try later"}), 429
+    flash_l("请求过于频繁，请稍后再试", "Too many requests — please try again later", "error")
+    return redirect(url_for("auth.login"))
+
 
 
 def _safe_next(target: str | None) -> str | None:
@@ -55,7 +90,7 @@ def register():
     if form.validate_on_submit():
         email = (form.email.data or "").strip().lower()
         if User.query.filter_by(email=email).first():
-            flash("该邮箱已被注册，请直接登录", "error")
+            flash_l("该邮箱已被注册，请直接登录", "This email is already registered — please sign in", "error")
             return render_template("register.html", form=form, code_form=CodeRegisterForm(), mode="password")
 
         user = User(email=email, username=(form.username.data or "").strip())
@@ -65,7 +100,7 @@ def register():
         db.session.commit()
 
         _ = session.get("_flashes")  # touch session ensure cookie exists
-        flash("注册成功！已自动登录，开始背单词吧", "success")
+        flash_l("注册成功！已自动登录，开始背单词吧", "Account created — you are signed in. Start learning!", "success")
 
         # 发送验证邮件；未配置 SMTP 时把链接直接给到页面（便于本地验证流程）
         verify_url = url_for("auth.verify_email", token=user.verify_token, _external=True)
@@ -75,9 +110,9 @@ def register():
             f"你好 {user.username}，\n\n请点击下面的链接完成邮箱验证：\n{verify_url}\n\n"
             "如果不是你本人操作，请忽略本邮件。",
         ):
-            flash("验证邮件已发送，请查收邮箱。", "info")
+            flash_l("验证邮件已发送，请查收邮箱。", "Verification email sent — please check your inbox.", "info")
         else:
-            flash(f"（邮件未配置 SMTP）邮箱验证链接：{verify_url}", "info")
+            flash_l(f"（邮件未配置 SMTP）邮箱验证链接：{verify_url}", f"(SMTP not configured) Verification link: {verify_url}", "info")
 
         _login_now(user, remember=True)
         return redirect(url_for("main.dashboard"))
@@ -104,7 +139,7 @@ def login():
         if user:
             remaining, wait_seconds = register_login_failure(user)
             if user.is_locked:
-                flash(f"登录失败次数过多，请 {wait_seconds // 60 + 1} 分钟后再试", "error")
+                flash_l(f"登录失败次数过多，请 {wait_seconds // 60 + 1} 分钟后再试", f"Too many failed attempts — try again in {wait_seconds // 60 + 1} min", "error")
                 return render_template("login.html", form=form, code_form=code_form, tab="password")
             if user.check_password(form.password.data):
                 ok = True
@@ -112,17 +147,19 @@ def login():
         if ok:
             clear_login_failures(user)
             _login_now(user, remember=bool(form.remember.data))
-            flash(f"欢迎回来，{user.username}！", "success")
+            flash_l(f"欢迎回来，{user.username}！", f"Welcome back, {user.username}!", "success")
             return redirect(_safe_next(request.args.get("next")) or url_for("main.dashboard"))
 
         # 统一提示，避免暴露邮箱是否已注册
         remaining = 0
         if user:
             remaining = max(0, 5 - int(user.failed_logins or 0))
-        tip = "邮箱或密码错误"
+        tip_zh = "邮箱或密码错误"
+        tip_en = "Wrong email or password"
         if remaining and remaining <= 3:
-            tip += f"，还可尝试 {remaining} 次"
-        flash(tip, "error")
+            tip_zh += f"，还可尝试 {remaining} 次"
+            tip_en += f", {remaining} tries left"
+        flash_l(tip_zh, tip_en, "error")
         return render_template("login.html", form=form, code_form=code_form, tab="password")
 
     return render_template("login.html", form=form, code_form=code_form, tab=tab)
@@ -170,7 +207,7 @@ def code_login():
         email = (code_form.email.data or "").strip().lower()
         user = User.query.filter_by(email=email).first()
         if not user:
-            flash("该邮箱尚未注册，请先创建账号 / Not registered yet", "error")
+            flash_l("该邮箱尚未注册，请先创建账号", "Not registered yet", "error")
             return render_template("login.html", form=LoginForm(), code_form=code_form, tab="code")
 
         ok, message = verify_code(email, code_form.code.data, "login")
@@ -185,7 +222,7 @@ def code_login():
         db.session.commit()
 
         _login_now(user, remember=bool(code_form.remember.data))
-        flash(f"欢迎回来，{user.username}！", "success")
+        flash_l(f"欢迎回来，{user.username}！", f"Welcome back, {user.username}!", "success")
         return redirect(_safe_next(request.args.get("next")) or url_for("main.dashboard"))
 
     return render_template("login.html", form=LoginForm(), code_form=code_form, tab="code")
@@ -201,7 +238,7 @@ def code_register():
     if code_form.validate_on_submit():
         email = (code_form.email.data or "").strip().lower()
         if User.query.filter_by(email=email).first():
-            flash("该邮箱已被注册，请直接登录 / Already registered, sign in", "error")
+            flash_l("该邮箱已被注册，请直接登录", "Already registered, please sign in", "error")
             return render_template("register.html", form=RegistrationForm(), code_form=code_form, mode="code")
 
         ok, message = verify_code(email, code_form.code.data, "register")
@@ -219,7 +256,7 @@ def code_register():
         db.session.add(user)
         db.session.commit()
 
-        flash("注册成功！已自动登录，开始背单词吧 / Account created, you're signed in", "success")
+        flash_l("注册成功！已自动登录，开始背单词吧", "Account created, you're signed in", "success")
         _login_now(user, remember=True)
         return redirect(url_for("main.dashboard"))
 
@@ -232,7 +269,7 @@ def logout():
     username = current_user.username
     logout_user()
     session.clear()
-    flash(f"已安全退出，期待你再来，{username}！", "info")
+    flash_l(f"已安全退出，期待你再来，{username}！", f"Signed out safely — see you soon, {username}!", "info")
     return redirect(url_for("main.index"))
 
 
@@ -263,8 +300,8 @@ def forgot_password():
                 f"{reset_url}\n\n如果不是你本人操作，请忽略本邮件，你的密码不会改变。",
             ):
                 # 未配置 SMTP：直接在页面给出链接，保证流程可走通
-                flash(f"（邮件未配置 SMTP）密码重置链接：{reset_url}", "info")
-        flash("如果该邮箱已注册，重置链接已发送，请注意查收。", "info")
+                flash_l(f"（邮件未配置 SMTP）密码重置链接：{reset_url}", f"(SMTP not configured) Password reset link: {reset_url}", "info")
+        flash_l("如果该邮箱已注册，重置链接已发送，请注意查收。", "If this email is registered, a reset link has been sent — please check your inbox.", "info")
         return redirect(url_for("auth.login"))
 
     return render_template("forgot_password.html", form=form)
@@ -278,7 +315,7 @@ def reset_password(token: str):
 
     user = User.query.filter_by(reset_token=token).first()
     if not user or not user.reset_token_exp or user.reset_token_exp < utcnow():
-        flash("重置链接无效或已过期，请重新申请。", "error")
+        flash_l("重置链接无效或已过期，请重新申请。", "Reset link is invalid or expired — please request a new one.", "error")
         return redirect(url_for("auth.forgot_password"))
 
     form = ResetPasswordForm()
@@ -287,7 +324,7 @@ def reset_password(token: str):
         user.reset_token = None
         user.reset_token_exp = None
         db.session.commit()
-        flash("密码已重置，请使用新密码登录。", "success")
+        flash_l("密码已重置，请使用新密码登录。", "Password reset — please sign in with your new password.", "success")
         return redirect(url_for("auth.login"))
 
     return render_template("reset_password.html", form=form)
@@ -298,13 +335,13 @@ def verify_email(token: str):
     """邮箱验证。注意：验证与否不影响登录，仅作标记，避免影响既有老用户。"""
     user = User.query.filter_by(verify_token=token).first()
     if not user:
-        flash("验证链接无效。", "error")
+        flash_l("验证链接无效。", "Verification link is invalid.", "error")
         return redirect(url_for("main.index"))
 
     user.email_verified = True
     user.verify_token = None
     db.session.commit()
-    flash("邮箱验证成功，谢谢！", "success")
+    flash_l("邮箱验证成功，谢谢！", "Email verified successfully — thank you!", "success")
     return redirect(url_for("main.dashboard") if current_user.is_authenticated else url_for("auth.login"))
 
 
@@ -314,7 +351,7 @@ def resend_verification():
     """重新发送验证邮件。"""
     user = current_user
     if user.email_verified:
-        flash("你的邮箱已经验证过了。", "info")
+        flash_l("你的邮箱已经验证过了。", "Your email is already verified.", "info")
         return redirect(url_for("main.profile"))
 
     if not user.verify_token:
@@ -328,9 +365,9 @@ def resend_verification():
         f"你好 {user.username}，\n\n请点击下面的链接完成邮箱验证：\n{verify_url}\n\n"
         "如果不是你本人操作，请忽略本邮件。",
     ):
-        flash("验证邮件已重新发送，请查收。", "info")
+        flash_l("验证邮件已重新发送，请查收。", "Verification email resent — please check your inbox.", "info")
     else:
-        flash(f"（邮件未配置 SMTP）邮箱验证链接：{verify_url}", "info")
+        flash_l(f"（邮件未配置 SMTP）邮箱验证链接：{verify_url}", f"(SMTP not configured) Verification link: {verify_url}", "info")
     return redirect(url_for("main.profile"))
 
 

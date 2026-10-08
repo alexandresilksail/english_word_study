@@ -1,0 +1,92 @@
+{% from "_icons.html" import icon %}
+{% extends "base.html" %}
+{% block title %}{{ bi_plain('nav.path') }} · {{ app_title_en }}{% endblock %}
+
+{% block content %}
+{# ---------------- Hero ---------------- #}
+<section class="path-hero">
+  <span class="eyebrow">{{ icon('route') }}{{ bi('path.eyebrow') }}</span>
+  <h1>{{ bi('path.title') }}</h1>
+  <p class="muted">{{ bi('path.sub') }}</p>
+  <div class="lang-chips">
+    {% for l in langs %}
+      <a class="lang-chip {{ 'on' if l.code == lang_code else '' }} {{ 'soon' if not l.ready else '' }}"
+         href="{{ url_for('main.learning_path', lang_code=l.code) }}">
+        <span class="flag">{{ l.flag }}</span>
+        <b>{{ l.name_en }}</b>
+        <small>{{ lang_label(l.code) }}</small>
+        {% if not l.ready %}<em>{{ t('path.coming_soon') }}</em>{% endif %}
+      </a>
+    {% endfor %}
+  </div>
+</section>
+
+{# ---------------- V6.0.3 个性化下一步（基于能力评估画像） ---------------- #}
+{% if plan %}
+<section class="plan-wrap">
+  <h2 class="plan-h">{{ pick('Your personalized next steps', '你的专属下一步') }}</h2>
+  {% if not plan.has_profile %}
+    <a class="plan-cta" href="{{ plan.steps[0].href }}">{{ plan.steps[0].title }} →</a>
+  {% else %}
+  <ol class="plan-list">
+    {% for s in plan.steps %}
+      <li class="plan-step type-{{ s.type }}">
+        <span class="plan-dot c-{{ 'rose' if s.type == 'focus' else ('violet' if s.type == 'unit' else 'emerald') }}"></span>
+        <div>
+          <b>{{ s.title }}</b>
+          <p class="muted">{{ s.description }}</p>
+          <a class="plan-go" href="{{ s.href }}">{{ pick('Open', '前往') }} →</a>
+        </div>
+      </li>
+    {% endfor %}
+  </ol>
+  {% endif %}
+</section>
+{% endif %}
+
+{# ---------------- 学习阶梯 ---------------- #}
+<div class="path-ladder">
+  {% for lv in levels %}
+  <div class="lvl {{ 'current' if current and lv.code == current.code }} {{ 'locked' if not lv.unlocked }}">
+    <div class="lvl-head">
+      <div class="lvl-badge c-{{ lv.color }}">
+        {% if lv.done %}{{ icon('check') }}{% elif not lv.unlocked %}{{ icon('lock') }}{% else %}{{ lv.emoji }}{% endif %}
+      </div>
+      <div class="lvl-meta">
+        <h2>{{ lv.code }} {{ pick(lv.name_en, lv.name_zh) }}</h2>
+        <p class="muted">{{ lv.mastered }}/{{ lv.total }} {{ t('path.words') }}
+          · {{ (lv.ratio*100)|round|int }}%
+          {% if lv.done %}<b class="tag ok">{{ t('path.done') }}</b>
+          {% elif not lv.unlocked %}<b class="tag lock">{{ t('path.locked') }}</b>
+          {% elif current and lv.code == current.code %}<b class="tag now">{{ t('path.current') }}</b>{% endif %}
+        </p>
+        <div class="lvl-bar"><i style="width:{{ (lv.ratio*100)|round|int }}%"></i></div>
+      </div>
+    </div>
+
+    {# 单元节点（Duolingo 式路径圆点） #}
+    <div class="nodes">
+      {% for u in range(1, lv.units + 1) %}
+        {% set unit_done = lv.done %}
+        {% set node_on = lv.unlocked %}
+        <a class="node n-{{ u }} {{ 'done' if unit_done }} {{ 'off' if not node_on }}"
+           href="{{ url_for('words.daily') }}?cefr={{ lv.code }}&unit={{ u }}"
+           {{ 'tabindex=-1 aria-disabled=true' if not node_on }}>
+          <span class="node-ico">{{ icon('check' if unit_done else ('lock' if not node_on else 'book-open')) }}</span>
+          <b>{{ lv.code }}-{{ u }}</b>
+          <small>{{ bi('path.level_unit') }} {{ u }} · {{ lv.total // lv.units }} {{ t('path.words') }}</small>
+        </a>
+      {% endfor %}
+      <a class="node n-quiz {{ 'off' if not lv.unlocked }}" href="{{ url_for('quiz.test_page') }}">
+        <span class="node-ico">{{ icon('practice') }}</span>
+        <b>{{ bi('nav.quiz') }}</b><small>Quiz · +XP</small>
+      </a>
+      <a class="node n-game {{ 'off' if not lv.unlocked }}" href="{{ url_for('games.index') }}">
+        <span class="node-ico">{{ icon('gamepad') }}</span>
+        <b>{{ bi('nav.games') }}</b><small>Mini Game · +XP</small>
+      </a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

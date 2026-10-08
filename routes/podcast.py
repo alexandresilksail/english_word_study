@@ -18,13 +18,15 @@ from models import PodcastChannel, PodcastEpisode
 podcast_bp = Blueprint("podcast", __name__, url_prefix="/podcast")
 
 # 未来的转换链路（展示用，说明一条音频如何变成一套学习材料）
+# 每项：(key, en, zh, desc_en, desc_zh, ico) —— 模板用 pick() 按 UI 语言取，
+# 保证 English 版面零中文。
 PIPELINE = [
-    ("audio", "Audio", "音频", "原始播客音频，存对象存储 + CDN", "headphones"),
-    ("transcript", "Transcript", "文稿", "语音转写，按时间轴切段", "article"),
-    ("vocabulary", "Vocabulary", "生词", "从文稿抽取高频生词，关联主词库", "book"),
-    ("grammar", "Grammar", "语法", "从文稿抽取语法点并配例句", "puzzle"),
-    ("listening", "Listening", "听力", "基于时间轴的精听与填空", "mic"),
-    ("quiz", "Quiz", "测验", "自动生成理解 / 词汇 / 语法题", "quiz"),
+    ("audio", "Audio", "音频", "Raw podcast audio, stored on object storage + CDN", "原始播客音频，存对象存储 + CDN", "headphones"),
+    ("transcript", "Transcript", "文稿", "Speech-to-text, segmented by timeline", "语音转写，按时间轴切段", "article"),
+    ("vocabulary", "Vocabulary", "生词", "High-frequency words drawn from the transcript, linked to the main bank", "从文稿抽取高频生词，关联主词库", "book"),
+    ("grammar", "Grammar", "语法", "Grammar points extracted from the transcript with example sentences", "从文稿抽取语法点并配例句", "puzzle"),
+    ("listening", "Listening", "听力", "Timeline-based intensive listening & fill-in-the-blank", "基于时间轴的精听与填空", "mic"),
+    ("quiz", "Quiz", "测验", "Auto-generated comprehension / vocabulary / grammar questions", "自动生成理解 / 词汇 / 语法题", "quiz"),
 ]
 
 
@@ -42,7 +44,7 @@ def index():
     return render_template("podcast.html", channels=channels, episodes=items,
                            pipeline=PIPELINE,
                            storage={"provider": provider(),
-                                    "base": media_base_url() or "（未配置，当前使用站内静态文件）"})
+                                    "base": media_base_url() or "(not set - using in-site static files)"})
 
 
 def _key(asset_id):

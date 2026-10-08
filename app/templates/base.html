@@ -1,27 +1,25 @@
-{% from "_macros.html" import icon %}
+{% from "_icons.html" import icon %}
 <!doctype html>
-<html lang="zh-CN" data-lang="both">
+<html lang="{% if ui_lang == 'en' %}en{% else %}zh-CN{% endif %}" data-lang="{{ ui_lang }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="English Learning Platform · 英语学习平台：2000 常用词、英式发音、四种测试、四款小游戏、XP 与连续学习激励。">
+  <meta name="description" content="{{ pick('AI Language Learning Platform: CEFR-graded learning paths, listening, speaking, reading and writing practice, spaced review, XP and streaks.', 'AI 语言学习平台：CEFR 分级学习路径、听说读写练、抗遗忘复习、XP 与连续学习激励。') }}">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta name="theme-color" content="#6d5efc">
-  <title>{% block title %}{{ app_title }} · {{ app_title_en }}{% endblock %}</title>
+  <title>{% block title %}{{ pick(app_title_en, app_title) }}{% endblock %}</title>
   <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/saas.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/design.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/v3.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/v4.css') }}">
 </head>
 <body>
 
+{# ============================================================ 顶部导航 ========= #}
 <header class="topbar">
   <div class="topbar-inner">
     <a class="brand" href="{{ url_for('main.dashboard') if current_user.is_authenticated else url_for('main.index') }}">
       <span class="brand-mark">EL</span>
       <span class="brand-text">
-        <b>{{ app_title }}</b>
+        <b>{{ pick('AI Language Learning', 'AI 语言学习平台') }}</b>
         <small>{{ app_title_en }}</small>
       </span>
     </a>
@@ -29,13 +27,11 @@
     {# 桌面端主导航（≤768px 隐藏，改由底部标签栏承担） #}
     <nav class="ds-nav" aria-label="main">
       {% if current_user.is_authenticated %}
-        <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('main.dashboard') }}"
-           href="{{ url_for('main.dashboard') }}">{{ icon('dashboard') }}{{ bi('nav.dashboard') }}</a>
 
         {# Learn：六项技能下拉 #}
         <div class="nav-drop">
-          <a class="nav-drop-toggle {{ 'active' if request.endpoint and (request.endpoint.startswith('learn.') or request.endpoint.startswith('words.')) }}"
-             href="{{ url_for('learn.hub') }}">{{ icon('book') }}{{ bi('nav.learn') }}{{ icon('chevron-right') }}</a>
+          <a class="nav-drop-toggle {{ 'active' if request.endpoint and (request.endpoint.startswith('learn.') or request.endpoint.startswith('words.') or request.endpoint.startswith('main.courses') or request.endpoint.startswith('main.unit')) }}"
+             href="{{ url_for('main.courses') }}">{{ icon('book') }}<span class="bi"><span class="bi-en">Courses</span><span class="bi-zh">课程</span></span>{{ icon('chevron-right') }}</a>
           <div class="nav-drop-menu">
             {% for s in nav_skills %}
               <a href="{{ s.url }}">
@@ -47,18 +43,26 @@
           </div>
         </div>
 
+        <a class="{{ 'active' if request.endpoint and request.endpoint == 'main.learning_path' }}"
+           href="{{ url_for('main.learning_path') }}">{{ icon('route') }}{{ bi('nav.path') }}</a>
+        <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('assessment.') }}"
+           href="{{ url_for('assessment.index') }}">{{ icon('chart') }}<span class="bi"><span class="bi-en">Assessment</span><span class="bi-zh">能力评估</span></span></a>
+        <a class="{{ 'active' if request.endpoint and request.endpoint == 'main.review' }}"
+           href="{{ url_for('main.review') }}">{{ icon('rotate-ccw') }}<span>Review</span></a>
         <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('quiz.') }}"
-           href="{{ url_for('quiz.test_page') }}">{{ icon('quiz') }}{{ bi('nav.quiz') }}</a>
+           href="{{ url_for('quiz.test_page') }}">{{ icon('practice') }}{{ bi('nav.quiz') }}</a>
         <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('games.') }}"
            href="{{ url_for('games.index') }}">{{ icon('gamepad') }}{{ bi('nav.games') }}</a>
-        <a class="{{ 'active' if request.endpoint and request.endpoint == 'main.ai_tutor' }}"
-           href="{{ url_for('main.ai_tutor') }}">{{ icon('sparkles') }}{{ bi('nav.ai_tutor') }}</a>
-        <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('words.progress') }}"
-           href="{{ url_for('words.progress') }}">{{ icon('chart') }}{{ bi('nav.progress') }}</a>
         <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('podcast.') }}"
            href="{{ url_for('podcast.index') }}">{{ icon('headphones') }}{{ bi('nav.podcast') }}</a>
+        <a class="{{ 'active' if request.endpoint and request.endpoint == 'main.ai_tutor' }}"
+           href="{{ url_for('main.ai_tutor') }}">{{ icon('bot') }}{{ bi('nav.ai_tutor') }}</a>
+        <a class="{{ 'active' if request.endpoint and request.endpoint == 'main.speaking' }}"
+           href="{{ url_for('main.speaking') }}">{{ icon('mic') }}<span class="bi"><span class="bi-en">Speaking</span><span class="bi-zh">口语听力</span></span></a>
+        <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('words.progress') }}"
+           href="{{ url_for('words.progress') }}">{{ icon('chart') }}{{ bi('nav.progress') }}</a>
 
-        {# 收藏与错题做成图标快捷入口，节省横向空间 #}
+        {# 收藏与错题做成图标快捷入口 #}
         <a class="nav-icon-link" href="{{ url_for('words.favorites') }}"
            title="{{ bi_plain('nav.favorites') }}">{{ icon('star') }}
            {% if nav_stats.favorites %}<span class="nav-count">{{ nav_stats.favorites }}</span>{% endif %}</a>
@@ -67,34 +71,42 @@
            {% if nav_stats.wrong %}<span class="nav-count">{{ nav_stats.wrong }}</span>{% endif %}</a>
 
         {% if current_user.is_admin %}
-          <a href="{{ url_for('admin.console') }}" title="{{ bi_plain('nav.admin') }}">{{ icon('shield') }}</a>
+          <a class="nav-icon-link" href="{{ url_for('admin.console') }}" title="{{ bi_plain('nav.admin') }}">{{ icon('shield') }}</a>
         {% endif %}
       {% else %}
         <a href="{{ url_for('main.index') }}">{{ icon('home') }}{{ bi('nav.home') }}</a>
-        <a href="{{ url_for('words.browse') }}">{{ icon('list') }}{{ bi('nav.browse') }}</a>
-        <a href="{{ url_for('quiz.test_page') }}">{{ icon('quiz') }}{{ bi('nav.quiz') }}</a>
+        <a href="{{ url_for('main.courses') }}">{{ icon('book') }}<span class="bi"><span class="bi-en">Courses</span><span class="bi-zh">课程</span></span></a>
+        <a href="{{ url_for('quiz.test_page') }}">{{ icon('practice') }}{{ bi('nav.quiz') }}</a>
         <a href="{{ url_for('games.index') }}">{{ icon('gamepad') }}{{ bi('nav.games') }}</a>
         <a href="{{ url_for('podcast.index') }}">{{ icon('headphones') }}{{ bi('nav.podcast') }}</a>
       {% endif %}
     </nav>
 
     <div class="topbar-right">
+      {% if current_user.is_authenticated and nav_gam %}
+        <span class="gam-chip xp" title="XP">{{ icon('bolt') }}{{ nav_gam.xp }} XP</span>
+        <span class="gam-chip streak" title="{{ bi_plain('dash.streak') }}">{{ icon('flame') }}{{ nav_gam.streak }}</span>
+      {% endif %}
+
+      {# V5.1：界面语言切换 中文 | English | 粵語（立即生效；登录存账号，未登录存 Cookie）
+          English = 纯英文版面（全站不出现中文）；中文站另有「双语同显」模式。 #}
+      <div class="lang-switch" role="group" aria-label="{{ bi_plain('lang.switch') }}">
+        {{ icon('globe') }}
+        {% for code in ui_langs %}
+          <a href="{{ url_for('main.set_lang', lang=code) }}{% if request.path %}?next={{ request.path }}{% endif %}"
+             class="{{ 'on' if ui_lang == code }}">{{ lang_label(code) }}</a>
+          {% if not loop.last %}<i class="ls-div"></i>{% endif %}
+        {% endfor %}
+      </div>
+
       {% if current_user.is_authenticated %}
         <a class="user-chip" href="{{ url_for('main.profile') }}" title="{{ bi_plain('nav.profile') }}">
           <i class="avatar">{{ current_user.username[:1] }}</i>
           <b>{{ current_user.username }}</b>
           {% if nav_gam %}<span class="chip-lv">Lv {{ nav_gam.level }}</span>{% endif %}
         </a>
-      {% endif %}
-
-      <button type="button" class="icon-btn" id="lang-toggle"
-              title="{{ bi_plain('lang.switch') }}" aria-label="{{ bi_plain('lang.switch') }}">
-        {{ icon('globe') }}
-      </button>
-
-      {% if current_user.is_authenticated %}
-        <a class="btn btn-ghost btn-sm" href="{{ url_for('auth.logout') }}">
-          {{ icon('logout') }}<span class="hide-sm">{{ bi('nav.logout') }}</span>
+        <a class="icon-btn" href="{{ url_for('auth.logout') }}" title="{{ bi_plain('nav.logout') }}">
+          {{ icon('logout') }}
         </a>
       {% else %}
         <a class="btn btn-secondary btn-sm" href="{{ url_for('auth.login') }}">{{ bi('nav.login') }}</a>
@@ -109,7 +121,7 @@
     {% if messages %}
       <div class="flashes">
         {% for cat, msg in messages %}
-          <div class="flash {{ cat }}">{{ msg }}</div>
+          <div class="flash {{ cat }}">{{ t_flash(msg) }}</div>
         {% endfor %}
       </div>
     {% endif %}
@@ -118,25 +130,26 @@
   {% block content %}{% endblock %}
 
   <footer class="footer">
-    <p><b>{{ app_title }}</b> · {{ app_title_en }} <span class="muted">v{{ app_version }}</span></p>
-    <p class="muted">{{ t('footer.wordbank') }} {{ nav_stats.total_words if nav_stats else 2000 }} {{ t('learn.words_unit') }} · {{ t('footer.offline') }}</p>
+    <p><b>{{ pick('AI Language Learning Platform', 'AI 语言学习平台') }}</b> <span class="muted">v{{ app_version }}</span></p>
+    <p class="muted">{{ pick('English · Cantonese · more languages coming · spaced review keeps your memory',
+                              '英语 · 粤语 · 更多语言即将上线 · 间隔复习记得更牢') }}</p>
     <p class="muted">{{ t('footer.privacy') }}</p>
   </footer>
 </main>
 
-{# 移动端底部标签栏（>768px 隐藏） #}
+{# ============================================================ 移动端底部标签栏 ====== #}
 {% if current_user.is_authenticated %}
 <nav class="tabbar" aria-label="mobile">
   <div class="tabbar-inner">
     <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('main.dashboard') }}"
-       href="{{ url_for('main.dashboard') }}">{{ icon('dashboard') }}<span>{{ bi('nav.dashboard') }}</span></a>
-    <a class="{{ 'active' if request.endpoint and (request.endpoint.startswith('learn.') or request.endpoint.startswith('words.learn')) }}"
-       href="{{ url_for('learn.hub') }}">{{ icon('book') }}<span>{{ bi('nav.learn') }}</span></a>
+       href="{{ url_for('main.dashboard') }}">{{ icon('home') }}<span>{{ bi('nav.dashboard') }}</span></a>
+    <a class="{{ 'active' if request.endpoint and (request.endpoint.startswith('learn.') or request.endpoint.startswith('words.daily') or request.endpoint.startswith('main.courses') or request.endpoint.startswith('main.unit')) }}"
+       href="{{ url_for('main.courses') }}">{{ icon('book') }}<span class="bi"><span class="bi-en">Courses</span><span class="bi-zh">课程</span></span></a>
     <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('quiz.') }}"
-       href="{{ url_for('quiz.test_page') }}">{{ icon('quiz') }}<span>{{ bi('nav.quiz') }}</span></a>
+       href="{{ url_for('quiz.test_page') }}">{{ icon('practice') }}<span>{{ bi('nav.quiz') }}</span></a>
     <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('games.') }}"
        href="{{ url_for('games.index') }}">{{ icon('gamepad') }}<span>{{ bi('nav.games') }}</span></a>
-    <a class="{{ 'active' if request.endpoint and request.endpoint.startswith('main.profile') }}"
+    <a class="{{ 'active' if request.endpoint and (request.endpoint.startswith('main.profile') or request.endpoint.startswith('words.progress')) }}"
        href="{{ url_for('main.profile') }}">{{ icon('user') }}<span>{{ bi('nav.profile') }}</span></a>
   </div>
 </nav>
@@ -144,6 +157,7 @@
 
 <script src="{{ url_for('static', filename='js/saas.js') }}"></script>
 <script src="{{ url_for('static', filename='js/v3.js') }}"></script>
+<script src="{{ url_for('static', filename='js/v4.js') }}"></script>
 {% block scripts %}{% endblock %}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </body>

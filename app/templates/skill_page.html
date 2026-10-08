@@ -1,35 +1,99 @@
 {% extends "base.html" %}
-{% block title %}{{ skill.zh }} · Skill{% endblock %}
+{% block title %}{{ pick(skill.en, skill.zh) }} · Skill{% endblock %}
 {% block content %}
-<div class="v3-hero">
-  <div class="v3-hero-deco"><span class="v3-deco-orb">{{ icon(skill.icon) }}</span></div>
-  <h1>{{ skill.zh }} <span class="bi"><span class="bi-en">{{ skill.en }}</span></span></h1>
-  <p>{{ skill.desc_zh }} · {{ skill.desc_en }}</p>
-</div>
 
-<div class="card" style="padding:22px;margin-top:-10px">
-  <div class="sec-head">
-    <h2 class="sec-title">即将上线 Coming soon</h2>
+{% set ill_map = {
+  'listening': 'ill-listening.svg', 'reading': 'ill-reading.svg',
+  'grammar': 'ill-grammar.svg', 'speaking': 'ill-speaking.svg',
+  'writing': 'ill-writing.svg',
+} %}
+{% set ill = ill_map.get(skill.key, 'ill-search.svg') %}
+{% set color_key = {'sky':'listen','amber':'read','rose':'grammar','emerald':'speak','indigo':'write'}.get(skill.color, 'vocab') %}
+
+{# ============================================================ Hero #}
+<div class="v3-hero hero-dark">
+  <div class="v3-hero-deco">
+    <span class="v3-deco-orb">{{ icon(skill.icon) }}</span>
+    <span class="v3-deco-orb">{{ icon('sparkles') }}</span>
   </div>
-  <p class="muted">该技能的内容正在制作中。下方是规划中的练习模块，上线后会自动出现，无需改代码。</p>
-  <div class="skill-grid">
-    {% for zh, en, desc in plan %}
-    <div class="skill-card c-{{ skill.color or 'indigo' }}">
-      <div class="skill-ico">{{ icon('rocket') }}</div>
-      <div class="skill-body">
-        <div class="skill-name">{{ zh }} <span class="bi"><span class="bi-en">{{ en }}</span></span></div>
-        <div class="skill-desc">{{ desc }}</div>
-      </div>
-    </div>
-    {% endfor %}
+  <h1><span class="bi"><span class="bi-en">{{ skill.en }}</span><span class="bi-zh">{{ skill.zh }}</span></span></h1>
+  <p>{{ pick(skill.desc_en, skill.desc_zh) }}</p>
+  {% if gamification %}
+  <div class="v3-hero-actions">
+    <span class="v3-btn-glass">{{ icon('zap') }} Lv {{ gamification.level or 0 }} · {{ gamification.xp or 0 }} XP</span>
+    <span class="v3-btn-ghost-w">{{ icon('flame') }} {{ gamification.streak or 0 }} {{ pick('day streak', '天连续') }}</span>
   </div>
-  {% if stat %}
-  <p class="muted" style="margin-top:14px">你在本技能已预留进度位：<b>{{ stat.xp or 0 }} XP</b>，上线即生效。</p>
   {% endif %}
 </div>
 
-<div style="text-align:center;margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-  <a class="btn btn-secondary" href="{{ url_for('learn.hub') }}">{{ icon('chevron-right') }} 返回学习中心</a>
-  <a class="btn btn-primary" href="{{ url_for('words.learn') }}">先去背单词 Start with Vocabulary</a>
+{# ============================================================ 空态：插画 + 说明 + 规划 #}
+<div class="empty-card" style="--ec1:var(--c-{{ color_key }}-soft);--ec2:var(--bg)">
+  <div class="ec-ill">
+    <img src="{{ url_for('static', filename='img/' ~ ill) }}" alt="{{ skill.en }} illustration">
+  </div>
+  <div class="ec-body">
+    <span class="tag" style="background:var(--c-{{ color_key }}-soft);color:var(--c-{{ color_key }})">
+      {{ icon('clock') }} {{ pick('Coming soon', '即将上线') }}
+    </span>
+    <h3>{{ pick(skill.en, skill.zh) }}</h3>
+    <p>{{ pick('This module is being prepared. The activities listed below are planned — they will appear automatically once ready, no code changes needed.',
+                '这个模块的内容正在制作中。规划中的练习列在下方，上线后会自动出现，无需改代码。') }}</p>
+    <div class="row">
+      <a class="btn btn-primary" href="{{ url_for('words.daily') }}">{{ icon('book-open') }} {{ pick('Start with Vocabulary', '先去背单词') }}</a>
+      <a class="btn btn-secondary" href="{{ url_for('learn.hub') }}">{{ icon('chevron-left') }} {{ pick('Back to Hub', '返回学习中心') }}</a>
+    </div>
+    {% if stat %}
+    <p class="small muted" style="margin-top:14px">{{ pick('Reserved XP for this skill: ' ~ (stat.xp or 0) ~ ' XP — activates once live.', '你在本技能已预留进度位：' ~ (stat.xp or 0) ~ ' XP，上线即生效。') }}</p>
+    {% endif %}
+  </div>
 </div>
+
+{# ============================================================ 规划模块 #}
+{% if plan %}
+<section style="margin-top:26px">
+  <div class="sec-head">
+    <div>
+      <h2 class="sec-title">{{ pick('Planned practice modules', '规划中的练习模块') }}</h2>
+      <p class="sec-sub">{{ pick('These appear automatically once live — no code changes needed', '上线后这些模块会自动出现在这里') }}</p>
+    </div>
+  </div>
+  <div class="skill-grid">
+    {% for m in plan %}
+    <div class="skill-card c-{{ skill.color or 'indigo' }} is-locked">
+      <div class="skill-ico">{{ icon('rocket') }}</div>
+      <div class="skill-body">
+        <div class="skill-name"><span class="bi"><span class="bi-en">{{ m.en }}</span><span class="bi-zh">{{ m.zh }}</span></span></div>
+        <div class="skill-desc">{{ pick(m.desc_en, m.desc_zh) }}</div>
+      </div>
+      <span class="skill-soon">{{ icon('clock') }} Soon</span>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{# ============================================================ 相关替代入口 #}
+<section style="margin-top:26px">
+  <div class="sec-head">
+    <div>
+      <h2 class="sec-title">{{ pick('Try this now', '先练起来') }}</h2>
+      <p class="sec-sub">{{ pick("Can't wait? These work right now", '等不及？这些功能现在就能用') }}</p>
+    </div>
+  </div>
+  <div class="rec-grid">
+    <a class="rec-card" href="{{ url_for('quiz.test_page') }}">
+      <div class="rec-cover"><img src="{{ url_for('static', filename='img/ill-quiz.svg') }}" alt=""><span class="rec-level">Now</span></div>
+      <div class="rec-body"><h3>{{ icon('practice') }} {{ bi('nav.quiz') }}</h3><p>{{ pick('Four question types test your vocabulary mastery', '四种题型检验你的词汇掌握度') }}</p><span class="rec-cta btn btn-secondary btn-sm">{{ bi('act.start') }} {{ icon('arrow-right') }}</span></div>
+    </a>
+    <a class="rec-card" href="{{ url_for('games.index') }}">
+      <div class="rec-cover"><img src="{{ url_for('static', filename='img/ill-games.svg') }}" alt=""><span class="rec-level">+XP</span></div>
+      <div class="rec-body"><h3>{{ icon('gamepad-2') }} {{ bi('nav.games') }}</h3><p>{{ pick('Four mini-games to lock in words while you play', '四款小游戏，边玩边巩固单词') }}</p><span class="rec-cta btn btn-secondary btn-sm">{{ bi('act.start') }} {{ icon('arrow-right') }}</span></div>
+    </a>
+    <a class="rec-card" href="{{ url_for('words.browse') }}">
+      <div class="rec-cover"><img src="{{ url_for('static', filename='img/ill-search.svg') }}" alt=""><span class="rec-level">A–Z</span></div>
+      <div class="rec-body"><h3>{{ icon('search') }} {{ bi('nav.browse') }}</h3><p>{{ pick('Browse by level — audio & examples on tap', '按等级浏览词条，随时查发音与例句') }}</p><span class="rec-cta btn btn-secondary btn-sm">{{ bi('act.start') }} {{ icon('arrow-right') }}</span></div>
+    </a>
+  </div>
+</section>
+
 {% endblock %}

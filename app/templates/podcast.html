@@ -1,57 +1,100 @@
 {% extends "base.html" %}
-{% block title %}播客与音频学习 · Podcast{% endblock %}
+{% block title %}{{ pick('Podcast & Audio Learning', '播客与音频学习') }} · Learn{% endblock %}
 {% block content %}
-<div class="v3-hero">
-  <div class="v3-hero-deco"><span class="v3-deco-orb">{{ icon('headphones') }}</span></div>
-  <h1>播客与音频学习 <span class="bi"><span class="bi-en">Podcast</span></span></h1>
-  <p>把一段音频变成一套学习材料：文稿 → 生词 → 语法 → 精听 → 测验。架构已就绪，内容库即将上线。</p>
-</div>
 
-<div class="sec-head">
+{# ============================================================ Podcast Hero（紫粉媒体感） #}
+<div class="pod-hero">
   <div>
-    <h2 class="sec-title">一条音频的转化链路 Pipeline</h2>
-    <p class="sec-sub">未来任意播客都能自动生成下方全套练习</p>
-  </div>
-</div>
-<div class="skill-grid">
-  {% for key, en, zh, desc, ico in pipeline %}
-  <div class="skill-card c-{{ loop.cycle('violet','sky','amber','emerald','rose','indigo') }}">
-    <div class="skill-ico">{{ icon(ico) }}</div>
-    <div class="skill-body">
-      <div class="skill-name">{{ zh }} <span class="bi"><span class="bi-en">{{ en }}</span></span></div>
-      <div class="skill-desc">{{ desc }}</div>
+    <span class="eyebrow">{{ icon('headphones') }} Podcast / Audio Learning</span>
+    <h1><span class="bi"><span class="bi-en">Podcast &amp; Audio Learning</span><span class="bi-zh">播客与音频学习</span></span></h1>
+    <p style="color:var(--ink-2);margin:0">{{ pick('Turn any audio into a full study kit: transcript → vocabulary → grammar → intensive listening → quiz. The architecture is ready; the content library is coming soon.', '把一段音频变成一套学习材料：文稿 → 生词 → 语法 → 精听 → 测验。架构已就绪，内容库即将上线。') }}</p>
+    <div class="pod-cta">
+      <a class="btn btn-primary" href="#episodes">{{ icon('play') }} {{ pick('Browse Episodes', '浏览剧集') }}</a>
+      <a class="btn btn-secondary" href="{{ url_for('words.daily') }}">{{ icon('book-open') }} {{ pick('Start with Vocabulary', '先去背单词') }}</a>
     </div>
   </div>
+  <img src="{{ url_for('static', filename='img/ill-podcast.svg') }}" alt="Podcast illustration">
+</div>
+
+{# ============================================================ 转化链路 Pipeline #}
+<div class="sec-head">
+  <div>
+    <h2 class="sec-title">{{ pick('From one audio clip to a full lesson', '一条音频的转化链路') }}</h2>
+    <p class="sec-sub">{{ pick('Any future podcast can auto-generate the full set of exercises below', '未来任意播客都能自动生成下方全套练习') }}</p>
+  </div>
+</div>
+<div class="pipeline-strip">
+  {% for key, en, zh, desc_en, desc_zh, ico in pipeline %}
+    <div class="pipe-step">
+      <span class="ps-ico" style="background:linear-gradient(135deg, {{ ['#a855f7,#7c3aed', '#06b6d4,#14b8a6', '#f59e0b,#f97316', '#f43f5e,#fb7185', '#22c55e,#10b981', '#6366f1,#8b5cf6'][loop.index0] }})">{{ icon(ico) }}</span>
+      <b><span class="bi"><span class="bi-en">{{ en }}</span><span class="bi-zh">{{ zh }}</span></span></b>
+      <small>{{ pick(desc_en, desc_zh) }}</small>
+    </div>
+    {% if not loop.last %}<span class="pipe-arrow">{{ icon('chevron-right') }}</span>{% endif %}
   {% endfor %}
 </div>
 
-<div class="card" style="padding:22px;margin-top:20px">
-  <h3 style="margin-top:0">音频存储架构 Storage</h3>
-  <p class="muted">音频文件不进代码仓库、不进镜像，统一走对象存储 + CDN：</p>
-  <div class="skill-grid">
-    <div class="stat-card c-sky"><div class="stat-ico">{{ icon('cloud') }}</div><div class="stat-val">对象存储</div><div class="stat-label">Object Storage</div></div>
-    <div class="stat-card c-violet"><div class="stat-ico">{{ icon('globe') }}</div><div class="stat-val">CDN</div><div class="stat-label">全球加速</div></div>
-    <div class="stat-card c-emerald"><div class="stat-ico">{{ icon('check') }}</div><div class="stat-val">{{ storage.provider or '未配置' }}</div><div class="stat-label">当前 Provider</div></div>
+{# ============================================================ 音频存储架构 #}
+<div class="card" style="padding:22px;margin-top:22px">
+  <div class="row-between">
+    <div>
+      <h3 style="margin:0 0 2px">{{ icon('cloud') }} {{ pick('Audio Storage Architecture', '音频存储架构') }}</h3>
+      <p class="muted small" style="margin:0">{{ pick('Audio files never enter the code repo or image — they go through object storage + CDN', '音频文件不进代码仓库、不进镜像，统一走对象存储 + CDN') }}</p>
+    </div>
   </div>
-  <p class="muted" style="margin-top:10px">基地址：{{ storage.base }}</p>
+  <div class="grid" style="grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px">
+    <div class="stat-card c-sky"><span class="stat-ico">{{ icon('cloud') }}</span><b class="stat-val">Object Storage</b><span class="stat-label">{{ pick('Object Storage', '对象存储') }} · {{ pick('reserved', '预留') }}</span></div>
+    <div class="stat-card c-violet"><span class="stat-ico">{{ icon('globe') }}</span><b class="stat-val">CDN</b><span class="stat-label">{{ pick('Global acceleration', '全球加速') }} · {{ pick('reserved', '预留') }}</span></div>
+    <div class="stat-card c-emerald"><span class="stat-ico">{{ icon('check') }}</span><b class="stat-val">{{ storage.provider or '未配置' }}</b><span class="stat-label">{{ pick('Current Provider', '当前 Provider') }}</span></div>
+  </div>
+  <p class="muted small" style="margin-top:12px">{{ pick('Base URL', '基地址') }}：<span class="mono">{{ storage.base }}</span></p>
+</div>
+
+{# ============================================================ 剧集列表 #}
+<div id="episodes" class="sec-head" style="margin-top:30px">
+  <div>
+    <h2 class="sec-title">{{ pick('Episodes', '可听内容') }}</h2>
+    <p class="sec-sub">{{ pick('Cover, level, duration and progress at a glance', '封面、级别、时长、进度一目了然') }}</p>
+  </div>
 </div>
 
 {% if episodes %}
-<div class="sec-head"><h2 class="sec-title">可听内容 Episodes</h2></div>
-<div class="card" style="padding:6px 18px">
+<div class="ep-grid">
   {% for e in episodes %}
-  <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--v3-line)">
-    <span style="flex:1"><b>{{ e.title }}</b>{% if e.channel %} <span class="muted">· {{ e.channel }}</span>{% endif %}</span>
-    <span class="muted">{{ e.level or '' }}</span>
-    {% if e.audio_url %}<a class="btn btn-secondary btn-sm" href="{{ e.audio_url }}">{{ icon('play') }} 播放</a>{% endif %}
-  </div>
+  <article class="ep-card">
+    <div class="ep-cover">
+      <img src="{{ url_for('static', filename='img/ill-podcast.svg') }}" alt="">
+      <span class="ep-level">{{ e.level or 'A2' }}</span>
+      {% if e.audio_url %}
+        <a class="ep-play" href="{{ e.audio_url }}" title="{{ pick('Play', '播放') }}">{{ icon('play') }}</a>
+      {% else %}
+        <span class="ep-play" style="cursor:default;opacity:.85" title="{{ pick('Coming soon', '即将上线') }}">{{ icon('play') }}</span>
+      {% endif %}
+      <span class="ep-duration">{{ icon('clock') }}{{ e.duration or '—' }}</span>
+    </div>
+    <div class="ep-body">
+      <h3>{{ e.title }}</h3>
+      <span class="ep-meta">{% if e.channel %}{{ e.channel }} · {% endif %}{{ t('nav.podcast') }}</span>
+      <div class="ep-bar"><i style="width:{{ e.progress or 0 }}%"></i></div>
+    </div>
+  </article>
   {% endfor %}
 </div>
 {% else %}
-<div class="card" style="padding:30px;text-align:center;margin-top:18px">
-  <div style="font-size:40px">🎧</div>
-  <h3 style="margin:8px 0">还没有可听内容 Not yet</h3>
-  <p class="muted">内容库上线后，这里会列出可听的播客单集。</p>
+<div class="empty-card" style="--ec1:#faf5ff;--ec2:#fdf4ff">
+  <div class="ec-ill">
+    <img src="{{ url_for('static', filename='img/ill-listening.svg') }}" alt="Listening illustration">
+  </div>
+  <div class="ec-body">
+    <span class="tag" style="background:#f5f3ff;color:#7c3aed">{{ icon('clock') }} {{ pick('Coming soon', '即将上线') }}</span>
+    <h3>{{ pick('The podcast content library is in production', 'Podcast 内容库正在制作中') }}</h3>
+    <p>{{ pick('When episodes go live you will get: cover art, an audio player, full transcript, a vocabulary list, grammar points and an intensive-listening quiz. For now you can listen to word audio or play the listening game.', '单集上线后，你将得到：节目封面、音频播放器、逐字稿、生词表、语法点与精听测验。现在可以先听单词发音，或者去玩听音游戏。') }}</p>
+    <div class="row">
+      <a class="btn btn-primary" href="{{ url_for('quiz.test_page', mode='listen') }}">{{ icon('headphones') }} {{ pick('Listening Quiz', '听音测试') }}</a>
+      <a class="btn btn-secondary" href="{{ url_for('words.browse') }}">{{ icon('book-open') }} {{ pick('Browse Words', '浏览单词') }}</a>
+    </div>
+  </div>
 </div>
 {% endif %}
+
 {% endblock %}

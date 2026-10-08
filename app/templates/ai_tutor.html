@@ -1,41 +1,220 @@
 {% extends "base.html" %}
-{% block title %}AI 导师 · AI Tutor{% endblock %}
+{% from "_macros.html" import icon %}
+{% block title %}{{ pick('AI Tutor', 'AI 导师') }}{% endblock %}
 {% block content %}
-<div class="v3-hero">
-  <div class="v3-hero-deco"><span class="v3-deco-orb">{{ icon('sparkles') }}</span></div>
-  <h1>AI 导师 <span class="bi"><span class="bi-en">AI Tutor</span></span></h1>
-  <p>未来的智能陪练：口语对练、写作批改、个性复习计划。当前为规划页，尚未接入任何模型。</p>
+
+{# ============================================================ AI Tutor（深色渐变） #}
+<div class="v3-hero hero-dark">
+  <div class="v3-hero-deco">
+    <span class="v3-deco-orb">{{ icon('sparkles') }}</span>
+    <span class="v3-deco-orb">{{ icon('bot') }}</span>
+    <span class="v3-deco-orb">{{ icon('mic') }}</span>
+  </div>
+  <h1>{{ pick('AI Tutor', 'AI 导师') }}</h1>
+  <p>{{ pick('Explanation, examples, correction, translation and drills — running locally today, and switching automatically to a large language model once AI_API_KEY is set.',
+              '讲解、例句、批改、翻译与练习：当前由本地规则提供，配置 AI_API_KEY 后自动切换为大模型回答。') }}</p>
+  <div class="v3-hero-actions">
+    <a class="v3-btn-glass" href="{{ url_for('words.daily') }}">{{ icon('book-open') }} {{ pick('Start learning words', '先去背单词') }}</a>
+    <a class="v3-btn-ghost-w" href="{{ url_for('learn.hub') }}">{{ icon('compass') }} {{ pick('Back to learning hub', '返回学习中心') }}</a>
+  </div>
 </div>
 
-<div class="card" style="padding:24px">
-  <div class="challenge">
-    <div class="challenge-ico">{{ icon('sparkles') }}</div>
-    <div class="challenge-body">
-      <b>规划中 · Coming soon</b>
-      <p>本阶段页面如实说明方向，不假装有 AI 功能。接入大模型后，下方能力会自动开启，无需改代码。</p>
+{# ============================================================ 今日额度 #}
+{# AI Tutor 的完整使用权属 PRO；非 PRO 靠每日试用额度进入，
+   页面必须先把「还能用几次」说清楚，而不是等用户撞上 403。 #}
+{% if access and not access.by_plan %}
+<div class="spk-note">
+  {{ icon('info') }}
+  <div>
+    <b>{{ pick('Daily trial', '每日试用') }}</b>
+    <div class="muted small">
+      {% if access.quota.remaining %}
+        {{ pick('AI Tutor is a PRO feature. You have', 'AI Tutor 为 PRO 专享，你今天还有') }}
+        <b>{{ access.quota.remaining }}</b>
+        {{ pick('requests left today (resets at UTC 00:00).',
+                '次提问机会（UTC 00:00 重置）。') }}
+      {% else %}
+        {{ pick('Trial requests exhausted for today. Upgrade to PRO for unlimited access, or come back after UTC 00:00.',
+                '今日试用次数已用完。升级 PRO 可不限量使用，或在 UTC 00:00 后重试。') }}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# ============================================================ 用户画像（真实数据，规格 §14） #}
+<section style="margin-top:26px">
+  <div class="sec-head">
+    <div>
+      <h2 class="sec-title">{{ pick('Your learning profile', '你的学习画像') }}</h2>
+      <p class="sec-sub">{{ pick('Auto-generated from your activity — no model required.',
+                                  '基于你的真实学习数据自动生成，无需模型也能看清当前位置。') }}</p>
     </div>
   </div>
 
-  {% set plans = [
-    ('口语对练','Speaking','录音对比原音，给出流利度与发音反馈'),
-    ('写作批改','Writing','提交短文获得结构与用词建议'),
-    ('个性复习','Review','根据错题与遗忘曲线自动生成复习计划'),
-    ('语法讲解','Grammar','从真实语料中抽取例句讲解规则')] %}
-  <div class="skill-grid" style="margin-top:18px">
-    {% for zh, en, desc in plans %}
-    <div class="skill-card c-indigo">
-      <div class="skill-ico">{{ icon('wand') }}</div>
-      <div class="skill-body">
-        <div class="skill-name">{{ zh }} <span class="bi"><span class="bi-en">{{ en }}</span></span></div>
-        <div class="skill-desc">{{ desc }}</div>
-      </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:14px">
+    <div style="border:1px solid #e5e7eb;border-radius:14px;padding:16px;background:#fff">
+      <div style="font-size:13px;color:#6b7280">{{ pick('Current level', '当前等级') }}</div>
+      <div style="font-size:24px;font-weight:700;margin-top:4px">{{ profile.level }}</div>
+      <div style="font-size:12px;color:#9ca3af;margin-top:4px">{{ pick('from placement & progress', '测评与进度') }}</div>
     </div>
+    <div style="border:1px solid #e5e7eb;border-radius:14px;padding:16px;background:#fff">
+      <div style="font-size:13px;color:#6b7280">{{ pick('Learning path', '学习路径') }}</div>
+      <div style="font-size:24px;font-weight:700;margin-top:4px">{% if profile.path_current %}{{ profile.path_current.code }}{% else %}A1{% endif %}</div>
+      <div style="font-size:12px;color:#9ca3af;margin-top:4px">{% if profile.path_current %}{{ pick(profile.path_current.name_en, profile.path_current.name_zh) }}{% else %}{{ pick('Beginner', '入门') }}{% endif %}</div>
+    </div>
+    <div style="border:1px solid #e5e7eb;border-radius:14px;padding:16px;background:#fff">
+      <div style="font-size:13px;color:#6b7280">{{ pick('Weak areas', '薄弱项') }}</div>
+      {% if profile.weak_areas %}
+        <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px">
+          {% for w in profile.weak_areas %}
+            <span style="background:#fef3c7;color:#92400e;border-radius:999px;padding:2px 10px;font-size:12px">{{ pick(w.label_en, w.label_zh) }} · {{ w.count }}</span>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="font-size:14px;margin-top:6px;color:#9ca3af">{{ pick('No test data yet', '暂无测验数据') }}</div>
+      {% endif %}
+      {% if profile.review_total %}
+        <div style="font-size:12px;color:#9ca3af;margin-top:8px">{{ pick('Due for review:', '待复习：') }} {{ profile.review_total }}</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div style="margin-top:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:linear-gradient(135deg,#eef2ff,#f5f3ff);border-radius:14px;padding:14px 18px">
+    <span style="font-size:18px">{{ icon('sparkles') }}</span>
+    <span style="flex:1;min-width:200px">{{ pick('Recommended focus:', '建议优先攻克：') }} <strong>{{ pick(profile.focus_label_en, profile.focus_label_zh) }}</strong></span>
+    <a class="btn btn-primary btn-sm" href="{{ profile.focus_url }}">{{ pick('Start now', '立即开始') }} →</a>
+  </div>
+</section>
+
+{# ============================================================ V5.7 交互面板 #}
+<section style="margin-top:26px">
+  <div class="sec-head">
+    <div>
+      <h2 class="sec-title">{{ icon('message-square') }} {{ pick('Ask the tutor', '向导师提问') }}</h2>
+      <p class="sec-sub">{{ pick('Pick a capability, type something, and get an instant response.',
+                                  '选择一项能力，输入内容即可获得回复。') }}</p>
+    </div>
+    <span id="ai-badge" class="tag" style="background:#f5f3ff;color:#6d28d9">
+      {{ icon('info') }}
+      {% if ai_mock %}{{ pick('Local rule mode', '本地规则模式') }}{% else %}{{ pick('Model connected', '已接模型') }}{% endif %}
+    </span>
+  </div>
+
+  <div class="tutor-panel" id="tutor-panel">
+    <div class="tutor-actions">
+      {% for a in [('explain','Explain','讲解'),('example','Examples','例句'),
+                   ('correct','Correct','批改'),('translate','Translate','翻译'),
+                   ('conversation','Chat','对话'),('practice','Drill','练习')] %}
+        <button type="button" class="tutor-act" data-action="{{ a[0] }}">{{ pick(a[1], a[2]) }}</button>
+      {% endfor %}
+    </div>
+
+    <textarea id="ai-input" rows="3" maxlength="2000"
+      placeholder="{{ pick('Type a word or sentence…', '输入单词或句子…') }}"></textarea>
+
+    <div class="tutor-run">
+      <select id="ai-lang">
+        <option value="zh">中文</option>
+        <option value="en">English</option>
+      </select>
+      <button type="button" class="btn btn-primary" id="ai-send">{{ icon('send') }} {{ pick('Send', '发送') }}</button>
+    </div>
+
+    <div id="ai-out" class="tutor-out" hidden></div>
+    <p class="muted small" style="margin-top:8px">
+      {% if ai_mock %}
+        {{ pick('Local rule mode: answers are generated from this site’s own content data, not by a large language model.',
+                '本地规则模式：答案由站内内容数据按规则生成，并非大模型回答。') }}
+      {% else %}
+        {{ pick('Connected to', '已连接模型') }}: {{ ai.model }}
+      {% endif %}
+    </p>
+  </div>
+</section>
+
+<script>
+(function () {
+  var input = document.getElementById('ai-input');
+  var out = document.getElementById('ai-out');
+  var btn = document.getElementById('ai-send');
+  var langSel = document.getElementById('ai-lang');
+  var action = 'explain';
+  var acts = document.querySelectorAll('.tutor-act');
+
+  function pickAct(a) {
+    action = a;
+    [].forEach.call(acts, function (b) {
+      b.classList.toggle('on', b.dataset.action === a);
+    });
+  }
+  [].forEach.call(acts, function (b) {
+    b.addEventListener('click', function () { pickAct(b.dataset.action); });
+  });
+  pickAct('explain');
+
+  function render(res) {
+    out.hidden = false;
+    if (!res || res.ok === false) {
+      out.className = 'tutor-out err';
+      out.textContent = (res && res.error && res.error.message) || '请求失败';
+      return;
+    }
+    var d = res.data || {};
+    out.className = 'tutor-out' + (d.mock ? ' mock' : '');
+    out.textContent = d.output || '';
+    if (d.mock) {
+      var tag = document.createElement('div');
+      tag.className = 'tutor-mock-tag';
+      tag.textContent = 'Mock / 本地规则';
+      out.appendChild(tag);
+    }
+  }
+
+  btn.addEventListener('click', function () {
+    var text = (input.value || '').trim();
+    if (!text) { out.hidden = false; out.className = 'tutor-out err'; out.textContent = '请输入内容'; return; }
+    btn.disabled = true;
+    out.hidden = false;
+    out.className = 'tutor-out';
+    out.textContent = '…';
+    fetch('/api/ai-tutor/' + action, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify({ text: text, lang: langSel.value })
+    }).then(function (r) { return r.json(); })
+      .then(render)
+      .catch(function () { out.className = 'tutor-out err'; out.textContent = '网络错误，请重试'; })
+      .then(function () { btn.disabled = false; });
+  });
+})();
+</script>
+
+{# ============================================================ 能力清单（如实标注） #}
+<section style="margin-top:26px">
+  <div class="sec-head">
+    <div>
+      <h2 class="sec-title">{{ pick('What the tutor does', '导师能做什么') }}</h2>
+      <p class="sec-sub">{{ pick('All six run locally today; switch to a model by setting AI_API_KEY.',
+                                  '六项能力当前均由本地规则实现；配置 AI_API_KEY 后切换为模型回答。') }}</p>
+    </div>
+  </div>
+  <div class="skill-grid">
+    {% for act, zh, en, desc_zh, desc_en in [
+        ('explain','讲解','Explain','释义、搭配与用法','Meaning, collocations and usage'),
+        ('example','例句','Examples','给出自然地道的例句','Natural example sentences'),
+        ('conversation','对话','Chat','继续对话并追问一句','Keep the dialogue going'),
+        ('correct','批改','Correct','订正句子并说明每处修改','Fix sentences and explain each change')] %}
+    <a class="skill-card c-indigo" href="#tutor-panel"
+       onclick="document.querySelector('.tutor-act[data-action=\'{{ act }}\']').click(); return false;">
+      <div class="skill-ico">{{ icon('sparkles') }}</div>
+      <div class="skill-body">
+        <div class="skill-name">{{ pick(en, zh) }}</div>
+        <div class="skill-desc">{{ pick(desc_en, desc_zh) }}</div>
+      </div>
+    </a>
     {% endfor %}
   </div>
-</div>
+</section>
 
-<div style="text-align:center;margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-  <a class="btn btn-secondary" href="{{ url_for('learn.hub') }}">返回学习中心</a>
-  <a class="btn btn-primary" href="{{ url_for('words.learn') }}">先去背单词 Start with Vocabulary</a>
-</div>
 {% endblock %}

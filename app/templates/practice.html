@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}{{ pick('Practice', '练习中心') }} · {{ app_title_en }}{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <span class="eyebrow">{{ icon('practice') }} {{ pick('Practice Hub', '练习中心') }}</span>
+    <h2>{{ icon('target') }} {{ pick('Practice Hub', '练习中心') }}</h2>
+    <p>{{ pick('Six exercise types to lock in what you learned — pick one to start.',
+                '六种题型，把学过的知识牢牢锁住——选一种开始吧。') }}</p>
+  </div>
+</section>
+
+<div class="practice-grid stagger">
+  {% for key, en, zh, sub_en, sub_zh, kind in types %}
+  <div class="pct-card">
+    <div class="pct-ico c-violet">{{ icon('practice') }}</div>
+    <h3>{{ pick(en, zh) }}</h3>
+    <p class="muted">{{ pick(sub_en, sub_zh) }}</p>
+    {% if kind == 'quiz' %}
+      <a class="btn btn-primary btn-sm" href="{{ url_for('quiz.test_page', mode=key) }}">{{ pick('Start', '开始') }} →</a>
+    {% else %}
+      <button class="btn btn-primary btn-sm" data-act="open" data-key="{{ key }}"
+              data-en="{{ en }}"{% if not is_english() %} data-zh="{{ zh }}"{% endif %}>{{ pick('Start', '开始') }} →</button>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+<div id="game-panel" class="card" hidden style="margin-top:var(--ds-sp-6)">
+  <div class="card-head">
+    <h3 id="game-title"></h3>
+    <button class="btn btn-ghost btn-sm" data-act="close">{{ pick('Close', '关闭') }}</button>
+  </div>
+  <div id="game-body"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const UI_LANG = document.documentElement.getAttribute("data-lang") || "zh";
+const EN = UI_LANG === "en";
+const T = {
+  en: { tapWord:"Tap a word, then its match", correct:"Correct!", wrong:"Try again",
+        done:"Round complete", score:"Score", again:"Play again", fill:"Type the missing word",
+        reorder:"Reorder the words into a sentence", speak:"Tap to listen, then say it aloud",
+        next:"Next", noSpeech:"Speech recognition unavailable — type instead",
+        youSaid:"You said", speakInput:"Type what you said" }{% if not is_english() %},
+  zh: { tapWord:"点击单词，再点对应释义", correct:"答对啦！", wrong:"再试试",
+        done:"本轮完成", score:"得分", again:"再来一局", fill:"补全缺失的单词",
+        reorder:"把单词排成一句完整的句子", speak:"点按听音后大声跟读",
+        next:"下一题", noSpeech:"当前环境不支持语音识别——改为输入",
+        youSaid:"你说的是", speakInput:"输入你说的内容" }{% endif %}
+};
+const t = (k) => (T[UI_LANG] || T.zh)[k];
+
+async function loadWords(n = 8) {
+  const r = await fetch(`/practice/api/words?n=${n}`);
+  const j = await r.json();
+  return j.words || [];
+}
+let OPEN_TITLE = { en: "", zh: "" };
+function panel() {
+  document.getElementById("game-title").textContent = EN ? OPEN_TITLE.en : OPEN_TITLE.zh;
+  const p = document.getElementById("game-panel");
+  p.hidden = false; p.scrollIntoView({ behavior: "smooth" });
+  const b = document.getElementById("game-body");
+  b.innerHTML = ""; return b;
+}
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+// ---- Matching ----
+async function playMatching() {
+  const body = panel(); const words = await loadWords(6); if (!words.length) return;
+  let score = 0, pending = null;
+  const right = words.map(w => EN ? (w.example || w.word) : w.meaning);
+  const prompt = document.createElement("p"); prompt.className = "muted"; prompt.textContent = t("tapWord"); body.appendChild(prompt);
+  const grid = document.createElement("div"); grid.className = "match-grid"; body.appendChild(grid);
+  const left = shuffle(words.map((w, i) => ({ t: w.word, i })));
+  const right = shuffle(words.map((w, i) => ({ t: EN ? (w.example || w.word) : w.meaning, i })));
+  function render() {
+    grid.innerHTML = "";
+    [...left, ...right].forEach((cell, idx) => {
+      const d = document.createElement("button"); d.className = "match-cell"; d.textContent = cell.t;
+      d.onclick = () => onPick(d, cell, idx < left.length ? "L" : "R");
+      grid.appendChild(d);
+    });
+  }
+  function onPick(el, cell, side) {
+    if (el.classList.contains("done")) return;
+    if (!pending) { pending = { el, cell, side }; el.classList.add("sel"); return; }
+    if (pending.side === side) { pending.el.classList.remove("sel"); pending = { el, cell, side }; return; }
+    if (pending.cell.i === cell.i) {
+      pending.el.classList.add("done"); el.classList.add("done"); score++;
+      const msg = document.createElement("p"); msg.textContent = t("correct"); body.appendChild(msg);
+      if (++doneCount === words.length) finish();
+    } else { pending.el.classList.remove("sel"); el.classList.add("wrong"); setTimeout(() => el.classList.remove("wrong"), 600); }
+    pending = null;
+  }
+  let doneCount = 0;
+  function finish() { const m = document.createElement("p"); m.innerHTML = `${t("score")}: <b>${score}</b> · <button class="btn btn-sm btn-primary" onclick="playMatching()">${t("again")}</button>`; body.appendChild(m); }
+  render();
+}
+
+// ---- Fill in the Blank (Cloze) ----
+async function playCloze() {
+  const body = panel(); const words = (await loadWords(10)).filter(w => w.example && w.example.includes(w.word));
+  if (!words.length) { return; }
+  let i = 0, score = 0;
+  function step() {
+    body.innerHTML = "";
+    const w = words[i % words.length];
+    const sent = w.example.split(new RegExp(w.word, "i")).join(" _____ ");
+    const p = document.createElement("p"); p.className = "cloze-sent"; p.textContent = sent; body.appendChild(p);
+    const inp = document.createElement("input"); inp.className = "input"; inp.placeholder = t("fill"); body.appendChild(inp);
+    const btn = document.createElement("button"); btn.className = "btn btn-primary btn-sm"; btn.textContent = t("next"); body.appendChild(btn);
+    inp.focus();
+    function check() {
+      const ok = inp.value.trim().toLowerCase() === w.word.toLowerCase();
+      const m = document.createElement("p"); m.textContent = (ok ? t("correct") + " " : t("wrong") + " ") + w.word; body.appendChild(m);
+      if (ok) score++; i++; setTimeout(step, 900);
+    }
+    btn.onclick = check; inp.onkeydown = (e) => { if (e.key === "Enter") check(); };
+  }
+  step();
+}
+
+// ---- Sentence Building ----
+async function playSentence() {
+  const body = panel(); const words = (await loadWords(10)).filter(w => w.example);
+  if (!words.length) return;
+  let i = 0;
+  function step() {
+    body.innerHTML = "";
+    const w = words[i % words.length];
+    const tokens = shuffle(w.example.replace(/[.?!,]/g, "").split(/\s+/).filter(Boolean));
+    const hint = document.createElement("p"); hint.className = "muted"; hint.textContent = t("reorder"); body.appendChild(hint);
+    const board = document.createElement("div"); board.className = "sent-board"; body.appendChild(board);
+    let order = [];
+    function render() {
+      board.innerHTML = "";
+      order.forEach((tk, idx) => { const b = document.createElement("button"); b.className = "sent-word"; b.textContent = tk; b.onclick = () => { order.splice(idx, 1); render(); }; board.appendChild(b); });
+      tokens.forEach(tk => { if (!order.includes(tk)) { const b = document.createElement("button"); b.className = "sent-pool"; b.textContent = tk; b.onclick = () => { order.push(tk); render(); }; board.appendChild(b); } });
+    }
+    const btn = document.createElement("button"); btn.className = "btn btn-primary btn-sm"; btn.textContent = t("next"); body.appendChild(btn);
+    btn.onclick = () => { if (order.join(" ").toLowerCase() === w.example.replace(/[.?!,]/g, "").toLowerCase()) { const m = document.createElement("p"); m.textContent = t("correct"); body.appendChild(m); i++; } else { const m = document.createElement("p"); m.textContent = t("wrong"); body.appendChild(m); } setTimeout(step, 900); };
+    render();
+  }
+  step();
+}
+
+// ---- Speaking ----
+async function playSpeaking() {
+  const body = panel(); const words = await loadWords(6); if (!words.length) return;
+  let i = 0;
+  function step() {
+    body.innerHTML = "";
+    const w = words[i % words.length];
+    const p = document.createElement("p"); p.className = "muted"; p.textContent = t("speak"); body.appendChild(p);
+    const big = document.createElement("h3"); big.className = "speak-word"; big.textContent = w.word; body.appendChild(big);
+    const listen = document.createElement("button"); listen.className = "btn btn-secondary btn-sm"; listen.textContent = "🔊"; listen.onclick = () => speak(w.word); body.appendChild(listen);
+    const inp = document.createElement("input"); inp.className = "input"; inp.placeholder = t("speakInput"); body.appendChild(inp);
+    const btn = document.createElement("button"); btn.className = "btn btn-primary btn-sm"; btn.textContent = t("next"); body.appendChild(btn);
+    btn.onclick = () => { const ok = inp.value.trim().toLowerCase() === w.word.toLowerCase(); const m = document.createElement("p"); m.textContent = (ok ? t("correct") : t("wrong")) + " " + w.word; body.appendChild(m); if (ok) i++; setTimeout(step, 900); };
+    try { const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if (SR) { const rec = new SR(); rec.lang = "en-US"; rec.onresult = (e) => { inp.value = e.results[0][0].transcript; }; listen.onclick = () => rec.start(); } } catch (e) {}
+    speak(w.word);
+  }
+  step();
+}
+function speak(text) { try { const u = new SpeechSynthesisUtterance(text); u.lang = "en-GB"; speechSynthesis.speak(u); } catch (e) {} }
+
+const GAMES = { matching: playMatching, cloze: playCloze, sentence: playSentence, speaking: playSpeaking };
+document.querySelectorAll('[data-act="open"]').forEach(b => b.onclick = () => {
+  const k = b.dataset.key;
+  OPEN_TITLE = { en: b.dataset.en, zh: b.dataset.zh };
+  (GAMES[k] || playMatching)();
+});
+document.querySelectorAll('[data-act="close"]').forEach(b => b.onclick = () => { document.getElementById("game-panel").hidden = true; });
+</script>
+{% endblock %}

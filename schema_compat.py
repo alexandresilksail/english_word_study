@@ -31,6 +31,24 @@ _EXTRA_COLUMNS = {
     "reset_token_exp": "datetime",
     # 无密码账号标记（邮箱验证码注册）
     "is_passwordless": "bool",
+    # 界面语言偏好（zh/en/yue/both，可空=双语自动）
+    "preferred_lang": "str8",
+    # 邮件订阅开关（周报 / 学习提醒）。曾漏登记导致老库缺列，
+    # 任何 SELECT users 都会报 "no such column: users.notify_email"。
+    "notify_email": "bool_true",
+}
+
+# 表名 -> {列名: 类型}（V5.1：内容的多语释义，保证 English 版面零中文）
+_EXTRA_COLUMNS_BY_TABLE = {
+    "content_items": {
+        "meaning_en": "str512",
+        "meaning_yue": "str512",
+        "example_yue": "text",
+    },
+    # V5.2：主词库的「生产就绪」标记（verified + 授权 + 字段有效 才为 True）
+    "lexicon_entries": {
+        "production_ready": "bool",
+    },
 }
 
 
@@ -38,10 +56,18 @@ def _ddl_for(col_type: str, dialect: str) -> str:
     pg = dialect == "postgresql"
     if col_type == "bool":
         return "BOOLEAN DEFAULT FALSE NOT NULL" if pg else "BOOLEAN DEFAULT 0 NOT NULL"
+    if col_type == "bool_true":
+        return "BOOLEAN DEFAULT TRUE NOT NULL" if pg else "BOOLEAN DEFAULT 1 NOT NULL"
     if col_type == "str64":
         return "VARCHAR(64)"
+    if col_type == "str8":
+        return "VARCHAR(8)"
     if col_type == "str255":
         return "VARCHAR(255)"
+    if col_type == "str512":
+        return "VARCHAR(512)"
+    if col_type == "text":
+        return "TEXT"
     if col_type == "str16":
         return "VARCHAR(16)"
     if col_type == "int":
@@ -73,4 +99,33 @@ def ensure_user_columns(app) -> int:
         except Exception as exc:  # pragma: no cover - 迁移失败不应阻断启动
             db.session.rollback()
             logger.warning("users 列补齐跳过（%s）", exc)
+    return added
+
+
+def ensure_content_columns(app) -> int:
+    """补齐 content_items 的多语释义列（meaning_en / meaning_yue / example_yue）。
+
+    这是「English 版面零中文」的数据前提：没有 ``meaning_en`` 就无法在英文
+    界面给出释义。幂等，老数据不受影响。
+    """
+    added = 0
+    with app.app_context():
+        for table, cols in _EXTRA_COLUMNS_BY_TABLE.items():
+            try:
+                insp = inspect(db.engine)
+                if table not in insp.get_table_names():
+                    continue
+                existing = {c["name"] for c in insp.get_columns(table)}
+                dialect = db.engine.dialect.name
+                for col, kind in cols.items():
+                    if col in existing:
+                        continue
+                    db.session.execute(
+                        text(f"ALTER TABLE {table} ADD COLUMN {col} {_ddl_for(kind, dialect)}"))
+                    added += 1
+                if added:
+                    db.session.commit()
+            except Exception as exc:  # pragma: no cover
+                db.session.rollback()
+                logger.warning("%s 列补齐跳过（%s）", table, exc)
     return added

@@ -1,0 +1,53 @@
+{
+  "_note": "各数据源实际许可证以数据源当前公布的 License 为准。不确定商业授权时 commercial_allowed 一律为 false。本文件为注册表，条目导入时据此填充许可证字段。",
+  "wordfreq": {
+    "license": "MIT (package) + frequency data CC-BY-SA 4.0 (Leeds Internet Lexical Corpus 等)",
+    "license_url": "https://github.com/rspeer/wordfreq",
+    "attribution": "wordfreq by Robyn Speer; underlying frequency corpora (attribution required, share-alike)",
+    "commercial_allowed": true,
+    "redistribution_allowed": true,
+    "notes": "wordfreq 提供的是「频率分数 / 频率排名」，绝不是 CEFR。CEFR 需另寻来源并记录 cefr_source。"
+  },
+  "cc-canto": {
+    "license": "CC BY 4.0",
+    "license_url": "https://github.com/CanCLID/cccanto-data",
+    "attribution": "CC-Canto by CanCLID (attribution required)",
+    "commercial_allowed": true,
+    "redistribution_allowed": true,
+    "notes": "粤语字词典数据，含 Jyutping。商用需保留署名。"
+  },
+  "words-hk": {
+    "license": "CC BY-NC 4.0（部分内容；以各条目实际许可为准）",
+    "license_url": "https://words.hk",
+    "attribution": "words.hk",
+    "commercial_allowed": false,
+    "redistribution_allowed": false,
+    "notes": "words.hk 多为非商业（NC）许可，未经逐条确认前 commercial_allowed 必须为 false。导入其数据前须先人工核实目标条目的可用许可。"
+  },
+  "synthetic-dev": {
+    "license": "DEV-PLACEHOLDER (not for production)",
+    "license_url": "",
+    "attribution": "generated for dev/perf/test only",
+    "commercial_allowed": false,
+    "redistribution_allowed": false,
+    "notes": "仅用于开发、性能与测试，绝非生产数据，不得对外分发或商用。"
+  },
+  "curated-original": {
+    "license": "CC0-1.0 (author-generated)",
+    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "attribution": "Silksail original curation",
+    "commercial_allowed": true,
+    "redistribution_allowed": true,
+    "notes": "由项目方自撰 / 公开可核对的小规模种子数据，可商用与再分发。"
+  },
+  "legacy-2000": {
+    "license": "UNKNOWN",
+    "license_url": "",
+    "attribution": "",
+    "commercial_allowed": false,
+    "redistribution_allowed": false,
+    "production_ready": false,
+    "verified": false,
+    "notes": "旧 2000 词库的来源无法从项目现有信息中确认，故许可证标记为 UNKNOWN。在许可证经人工核实前，commercial_allowed / redistribution_allowed / production_ready 一律为 false，绝不可当作生产内容对外分发或商用。audio 来源已记录为 Edge TTS（en-GB / British English / offline TTS），但音频文件同样需许可证确认，不得默认授权。"
+  }
+}

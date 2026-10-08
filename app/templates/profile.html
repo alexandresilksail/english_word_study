@@ -1,17 +1,25 @@
 {% extends "base.html" %}
 {% import "_macros.html" as mm %}
 {% from "_macros.html" import icon %}
-{% block title %}{{ bi_plain('nav.profile') }} · {{ app_title }}{% endblock %}
+{% block title %}{{ pick('Profile', '个人资料') }} · {{ app_title_en }}{% endblock %}
 
 {% block content %}
 
-<div class="page-head">
-  <div>
-    <span class="eyebrow">{{ t('nav.profile') }} / My Account</span>
-    <h2>{{ bi('prof.title') }}</h2>
-    <p>{{ t('prof.sub') }}</p>
+{# ---------------------------------------------------------- 个人头部 #}
+<div class="dash-top" style="margin-bottom:22px">
+  <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <span class="avatar" style="width:64px;height:64px;font-size:28px;border:3px solid rgba(255,255,255,.5)">{{ current_user.username[:1] }}</span>
+    <div>
+      <h1 style="margin:0 0 2px">{{ current_user.username }}</h1>
+      <p style="margin:0;color:rgba(255,255,255,.85)">{{ t('prof.joined_days') }} {{ joined_days }} {{ t('prof.joined_days_unit') }} · {{ t('prof.role_admin') if current_user.is_admin else t('prof.role_user') }}</p>
+    </div>
   </div>
-  <span class="tag blue">{{ t('prof.joined_days') }} {{ joined_days }} {{ t('prof.joined_days_unit') }}</span>
+  <div class="dash-stats">
+    <div class="dash-tile">{{ icon('zap') }}<b data-count="{{ gam.xp }}">0</b><span>XP</span></div>
+    <div class="dash-tile">{{ icon('level') }}<b>{{ gam.level }}</b><span>Level</span></div>
+    <div class="dash-tile">{{ icon('flame') }}<b>{{ gam.streak }}</b><span>Streak</span></div>
+    <div class="dash-tile">{{ icon('trophy') }}<b>{{ badges|selectattr('unlocked')|list|length }}</b><span>Badges</span></div>
+  </div>
 </div>
 
 <div class="grid-2" style="grid-template-columns:.95fr 1.05fr">
@@ -85,7 +93,7 @@
           {{ form.username(class="input", id="username") }}
           <div class="errs">{% for e in form.username.errors %}<div>{{ e }}</div>{% endfor %}</div>
         </div>
-        {{ form.submit(class="btn btn-primary") }}
+        <button type="submit" class="btn btn-primary">{{ pick('Save', '保存') }}</button>
       </form>
     </div>
 
@@ -110,7 +118,7 @@
           {{ pwd_form.confirm(class="input", id="confirm2", autocomplete="new-password") }}
           <div class="errs">{% for e in pwd_form.confirm.errors %}<div>{{ e }}</div>{% endfor %}</div>
         </div>
-        {{ pwd_form.submit(class="btn btn-primary") }}
+        <button type="submit" class="btn btn-primary">{{ pick('Change password', '修改密码') }}</button>
       </form>
       <div class="secure-note">{{ icon('lock') }}<span>{{ t('auth.secure_note') }}</span></div>
     </div>

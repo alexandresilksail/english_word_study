@@ -5,49 +5,165 @@
 
 {% block content %}
 
-{# ---------------------------------------------------------- Hero #}
-<section class="v3-hero">
-  <div class="v3-hero-deco">
-    <span class="v3-deco-orb">{{ icon('flame') }}</span>
-    <span class="v3-deco-orb">{{ icon('star') }}</span>
-    <span class="v3-deco-orb">{{ icon('bolt') }}</span>
+{# ============================================================ 顶部问候 + 今日目标 #}
+<section class="dash-top">
+  <div>
+    <span class="eyebrow" style="background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.3);color:#fff">
+      {{ icon('calendar') }}<span id="today-date"></span>
+    </span>
+    <h1><span data-greet></span>, {{ current_user.username }} 👋</h1>
+    <p style="color:rgba(255,255,255,.85);margin:0"><span class="bi"><span class="bi-en">Your personalized learning path · {{ stats.today_answers }} answers today</span><span class="bi-zh">个性化学习路径 · 今日答题 {{ stats.today_answers }} 题</span></span></p>
+
+    <div class="goal-row">
+      <span class="goal-label">{{ icon('target') }} <span class="bi"><span class="bi-en">Today's goal · {{ gam.daily_goal or 20 }} tasks</span><span class="bi-zh">今日目标 · 完成 {{ gam.daily_goal or 20 }} 项</span></span></span>
+      <span class="goal-segments" id="goal-segs" data-done="{{ gam.today_done }}" data-goal="{{ gam.daily_goal or 20 }}">
+        {% for i in range(10) %}<i{% if i < (gam.goal_percent * 10 / 100)|round|int %} class="on"{% endif %}></i>{% endfor %}
+      </span>
+      <span class="goal-pct" data-count="{{ gam.goal_percent }}">0%</span>
+    </div>
   </div>
-  <span class="eyebrow" style="color:rgba(255,255,255,.92)">{{ t('dash.today') }} / Today</span>
-  <h1>{{ t('dash.greeting') }}, {{ current_user.username }} 👋</h1>
-  <p>{{ t('learn.total') }} {{ stats.learned }} / {{ stats.total_words }} {{ t('learn.words_unit') }} ·
-     {{ t('dash.words_mastered') }} {{ stats.mastered }} · {{ t('dash.today_answers') }} {{ stats.today_answers }}</p>
-  <div class="v3-hero-actions">
-    <a class="v3-btn-glass" href="{{ url_for('words.learn', scope='new') }}">{{ icon('book') }}{{ bi('act.start') }}</a>
-    <a class="v3-btn-ghost-w" href="{{ url_for('quiz.test_page') }}">{{ icon('quiz') }}{{ bi('act.take_quiz') }}</a>
-    <a class="v3-btn-ghost-w" href="{{ url_for('words.wrong') }}">{{ icon('review') }}{{ bi('act.review') }}</a>
+
+  <div class="dash-stats">
+    <div class="dash-tile">{{ icon('zap') }}<b data-count="{{ gam.xp }}">0</b><span>XP</span></div>
+    <div class="dash-tile">{{ icon('level') }}<b>{{ gam.level }}</b><span>Level</span></div>
+    <div class="dash-tile">{{ icon('flame') }}<b>{{ gam.streak }}</b><span>Streak</span></div>
+    <div class="dash-tile">{{ icon('trophy') }}<b>{{ badges|selectattr('unlocked')|list|length }}</b><span>Badges</span></div>
   </div>
 </section>
 
-{# ---------------------------------------------------------- 关键数据 #}
-<div class="stat-grid" style="margin:18px 0">
-  {{ mm.stat_card('book', stats.learned, '已学单词', 'Learned', 'violet', url_for('words.learn', scope='new')) }}
-  {{ mm.stat_card('check-circle', stats.mastered, '已掌握', 'Mastered', 'emerald', url_for('words.learn', scope='mastered')) }}
-  {{ mm.stat_card('quiz', (stats.accuracy ~ '%'), '正确率', 'Accuracy', 'sky') }}
-  {{ mm.stat_card('flame', gam.streak, '连续学习', 'Streak', 'amber') }}
-  {{ mm.stat_card('review', stats.wrong, '错题', 'Mistakes', 'rose', url_for('words.wrong')) }}
-</div>
+{# ============================================================ V5 My Learning Path #}
+<section class="mypath">
+  <div class="sec-head">
+    <div>
+      <h2 class="sec-title">{{ icon('route') }}{{ bi('path.mylearning') }}</h2>
+      <p class="muted">{{ bi('path.mylearning_sub') }}</p>
+    </div>
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('main.learning_path') }}">{{ bi('nav.path') }} →</a>
+  </div>
+  <div class="mypath-track">
+    {% for lv in path_levels %}
+      <div class="mp-level c-{{ lv.color }} {{ 'on' if lv.unlocked }} {{ 'off' if not lv.unlocked }}">
+        <div class="mp-head">
+          <b>{{ lv.emoji }} {{ lv.code }} <span>{{ lv.name_en }}</span></b>
+          {% if not lv.unlocked %}{{ icon('lock') }}{% elif lv.done %}{{ icon('check') }}{% endif %}
+        </div>
+        <div class="mp-units">
+          {% for u in range(1, lv.units + 1) %}
+            <a class="mp-unit {{ 'done' if lv.done }} {{ 'off' if not lv.unlocked }}"
+               href="{{ url_for('words.daily') }}?cefr={{ lv.code }}&unit={{ u }}">U{{ u }}</a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
 
-{# ---------------------------------------------------------- XP 条 + 每日挑战 #}
-<div class="grid-2" style="grid-template-columns:1fr 1.3fr">
-  <div class="card" style="padding:18px">
-    {{ mm.section_head('等级与经验', 'Level & XP') }}
-    {{ mm.xp_bar(gam) }}
-    <div class="row" style="margin-top:14px;gap:8px">
-      <span class="tag">{{ t('dash.tests_count') }} {{ gam.total_games }}</span>
-      <span class="tag amber">{{ t('dash.streak') }} {{ gam.best_streak }}</span>
+{# ============================================================ V5 Today's Review #}
+<section class="review-strip">
+  <div>
+    <h2 class="sec-title">{{ icon('rotate-ccw') }} <span class="bi"><span class="bi-en">Today's Review</span><span class="bi-zh">今日复习</span></span></h2>
+    <p class="muted bi"><span class="bi-en">Spaced repetition keeps what you learn.</span><span class="bi-zh">按记忆曲线复习，抗遗忘。</span></p>
+  </div>
+  <div class="review-counts">
+    <span><b>{{ review_today.vocabulary }}</b> Vocabulary</span>
+    <span><b>{{ review_today.phrase }}</b> Phrases</span>
+    <span><b>{{ review_today.sentence }}</b> Sentences</span>
+    <span><b>{{ review_today.grammar }}</b> Grammar</span>
+  </div>
+  <div class="review-counts" style="margin-top:2px">
+    <span class="muted small">{{ review_due_total }} due now</span>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('main.review') }}">Start Review →</a>
+</section>
+
+{# ============================================================ V5.6 Mastery 0-4 + Weak Areas #}
+<section style="margin-top:20px">
+  <div class="sec-head">
+    <div>
+      <h2 class="sec-title">{{ icon('chart') }} Mastery</h2>
+      <p class="sec-sub bi">
+        <span class="bi-en">Where everything sits on the 0–4 mastery scale</span>
+        <span class="bi-zh">统一掌握度 0–4 分布</span>
+      </p>
+    </div>
+    <span class="sec-more">{{ mastery.tracked }} tracked · {{ mastery.coverage_pct }}%</span>
+  </div>
+
+  <div class="mastery-grid">
+    {% set dist = mastery.distribution %}
+    {% for lv in [0,1,2,3,4] %}
+    <div class="mastery-item lv{{ lv }}">
+      <span class="mastery-num">{{ dist[lv] }}</span>
+      <span class="mastery-name">
+        <span class="bi">
+          <span class="bi-en">{{ ['New','Learning','Familiar','Strong','Mastered'][lv] }}</span>
+          <span class="bi-zh">{{ ['未学','学习中','熟悉','扎实','已掌握'][lv] }}</span>
+        </span>
+      </span>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if mastery.weak_areas %}
+  <div class="sec-head" style="margin-top:16px">
+    <h3 class="sec-title" style="font-size:15px">{{ icon('triangle-alert') }} Weak Areas</h3>
+  </div>
+  <ul class="weak-list">
+    {% for w in mastery.weak_areas %}
+    <li>
+      <span class="weak-surface">{{ w.surface }}</span>
+      <span class="tag">{{ w.kind }}</span>
+      <span class="muted small">{{ w.level_label }} · {{ w.wrong_count }}× wrong</span>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('main.review') }}">Practice</a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</section>
+
+{# ============================================================ Continue Learning #}
+<section style="margin-top:20px">
+  <div class="sec-head">
+    <div>
+      <h2 class="sec-title">{{ icon('play-circle') }} Continue Learning</h2>
+      <p class="sec-sub bi"><span class="bi-en">Pick up where you left off</span><span class="bi-zh">从上次停下的地方继续</span></p>
+    </div>
+    <a class="sec-more" href="{{ url_for('words.daily') }}">{{ bi('act.continue') }} {{ icon('chevron-right') }}</a>
+  </div>
+
+  <a class="continue-card" href="{{ url_for('words.daily') }}">
+    <div class="cont-cover" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">
+      <img src="{{ url_for('static', filename='img/ill-continue.svg') }}" alt="">
+      <span class="play-dot">{{ icon('play') }}</span>
+    </div>
+    <div class="cont-body">
+      <div class="row" style="gap:8px;margin-bottom:2px">
+        <span class="tag violet">{{ icon('book-open') }}Vocabulary</span>
+        <span class="tag">Beginner · A1</span>
+        <span class="tag amber">{{ icon('clock') }}~10 min</span>
+      </div>
+      <h3><span class="bi"><span class="bi-en">A1 Unit 1 · Getting Started</span><span class="bi-zh">A1 第 1 单元 · 开始学习</span></span></h3>
+      <p class="small muted" style="margin:0 0 8px"><span class="bi"><span class="bi-en">Your progress · {{ stats.progress_percent }}% complete</span><span class="bi-zh">学习进度 · 已完成 {{ stats.progress_percent }}%</span></span></p>
+      <div class="cont-bar"><i style="width:{{ stats.progress_percent }}%"></i></div>
+    </div>
+    <span class="btn btn-primary" style="align-self:center">{{ bi('act.continue') }} {{ icon('arrow-right') }}</span>
+  </a>
+</section>
+
+{# ============================================================ Daily Challenge #}
+<section style="margin-top:26px">
+  <div class="sec-head">
+    <div>
+      <h2 class="sec-title">{{ icon('calendar-check') }} Daily Challenge</h2>
+      <p class="sec-sub bi"><span class="bi-en">One small goal a day, keep your streak</span><span class="bi-zh">每天一个小目标，保持连续学习</span></p>
     </div>
   </div>
 
   <div class="challenge">
     <span class="challenge-ico">{{ icon('target') }}</span>
     <div class="challenge-body">
-      <b><span class="bi-zh">{{ challenge.title_zh }}</span><span class="bi-en">{{ challenge.title_en }}</span></b>
-      <p><span class="bi-zh">{{ challenge.desc_zh }}</span><span class="bi-en">{{ challenge.desc_en }}</span></p>
+      <b>{{ pick(challenge.title_en, challenge.title_zh) }}</b>
+      <p>{{ pick(challenge.desc_en, challenge.desc_zh) }}</p>
       {% if not challenge.done %}
         <div class="streak-row">
           {% for i in range(challenge.goal) %}
@@ -57,19 +173,101 @@
       {% endif %}
     </div>
     <a class="btn btn-primary" href="{{ challenge.url }}">
-      <span class="bi-zh">{{ challenge.cta_zh }}</span><span class="bi-en">{{ challenge.cta_en }}</span>
+      <span class="bi-en">{{ challenge.cta_en }}</span><span class="bi-zh">{{ challenge.cta_zh }}</span>
+      {{ icon('arrow-right') }}
     </a>
+  </div>
+</section>
+
+{# ============================================================ Recommended for You #}
+<section style="margin-top:26px">
+  <div class="sec-head">
+    <div>
+      <h2 class="sec-title">{{ icon('sparkles') }} Recommended for You</h2>
+      <p class="sec-sub bi"><span class="bi-en">Picked for you from your learning data</span><span class="bi-zh">根据你的学习数据推荐</span></p>
+    </div>
+    <a class="sec-more" href="{{ url_for('learn.hub') }}">{{ bi('nav.learn') }} {{ icon('chevron-right') }}</a>
+  </div>
+
+  <div class="rec-grid">
+    <a class="rec-card" href="{{ url_for('quiz.test_page', mode='choice') }}">
+      <div class="rec-cover"><img src="{{ url_for('static', filename='img/ill-quiz.svg') }}" alt=""><span class="rec-level">A1–B1</span></div>
+      <div class="rec-body">
+        <h3>{{ icon('practice') }} {{ bi('nav.quiz') }} · {{ pick('EN → CN', '英译中') }}</h3>
+        <p>{{ pick('Read the English, choose the meaning', '看英文选中文，检验掌握度') }}</p>
+        <span class="rec-cta btn btn-secondary btn-sm">{{ bi('act.start') }} {{ icon('arrow-right') }}</span>
+      </div>
+    </a>
+    <a class="rec-card" href="{{ url_for('quiz.test_page', mode='listen') }}">
+      <div class="rec-cover"><img src="{{ url_for('static', filename='img/ill-listening.svg') }}" alt=""><span class="rec-level">A2</span></div>
+      <div class="rec-body">
+        <h3>{{ icon('headphones') }} {{ pick('Listening Quiz', '听音测试') }}</h3>
+        <p>{{ pick('Hear the UK pronunciation, pick the right word', '听英式发音，选出正确的单词') }}</p>
+        <span class="rec-cta btn btn-secondary btn-sm">{{ bi('act.start') }} {{ icon('arrow-right') }}</span>
+      </div>
+    </a>
+    <a class="rec-card" href="{{ url_for('games.index') }}">
+      <div class="rec-cover"><img src="{{ url_for('static', filename='img/ill-games.svg') }}" alt=""><span class="rec-level">+XP</span></div>
+      <div class="rec-body">
+        <h3>{{ icon('gamepad-2') }} {{ bi('nav.games') }} · {{ pick('Learn by playing', '边玩边学') }}</h3>
+        <p>{{ pick('Match, sprint, listen, build — earn XP as you play', '配对、抢答、听音、拼词，玩着就把分拿了') }}</p>
+        <span class="rec-cta btn btn-secondary btn-sm">{{ bi('act.start') }} {{ icon('arrow-right') }}</span>
+      </div>
+    </a>
+  </div>
+</section>
+
+{# ============================================================ 关键数据 #}
+<section style="margin-top:28px">
+  <div class="sec-head">
+    <div>
+      <h2 class="sec-title">{{ icon('chart') }} Your Stats</h2>
+      <p class="sec-sub bi"><span class="bi-en">Your learning at a glance</span><span class="bi-zh">学习概览</span></p>
+    </div>
+  </div>
+  <div class="stat-grid">
+    {{ mm.stat_card('book', stats.learned, '已学单词', 'Learned', 'vocab', url_for('words.daily', scope='new')) }}
+    {{ mm.stat_card('check-circle', stats.mastered, '已掌握', 'Mastered', 'speak', url_for('words.daily', scope='mastered')) }}
+    {{ mm.stat_card('practice', (stats.accuracy ~ '%'), '正确率', 'Accuracy', 'listen') }}
+    {{ mm.stat_card('flame', gam.streak, '连续学习', 'Streak', 'read') }}
+    {{ mm.stat_card('review', stats.wrong, '错题', 'Mistakes', 'grammar', url_for('words.wrong')) }}
+  </div>
+</section>
+
+{# ============================================================ XP + 挑战 + 徽章 + 技能 + 游戏 #}
+<div class="grid-2" style="grid-template-columns:1fr 1.3fr;margin-top:22px">
+  <div class="card">
+    {{ mm.section_head('等级与经验', 'Level & XP', sub_zh='完成学习与游戏即可获得 XP', sub_en='Earn XP from lessons and games') }}
+    {{ mm.xp_bar(gam) }}
+    <div class="row" style="margin-top:14px;gap:8px">
+      <span class="tag">{{ t('dash.tests_count') }} {{ gam.total_games }}</span>
+      <span class="tag amber">{{ t('dash.streak') }} {{ gam.best_streak }}</span>
+    </div>
+  </div>
+
+  <div class="card" style="background:linear-gradient(180deg,#fffbeb,#fff)">
+    <div class="row-between">
+      <div>
+        <h3 style="margin:0 0 2px">{{ icon('trophy') }} {{ bi('dash.streak') }}</h3>
+        <p class="small muted" style="margin:0">{{ t('prog.sub') }}</p>
+      </div>
+      <span class="tag amber" style="font-size:15px;padding:6px 14px">{{ icon('flame') }} {{ gam.streak }} {{ t('dash.streak_unit') }}</span>
+    </div>
+    <div class="streak-row" style="margin-top:14px">
+      {% for i in range(7) %}
+        <span class="streak-day {{ 'on' if i < (gam.streak % 8) }}" title="{{ 'day %d' % (i+1) }}"></span>
+      {% endfor %}
+      <span class="small muted" style="margin-left:6px">Best {{ gam.best_streak }}</span>
+    </div>
   </div>
 </div>
 
-{# ---------------------------------------------------------- 徽章墙 #}
-<section style="margin-top:22px">
+<section style="margin-top:24px">
   {{ mm.section_head('成就徽章', 'Badges', sub_zh='完成里程碑即可点亮', sub_en='Light up as you hit milestones') }}
   {{ mm.badge_wall(badges) }}
 </section>
 
-{# ---------------------------------------------------------- 技能 #}
-<section style="margin-top:22px">
+<section style="margin-top:24px">
   {{ mm.section_head('学习技能', 'Skills', sub_zh='六大技能，循序渐进', sub_en='Six skills, one journey',
                      href=url_for('learn.hub'), more_zh='进入学习中心', more_en='Open hub') }}
   <div class="skill-grid">
@@ -77,8 +275,7 @@
   </div>
 </section>
 
-{# ---------------------------------------------------------- 小游戏 #}
-<section style="margin-top:22px">
+<section style="margin-top:24px">
   {{ mm.section_head('小游戏', 'Mini Games', sub_zh='边玩边记，轻松巩固', sub_en='Learn while you play',
                      href=url_for('games.index'), more_zh='全部游戏', more_en='All games') }}
   <div class="game-grid">
@@ -86,10 +283,10 @@
   </div>
 </section>
 
-{# ---------------------------------------------------------- 最近测试 + 趋势 #}
-<div class="grid-2" style="margin-top:22px;grid-template-columns:1.4fr .6fr">
+{# ============================================================ 趋势 + 最近测试 #}
+<div class="grid-2" style="margin-top:24px;grid-template-columns:1.4fr .6fr">
 
-  <div class="card" style="padding:18px">
+  <div class="card">
     {{ mm.section_head('近 7 天学习趋势', 'Last 7 days', sub_zh=t('dash.chart_sub'), sub_en=t('dash.chart_sub')) }}
     <div class="chart">
       {% set maxv = trend|map(attribute='total')|max or 1 %}
@@ -111,7 +308,7 @@
     </div>
   </div>
 
-  <div class="card" style="padding:18px">
+  <div class="card">
     {{ mm.section_head('最近测试', 'Recent') }}
     {% if recent_tests %}
       <div class="stack" style="gap:8px">
@@ -124,7 +321,7 @@
         {% endfor %}
       </div>
     {% else %}
-      {{ mm.empty_box('quiz', t('dash.no_tests'), t('dash.no_tests_desc'), url_for('quiz.test_page'), bi('act.take_quiz')) }}
+      {{ mm.empty_box('ill-quiz.svg', t('dash.no_tests'), t('dash.no_tests_desc'), url_for('quiz.test_page'), bi('act.take_quiz')) }}
     {% endif %}
   </div>
 </div>

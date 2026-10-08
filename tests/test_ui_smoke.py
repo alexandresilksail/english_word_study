@@ -67,7 +67,7 @@ def main():
     body = c.get("/login").get_data(as_text=True)
     check("登录页含双语结构 bi-en", 'class="bi-en"' in body)
     check("登录页含双语结构 bi-zh", 'class="bi-zh"' in body)
-    check("登录页引入 design.css", "design.css" in body)
+    check("登录页引入 v4.css 设计系统", "css/v4.css" in body)
     check("登录页提供忘记密码入口", "/forgot-password" in body)
 
     # ---------------------------------------------------------- 注册并登录
@@ -98,7 +98,8 @@ def main():
 
     # ---------------------------------------------------------- 单词卡五段结构
     print("\n[5] 单词卡结构 Word → Pronunciation → Meaning → Example → Action")
-    learn = c.get("/learn").get_data(as_text=True)
+    # 词表页已迁移到 /words/learn（/learn 现为学习总入口，见规格 §24 / 修复 #7）
+    learn = c.get("/words/learn").get_data(as_text=True)
     for cls, label in [("wc-word", "Word 单词"),
                        ("wc-pron", "Pronunciation 发音"),
                        ("wc-meaning", "Meaning 释义"),

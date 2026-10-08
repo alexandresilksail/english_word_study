@@ -9,6 +9,7 @@ import os
 import sys
 from datetime import timedelta
 
+import click
 from dotenv import load_dotenv
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -42,6 +43,10 @@ def ensure_instance_dir(app: Flask) -> None:
 
 
 def create_app(config_object=None):
+    import logging
+
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger("english_app")
     cfg = config_object or load_config()
 
     # Flask 根路径固定到项目目录，模板与静态资源位于 ./app/ 下
@@ -58,8 +63,20 @@ def create_app(config_object=None):
     # 双语（中文 + English）文案层：模板中可直接用 bi() / t() / bi_plain()
     from i18n import bi, bi_plain, t
     from media_service import audio_url, cover_url
+    # V5.1：数据字段本地化助手（pick 系列）—— 注册为 Jinja 全局，
+    # 确保被 `{% import ... %}` 引入的 macro 内部也能用到
+    # （否则 macro 中 pick 为 undefined）。
+    from localization import (pick, pick_pair, title_of, desc_of, meaning_of,
+                              example_of, lang_label, translate, t_ui,
+                              pos_label, is_english, flash_l)
     app.jinja_env.globals.update(bi=bi, t=t, bi_plain=bi_plain,
-                                 audio_url=audio_url, cover_url=cover_url)
+                                 audio_url=audio_url, cover_url=cover_url,
+                                 pick=pick, pick_pair=pick_pair,
+                                 title_of=title_of, desc_of=desc_of,
+                                 meaning_of=meaning_of, example_of=example_of,
+                                 lang_label=lang_label, translate=translate,
+                                 t_ui=t_ui, pos_label=pos_label,
+                                 is_english=is_english)
 
     # 生产环境必须有 SECRET_KEY
     if not app.config.get("SECRET_KEY"):
@@ -76,8 +93,9 @@ def create_app(config_object=None):
     login_manager.init_app(app)
 
     # 为既有数据库补齐本轮新增列（幂等增量，不改动既有数据）
-    from schema_compat import ensure_user_columns
+    from schema_compat import ensure_content_columns, ensure_user_columns
     ensure_user_columns(app)
+    ensure_content_columns(app)
 
     from models import User
 
@@ -90,7 +108,8 @@ def create_app(config_object=None):
 
     @login_manager.unauthorized_handler
     def unauthorized():
-        flash("请先登录后再继续 😊", "info")
+        # 语言感知：English 版面只显示英文提示，绝不出现中文（V5 硬约束）
+        flash_l("请先登录后再继续 😊", "Please log in to continue 😊", "info")
         return redirect(url_for("auth.login", next=request.path))
 
     _register_blueprints(app)
@@ -104,6 +123,52 @@ def create_app(config_object=None):
 
     with app.app_context():
         db.create_all()
+        # V5：词库 CEFR 分级元数据幂等回填（空表才写）
+        try:
+            from path_service import ensure_word_meta
+            ensure_word_meta()
+        except Exception as exc:  # pragma: no cover
+            logger.warning("word_meta 回填跳过：%s", exc)
+        # V5：English / Cantonese 课程体系幂等播种
+        try:
+            from seed_courses import seed_courses
+            seed_courses()
+        except Exception as exc:  # pragma: no cover
+            logger.warning("课程播种跳过：%s", exc)
+        # V5.1：给空壳课时补内容 + 回填英文释义（English 版面零中文的数据前提）
+        try:
+            from seed_courses import fill_missing_content
+            fill_missing_content()
+        except Exception as exc:  # pragma: no cover
+            logger.warning("课时内容补齐跳过：%s", exc)
+        try:
+            from translation_service import backfill_english
+            backfill_english(app)
+        except Exception as exc:  # pragma: no cover
+            logger.warning("英文释义回填跳过：%s", exc)
+        # V5.2：等级主数据 + 商业化商品（§17 / §19），均为幂等播种
+        try:
+            from payment_service import ensure_levels, ensure_products
+            ensure_levels()
+            ensure_products()
+        except Exception as exc:  # pragma: no cover
+            logger.warning("levels/products 播种跳过：%s", exc)
+
+    # V5.1：English 版面在服务端剥离中文节点（不只是 CSS 隐藏）
+    @app.after_request
+    def _strip_other_language(resp):
+        try:
+            from localization import resolve_lang, strip_other_language
+            lang = resolve_lang()
+            if (lang == "en"
+                    and (resp.content_type or "").startswith("text/html")):
+                data = resp.get_data(as_text=True)
+                cleaned = strip_other_language(data, lang)
+                if cleaned != data:
+                    resp.set_data(cleaned)
+        except Exception:  # pragma: no cover - 剥离失败绝不能影响正常响应
+            pass
+        return resp
 
     _setup_logging(app)
     return app
@@ -112,12 +177,17 @@ def create_app(config_object=None):
 def _register_blueprints(app: Flask) -> None:
     from auth import auth_bp
     from routes.admin import admin_bp
+    from routes.ai_tutor import ai_tutor_bp
+    from routes.assessment import assessment_bp
     from routes.api import api_bp
+    from routes.speaking import speaking_bp
     from routes.games import games_bp
     from routes.learn import learn_bp
     from routes.main import main_bp
     from routes.podcast import podcast_bp
+    from routes.practice import practice_bp
     from routes.quiz import quiz_bp
+    from routes.settings import settings_bp
     from routes.words import words_bp
 
     app.register_blueprint(auth_bp)
@@ -127,7 +197,12 @@ def _register_blueprints(app: Flask) -> None:
     app.register_blueprint(learn_bp)
     app.register_blueprint(games_bp)
     app.register_blueprint(podcast_bp)
+    app.register_blueprint(practice_bp)
+    app.register_blueprint(settings_bp)
     app.register_blueprint(api_bp)      # REST API v1（未来多端共用）
+    app.register_blueprint(ai_tutor_bp)  # V5.7 AI Tutor JSON API
+    app.register_blueprint(speaking_bp)  # V5.8 Speaking / Listening API
+    app.register_blueprint(assessment_bp)  # V6.0.1 AI Assessment
     app.register_blueprint(admin_bp)
 
 
@@ -253,17 +328,55 @@ def _register_cli(app: Flask) -> None:
             n = purge_expired()
         print(f"✔ 已清理 {n} 条过期验证码")
 
+    @app.cli.command("recompute-mastery")
+    @click.option("--user-id", type=int, default=None,
+                  help="只重算指定用户；不传则全量重算")
+    def recompute_mastery(user_id):
+        """按当前统一 0-4 规则重算掌握度 level。
+
+        用途：掌握度规则演进后（如 V5.5 初步规则 → V5.6 统一规则），
+        老数据仍是按旧规则算出的 level，需要一次性刷平。
+
+        **幂等**，可反复执行；只在 level 真的变化时才写库，
+        因此第二次执行应该是「变更 0 行」。
+        """
+        from mastery_service import recompute
+        with app.app_context():
+            n = recompute(user_id)
+        scope = f"用户 {user_id}" if user_id is not None else "全量"
+        print(f"✔ 掌握度重算完成（{scope}）：更新 {n} 行")
+
+    @app.cli.command("purge-usage")
+    @click.option("--days", type=int, default=90,
+                  help="保留最近 N 天的用量记录，默认 90")
+    def purge_usage(days):
+        """清理过期的每日用量计数行（usage_counters）。
+
+        计数表是「每用户 × 每功能 × 每天」一行，长期运行会持续膨胀，
+        而 90 天前的行已无任何查询价值 —— 建议挂月度定时任务清理。
+        """
+        from entitlements import purge_old_usage
+        with app.app_context():
+            n = purge_old_usage(days)
+        print(f"✔ 已清理 {n} 条 {days} 天前的用量记录")
+
 
 def _register_template_globals(app: Flask) -> None:
+    try:
+        from localization import UI_LANGS as _UI_LANGS
+    except Exception:  # pragma: no cover
+        _UI_LANGS = ("zh", "en", "yue")
+
     @app.context_processor
     def inject_globals():
         from models import TEST_MODE_LABELS
         from services import dashboard_stats
-        from flask import url_for
+        from flask import request, url_for
         from models import SKILLS
         stats = None
         gam = None
         skills = []
+        ui_lang = "both"   # zh / en / both（双语自动）
         if current_user and current_user.is_authenticated:
             try:
                 stats = dashboard_stats(current_user.id)
@@ -275,17 +388,41 @@ def _register_template_globals(app: Flask) -> None:
             # 顶部 Learn 下拉：六项技能（数据来自 models.SKILLS，单一来源）
             for s in SKILLS:
                 item = dict(s)
-                item["url"] = (url_for("words.learn") if s["key"] == "vocabulary"
+                item["url"] = (url_for("words.daily") if s["key"] == "vocabulary"
                                else url_for("learn.skill", key=s["key"]))
                 skills.append(item)
-        return dict(app_title=app.config.get("APP_TITLE_CN", "英语单词学习"),
-                    app_title_en=app.config.get("APP_TITLE_EN", "English Learning Platform"),
-                    app_version=app.config.get("APP_VERSION", "3.0.0"),
+            if getattr(current_user, "preferred_lang", None) in _UI_LANGS:
+                ui_lang = current_user.preferred_lang
+        cookie_lang = (request.cookies.get("ui_lang") or "").strip()
+        if cookie_lang in ("zh", "en", "yue", "both"):
+            ui_lang = cookie_lang
+
+        # V5.1：数据字段本地化助手 —— 「English 版面零中文」的模板入口
+        import localization as _loc
+        title_cn = app.config.get("APP_TITLE_CN", "AI 语言学习平台")
+        title_en = app.config.get("APP_TITLE_EN", "AI Language Learning Platform")
+        # English 版面下站点名也必须是英文（<title>、footer 都用这个变量）
+        app_title = title_en if ui_lang == "en" else title_cn
+        return dict(app_title=app_title,
+                    app_title_en=title_en,
+                    app_version=app.config.get("APP_VERSION", "5.1.0"),
                     domain=app.config.get("DOMAIN", ""),
                     mode_labels=TEST_MODE_LABELS,
                     nav_stats=stats,
                     nav_gam=gam,
-                    nav_skills=skills)
+                    nav_skills=skills,
+                    ui_lang=ui_lang,
+                    ui_langs=_loc.UI_LANGS,
+                    lang_flags=_loc.LANG_FLAGS,
+                    lang_switch_url=url_for("main.set_lang"),
+                    pick=_loc.pick,
+                    pick_pair=_loc.pick_pair,
+                    title_of=_loc.title_of,
+                    desc_of=_loc.desc_of,
+                    meaning_of=_loc.meaning_of,
+                    example_of=_loc.example_of,
+                    lang_label=_loc.lang_label,
+                    t_flash=_loc.t_flash)
 
 
 def _register_filters(app: Flask) -> None:

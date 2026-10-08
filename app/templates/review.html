@@ -1,0 +1,44 @@
+{% from "_icons.html" import icon %}
+{% extends "base.html" %}
+{% block title %}Review · {{ app_title_en }}{% endblock %}
+{% block content %}
+<section class="path-hero">
+  <span class="eyebrow">🔁 {{ pick('Spaced Review', '抗遗忘复习') }}</span>
+  <h1>{{ pick("Today's Review", '今日复习') }}</h1>
+  <p class="muted">{{ pick('You have %d items due. Reviewing on schedule keeps your memory strong.' % total,
+                            '你有 %d 项待复习。按记忆曲线复习，记得更牢。' % total) }}  </p>
+</section>
+{% if adaptive_on %}
+<div class="adaptive-badge">{{ icon('sparkles') }} {{ pick('Adaptive: weak areas first', '自适应：弱项优先') }}
+  <a href="{{ url_for('main.review', mode='classic') }}">{{ pick('classic order', '经典顺序') }}</a>
+</div>
+{% endif %}
+<div class="review-summary">
+  <div class="rs-card">{{ icon('book-open') }}<b>{{ counts.vocabulary }}</b><span>Vocabulary</span></div>
+  <div class="rs-card">{{ icon('chat') }}<b>{{ counts.phrase }}</b><span>Phrases</span></div>
+  <div class="rs-card">{{ icon('pen') }}<b>{{ counts.sentence }}</b><span>Sentences</span></div>
+  <div class="rs-card">{{ icon('puzzle') }}<b>{{ counts.grammar }}</b><span>Grammar</span></div>
+</div>
+{% if items %}
+<div class="review-list">
+  {% for it in items %}
+  <article class="review-card">
+    <div><b>{{ it.ContentItem.surface }}</b><small>{{ meaning_of(it.ContentItem) }}</small></div>
+    <form method="post" action="{{ url_for('main.review_answer') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="content_id" value="{{ it.content_id }}">
+      <button class="btn btn-secondary btn-sm" name="correct" value="0">😅 Still learning</button>
+      <button class="btn btn-primary btn-sm" name="correct" value="1">💪 Got it</button>
+    </form>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-card" style="text-align:center;padding:50px">
+  <div class="empty-ill c-emerald">🎉</div>
+  <h2>All caught up!</h2>
+  <p class="muted">{{ pick('Nothing is due right now. Learn a lesson, or come back later.',
+                            '没有到期的复习项了。去学一课，或稍后回来。') }}</p>
+</div>
+{% endif %}
+{% endblock %}

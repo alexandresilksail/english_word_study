@@ -40,6 +40,8 @@ def build(csrf_enabled: bool = False):
         db.create_all()
         from seeds.seed_words import seed_from_json
         seed_from_json(app.config["WORDS_JSON"])
+        from path_service import ensure_word_meta
+        ensure_word_meta()
     return app
 
 
@@ -86,18 +88,20 @@ def main():
         pages = {
             "/dashboard": ["词汇", "听力"],                       # 游戏化 + 技能卡
             "/learn": ["词汇", "听力", "阅读", "语法", "口语", "写作"],
-            "/learn/vocabulary": ["今日学习", "单词本", "测试", "错题本", "我的收藏"],
-            "/learn/listening": ["Coming soon", "精听播客"],
-            "/learn/reading": ["Coming soon", "分级短文"],
-            "/learn/grammar": ["Coming soon", "情景语法"],
-            "/learn/speaking": ["Coming soon", "跟读打分"],
-            "/learn/writing": ["Coming soon", "句型练习"],
+            "/learn/skill/vocabulary": ["今日学习", "单词本", "测试", "错题本", "我的收藏"],
+            "/learn/skill/listening": ["Coming soon", "精听播客"],
+            "/learn/skill/reading": ["Coming soon", "分级短文"],
+            "/learn/skill/grammar": ["Coming soon", "情景语法"],
+            "/learn/skill/speaking": ["Coming soon", "跟读打分"],
+            "/learn/skill/writing": ["Coming soon", "句型练习"],
             "/games/": ["单词配对", "限时抢答", "听音挑战", "字母拼词"],
             "/games/word_match": ["单词配对", "怎么玩"],
             "/games/speed_quiz": ["限时抢答", "怎么玩"],
             "/games/listening_challenge": ["听音挑战", "怎么玩"],
             "/games/word_builder": ["字母拼词", "怎么玩"],
-            "/ai-tutor": ["Coming soon", "规划中", "不假装有 AI"],
+            # V5.7 起 AI Tutor 不再是规划页：六项能力由本地规则真实提供，
+            # 页面必须出现「本地规则模式」标注 + 交互面板，并保留诚实说明文案。
+            "/ai-tutor": ["本地规则模式", "并非大模型回答", "tutor-panel"],
             "/podcast/": ["播客", "Podcast", "文稿"],
         }
         for path, needles in pages.items():
@@ -119,12 +123,17 @@ def main():
         check("dashboard 渲染出游戏/技能导航", ("游戏" in nav_html or "Games" in nav_html),
               "导航无游戏入口")
 
-        print("\n[3] AI Tutor 诚实：有规划，不假装有 AI")
+        print("\n[3] AI Tutor 诚实：不假装有 AI")
         ai = c.get("/ai-tutor").get_data(as_text=True)
         # 不应出现「真实可用」的聊天输入框（action 指向真实 AI 接口）
         check("AI Tutor 不含伪装可用的聊天表单",
               ("/api/ai/" not in ai) and ("ai-chat" not in ai) and ("gpt" not in ai.lower()),
               "疑似暴露了真实 AI 接口")
+        # V5.7：未配置 AI_API_KEY 时必须如实标注「本地规则模式」，
+        # 否则用户会误以为回答来自大模型 —— 这是本项目的硬性诚实约束。
+        check("AI Tutor 标注了本地规则模式",
+              ("本地规则模式" in ai) or ("Local rule mode" in ai),
+              "缺少本地规则模式标注，可能误导用户")
 
         print("\n[4] 匿名访问控制")
         anon = C(app)
@@ -137,6 +146,34 @@ def main():
         r_dash = anon.get("/dashboard")
         check("Dashboard 匿名被拦截", r_dash.status_code == 302 and "/login" in
               (r_dash.headers.get("Location") or ""), r_dash.status_code)
+
+        print("\n[5] V5 学习路径 + i18n 切换")
+        rp = c.get("/path")
+        pbody = rp.get_data(as_text=True)
+        check("/path 学习路径页 200", rp.status_code == 200, rp.status_code)
+        check("/path 含 CEFR 阶梯 A1/C2", ("A1" in pbody and "C2" in pbody), "缺 CEFR 节点")
+        check("/path 有锁定/完成节点", ("未解锁" in pbody or "Locked" in pbody), "缺锁定态")
+        with app.app_context():
+            from models import WordMeta
+            total_meta = WordMeta.query.count()
+            check("词库 CEFR 分级已回填（>=1000 词）", total_meta >= 1000, total_meta)
+        rlang = c.client.get("/set-lang?lang=en", follow_redirects=False)
+        cookie = rlang.headers.get("Set-Cookie", "")
+        check("/set-lang?lang=en 写入 ui_lang Cookie", "ui_lang=en" in cookie, cookie[:120])
+        check("/learn?cefr=A1 正常 200", c.get("/learn?cefr=A1").status_code == 200)
+        check("/learn?cefr=C2 正常 200", c.get("/learn?cefr=C2").status_code == 200)
+
+        print("\n[6] V5 平台：Onboarding / Courses / Review / 粤语")
+        check("/onboarding 200", c.get("/onboarding").status_code == 200)
+        check("/courses 200 且含 Cantonese",
+              c.get("/courses").status_code == 200 and "Cantonese" in c.get("/courses").get_data(as_text=True))
+        check("/review 200（Today's Review）",
+              c.get("/review").status_code == 200 and "Review" in c.get("/review").get_data(as_text=True))
+        ry = c.client.get("/learn/yue", follow_redirects=False)
+        check("/learn/yue 跳转粤语 Unit", ry.status_code in (301, 302) and "/unit/" in (ry.headers.get("Location") or ""),
+              f"{ry.status_code} {ry.headers.get('Location')}")
+        rdash = c.get("/dashboard")
+        check("Dashboard 含 Today's Review 条", "Review" in rdash.get_data(as_text=True))
 
         print("\n" + "=" * 62)
         print(f"结果：通过 {PASS} / 失败 {FAIL}")

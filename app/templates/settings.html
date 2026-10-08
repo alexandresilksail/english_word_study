@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}{{ pick(title_en, title_zh) }} · {{ app_title_en }}{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <span class="eyebrow">{{ icon('settings') }} {{ pick('Account', '账户') }}</span>
+    <h2>{{ icon('settings') }} {{ pick(title_en, title_zh) }}</h2>
+    <p>{{ pick('Tune your interface language, daily study goal and email notifications.',
+                '调整界面语言、每日学习目标和邮件通知偏好。') }}</p>
+  </div>
+</section>
+
+<div class="settings-wrap stagger">
+  <form class="card" method="post" action="{{ url_for('settings.index') }}">
+    {{ form.csrf_token }}
+
+    <div class="card-head">
+      <h3>{{ icon('globe') }} {{ pick('Interface Language', '界面语言') }}</h3>
+    </div>
+    <div class="card-body">
+      <p class="muted">{{ pick('Choose the language of the interface. Learning content follows the language of its course.',
+                                '选择界面显示语言。学习内容跟随课程本身的语言。') }}</p>
+      <div class="opt-list">
+        {% for code, zh_name, en_name in langs %}
+        <label class="opt-row {{ 'sel' if preferred == code }}">
+          <input type="radio" name="preferred_lang" value="{{ code }}" {{ 'checked' if preferred == code }}>
+          <span class="opt-ico c-violet">{{ icon('globe') }}</span>
+          <span class="opt-text">
+            <b>{{ lang_label(code) }}</b>
+            <small class="muted">{{ pick(en_name, zh_name) }}</small>
+          </span>
+          <span class="opt-flag">{{ lang_flags.get(code, '') }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card-head">
+      <h3>{{ icon('target') }} {{ pick('Daily Goal', '每日目标') }}</h3>
+    </div>
+    <div class="card-body">
+      <p class="muted">{{ pick('How many new words do you want to learn each day?',
+                                '你希望每天学习多少个新单词？') }}</p>
+      <div class="field">
+        <select class="input" name="daily_goal" aria-label="{{ pick('Daily goal', '每日目标') }}">
+          {% for g in goals %}
+          <option value="{{ g }}" {{ 'selected' if daily_goal == g }}>{{ g }} {{ pick('words / day', '词 / 天') }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="card-head">
+      <h3>{{ icon('bell') }} {{ pick('Notifications', '通知') }}</h3>
+    </div>
+    <div class="card-body">
+      <label class="opt-row {{ 'sel' if notify }}">
+        <input type="checkbox" name="notify_email" value="1" {{ 'checked' if notify }}>
+        <span class="opt-ico c-teal">{{ icon('mail') }}</span>
+        <span class="opt-text">
+          <b>{{ pick('Email reminders', '邮件提醒') }}</b>
+          <small class="muted">{{ pick('Get a gentle nudge when you miss a day.',
+                                        '漏掉学习时收到温柔提醒。') }}</small>
+        </span>
+      </label>
+    </div>
+
+    <div class="card-foot">
+      <button type="submit" class="btn btn-primary">{{ icon('check') }} {{ pick('Save changes', '保存设置') }}</button>
+      <a class="btn btn-ghost" href="{{ url_for('main.profile') }}">{{ pick('Back to profile', '返回个人资料') }}</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

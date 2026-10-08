@@ -5,24 +5,25 @@
 1. **统一来源**：所有界面文字集中在本文件的 STRINGS 中，避免中英文散落各处造成混乱。
 2. **结构固定**：每条文案固定为 ``(中文, English)`` 二元组，渲染时默认同时展示（英文在前）。
 3. **面向未来切换**：模板里用 ``{{ bi('key') }}`` 输出双语结构，
-   用 ``{{ t('key') }}`` 输出单一语言。只需给 <html> 设置 ``data-lang="zh" / "en"``
-   即可由 CSS 隐藏另一种语言，无需改动模板 —— 为真正的语言切换预留好结构。
+   用 ``{{ t('key') }}`` 输出单一语言。从 V5.1 起，真正的语言资源放在 ``app/translations/{zh,en,yue}.json``
+（由 :mod:`localization` 加载）。本模块保留 ``STRINGS`` 仅为兼容旧调用，
+渲染一律委托给 :mod:`localization`，从而做到：
 
-渲染出的 HTML 结构：::
-
-    <span class="bi"><span class="bi-en">Dashboard</span><span class="bi-zh">学习中心</span></span>
-
-CSS 负责在两段之间加 “/” 分隔，并在切换语言时隐藏其中一段。
+    **English 版面（ui_lang == "en"）输出纯英文，绝不出现中文。**
 """
 from __future__ import annotations
 
 from markupsafe import Markup, escape
 
+from localization import UI_LANGS, bundle, resolve_lang, translate  # noqa: F401
+
+# （保留旧二元组结构以便兼容/回溯；新文案请写入 app/translations/*.json）
+
 # 每条文案固定为 (中文, English)
 STRINGS: dict[str, tuple[str, str]] = {
     # ---------------------------------------------------------------- 品牌
-    "brand.name": ("英语单词学习", "English Word Study"),
-    "brand.tagline": ("系统化掌握 2000 个常用词", "Master 2000 Essential Words"),
+    "brand.name": ("AI 语言学习平台", "AI Language Learning Platform"),
+    "brand.tagline": ("按水平规划学习路径，持续练习与复习", "Your personalized path to language mastery"),
 
     # ---------------------------------------------------------------- 导航
     "nav.home": ("首页", "Home"),
@@ -280,6 +281,25 @@ STRINGS: dict[str, tuple[str, str]] = {
     "lang.en": ("English", "English"),
     "lang.both": ("双语", "Bilingual"),
 
+    # ----------------------------------------------------- V5 学习路径 / 语言
+    "nav.path": ("学习路径", "Path"),
+    "path.eyebrow": ("学习路径", "Learning Path"),
+    "path.title": ("选择你的语言，逐级闯关", "Pick your language, level up step by step"),
+    "path.sub": ("完成课程 → 赢得 XP → 解锁下一等级。先从 English A1 开始。",
+                 "Finish lessons → earn XP → unlock the next level. Start with English A1."),
+    "path.level_unit": ("单元", "Unit"),
+    "path.words": ("词", "words"),
+    "path.start": ("开始学习", "Start"),
+    "path.continue": ("继续", "Continue"),
+    "path.locked": ("未解锁", "Locked"),
+    "path.done": ("已完成", "Completed"),
+    "path.next": ("下一等级", "Next level"),
+    "path.current": ("当前位置", "You are here"),
+    "path.mylearning": ("我的学习路径", "My Learning Path"),
+    "path.mylearning_sub": ("按完成度自动解锁下一等级", "Levels unlock automatically as you progress"),
+    "path.other_lang": ("更多学习语言即将开放", "More learning languages coming soon"),
+    "path.coming_soon": ("正在制作中", "Coming soon"),
+
     # ----------------------------------------------------- 技能 / 游戏（模板备用；主来源是路由传入的 zh/en）
     "skill.vocabulary": ("词汇", "Vocabulary"),
     "skill.listening": ("听力", "Listening"),
@@ -298,39 +318,58 @@ def _pair(key: str) -> tuple[str, str]:
     """取一条文案的 (中文, English)。缺失时返回 key 本身，避免页面报错。"""
     pair = STRINGS.get(key)
     if not pair:
-        return (key, key)
+        # 旧新增的文案可能只写进了 translations/*.json
+        return (translate(key, "zh"), translate(key, "en"))
     zh, en = pair
-    return (zh or key, en or key)
+    return (zh or translate(key, "zh") or key,
+            en or translate(key, "en") or key)
 
 
-def t(key: str, lang: str = "zh") -> str:
-    """返回单一语言的文字（供需要纯文本的场合使用，如 placeholder）。"""
-    zh, en = _pair(key)
-    return en if lang == "en" else zh
+def t(key: str, lang: str | None = None) -> str:
+    """返回**单一语言**的文字。
+
+    未显式指定 ``lang`` 时跟随当前 UI 语言（``ui_lang``）。
+    ``both`` 模式按 ``zh`` 处理 —— ``t()`` 的契约就是只给一种语言。
+    """
+    lang = lang or resolve_lang()
+    if lang not in UI_LANGS:
+        lang = "zh"
+    return translate(key, lang)
 
 
 def bi(key: str, sep: str = "/") -> Markup:
-    """渲染双语结构：英文在前，中文在后，中间由 CSS 加分隔符。
+    """渲染文案结构，**跟随当前 UI 语言**。
 
-    输出形如
-    ``<span class="bi"><span class="bi-en">Dashboard</span><span class="bi-zh">学习中心</span></span>``
-
-    未来切换语言只需给 <html> 加 ``data-lang="zh|en"``，由 CSS 隐藏另一段。
+    - ``en``   -> 只输出英文（**English 版面绝不出现中文**）
+    - ``both`` -> 双语同显（英文在前，中文在后，CSS 加分隔符）
+    - ``zh``/``yue`` -> 单语输出
     """
-    zh, en = _pair(key)
-    return Markup(
-        '<span class="bi">'
-        f'<span class="bi-en">{escape(en)}</span>'
-        f'<span class="bi-zh">{escape(zh)}</span>'
-        "</span>"
-    )
+    lang = resolve_lang()
+    if lang == "en":
+        return Markup(escape(translate(key, "en")))
+    if lang == "both":
+        zh = translate(key, "zh")
+        en = translate(key, "en")
+        if en == zh:
+            return Markup(escape(en))
+        return Markup(
+            '<span class="bi">'
+            f'<span class="bi-en">{escape(en)}</span>'
+            f'<span class="bi-zh">{escape(zh)}</span>'
+            "</span>"
+        )
+    return Markup(escape(translate(key, lang)))
 
 
 def bi_plain(key: str, sep: str = " / ") -> str:
-    """返回纯文本双语（用于 title 属性、纯文本提示等）。"""
-    zh, en = _pair(key)
-    return f"{en}{sep}{zh}"
+    """返回纯文本形式（用于 title 属性等）。English 版面只给英文。"""
+    lang = resolve_lang()
+    if lang == "en":
+        return translate(key, "en")
+    if lang == "both":
+        return f"{translate(key, 'en')}{sep}{translate(key, 'zh')}"
+    return translate(key, lang)
 
 
 def has(key: str) -> bool:
-    return key in STRINGS
+    return key in STRINGS or bool(bundle("en").get(key) or bundle("zh").get(key))

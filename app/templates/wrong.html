@@ -17,7 +17,7 @@
 {% if words %}
   <div class="row" style="margin-bottom:var(--ds-sp-5);gap:8px">
     <a class="btn btn-primary" href="{{ url_for('quiz.test_page', scope='wrong') }}">{{ icon('quiz') }}{{ bi('wrong.practice') }}</a>
-    <a class="btn btn-secondary" href="{{ url_for('words.learn', scope='wrong') }}">{{ icon('book') }}{{ bi('wrong.study') }}</a>
+    <a class="btn btn-secondary" href="{{ url_for('words.daily', scope='wrong') }}">{{ icon('book') }}{{ bi('wrong.study') }}</a>
   </div>
 
   <div class="word-grid">
