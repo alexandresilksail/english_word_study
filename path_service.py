@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import logging
 
+from sqlalchemy.exc import IntegrityError
+
 from extensions import db
 from learning_path import (LEVELS, LEVEL_BY_CODE, UNITS_PER_LEVEL, UNLOCK_RATIO,
                            assign_by_quantile, cefr_from_freq)
@@ -11,8 +13,8 @@ from models import UserWordProgress, Word, WordMeta
 logger = logging.getLogger(__name__)
 
 
-def ensure_word_meta() -> int:
-    """幂等回填 word_meta：只为还没有分级记录的词补分级。
+def _missing_meta_rows() -> list[WordMeta]:
+    """计算「还没有分级记录」的词，并生成对应的 WordMeta 行（只算不写）。
 
     与 seed 顺序无关：create_app 先跑、词库后 seed 也没关系 ——
     下次启动（或测试里再次调用）会把缺失词补齐。words 表一行不动。
@@ -23,7 +25,7 @@ def ensure_word_meta() -> int:
     words = [w for w in Word.query.order_by(Word.freq.asc(), Word.id.asc()).all()
              if w.id not in existing]
     if not words:
-        return 0
+        return []
 
     # ── 分级：优先按「已入库词的词频分位」整体重算，保证分布合理 ──────────
     # 只有在增量补齐（库里已有大量分级）时，才单独给新词按分位定档。
@@ -55,10 +57,41 @@ def ensure_word_meta() -> int:
                 difficulty=lv.order + 1,
                 category="general",
             ))
-    db.session.add_all(rows)
-    db.session.commit()
-    logger.info("word_meta 补齐 %d 词（累计 %d）", len(rows), WordMeta.query.count())
-    return len(rows)
+    return rows
+
+
+def ensure_word_meta() -> int:
+    """幂等回填 word_meta：只为还没有分级记录的词补分级。words 表一行不动。
+
+    并发安全（根因修复）：
+    Gunicorn 多 worker / 多容器会对**同一个 SQLite 文件**同时执行本函数。
+    「读现有集合 → 算缺失 → 插入」不是原子的：两个进程可能算出同一批缺失词，
+    后提交者会撞 ``word_meta.word_id`` 唯一约束（如 word_id=110）。
+    这里在 IntegrityError 时**回滚并重读补集**，把“插入缺口”收敛为 0——
+    这是对幂等逻辑的重新执行（第二次重读时另一进程已提交的行会进入 existing），
+    不是跳过约束或吞掉异常；重试耗尽后原样抛出，交由调用方回滚。
+    """
+    last_exc: IntegrityError | None = None
+    for attempt in range(3):
+        rows = _missing_meta_rows()
+        if not rows:
+            return 0
+        try:
+            db.session.add_all(rows)
+            db.session.commit()
+            logger.info("word_meta 补齐 %d 词（累计 %d）",
+                        len(rows), WordMeta.query.count())
+            return len(rows)
+        except IntegrityError as exc:
+            last_exc = exc
+            db.session.rollback()
+            if attempt + 1 >= 3:
+                break
+            logger.warning("word_meta 检测到并发写入冲突（第 %d 次），回滚后重试",
+                           attempt + 1)
+    if last_exc is not None:
+        raise last_exc
+    return 0
 
 
 def level_progress(uid: int) -> list[dict]:

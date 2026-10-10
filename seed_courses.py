@@ -610,6 +610,9 @@ def fill_missing_content() -> dict:
         from path_service import ensure_word_meta
         ensure_word_meta()
     except Exception as exc:  # pragma: no cover
+        # 失败后必须回滚：否则本 Session 停留在 pending-rollback 状态，
+        # 下方 Course/Unit/Lesson 的查询与写入会全部连带失败。
+        db.session.rollback()
         logger.warning("word_meta 补齐跳过：%s", exc)
 
     for course in Course.query.all():

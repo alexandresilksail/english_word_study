@@ -42,6 +42,23 @@ def ensure_instance_dir(app: Flask) -> None:
             os.makedirs(folder, exist_ok=True)
 
 
+def _init_lock_path(database_url: str) -> str | None:
+    """SQLite 文件库的初始化互斥锁路径；内存库 / 非 SQLite 不锁定。
+
+    Gunicorn 多 worker 与「部署脚本 docker run + web 容器启动」会在同一
+    SQLite 文件上并发执行 create_app 初始化：先查后插的播种逻辑（word_meta、
+    courses、levels…）存在竞态，后提交者会撞唯一约束。用 flock 把整段
+    初始化串行化：后启动的进程会阻塞到先启动者初始化完成，再重读库时
+    所有数据已就位、幂等跳过。flock 随进程退出自动释放，无残留锁。
+    """
+    if not database_url.startswith("sqlite:///"):
+        return None
+    path = database_url[len("sqlite:///"):]
+    if not path or path == ":memory:":
+        return None
+    return path + ".init.lock"
+
+
 def create_app(config_object=None):
     import logging
 
@@ -121,38 +138,30 @@ def create_app(config_object=None):
 
     ensure_instance_dir(app)
 
-    with app.app_context():
-        db.create_all()
-        # V5：词库 CEFR 分级元数据幂等回填（空表才写）
+    # ── 初始化互斥锁：串行化多进程对同一 SQLite 文件的并发初始化 ──────────
+    # 失败（非 POSIX / 无权限）时退化为不锁定，幂等重试仍能自愈。
+    lock_fd = None
+    lock_path = _init_lock_path(app.config["SQLALCHEMY_DATABASE_URI"])
+    if lock_path is not None:
         try:
-            from path_service import ensure_word_meta
-            ensure_word_meta()
-        except Exception as exc:  # pragma: no cover
-            logger.warning("word_meta 回填跳过：%s", exc)
-        # V5：English / Cantonese 课程体系幂等播种
-        try:
-            from seed_courses import seed_courses
-            seed_courses()
-        except Exception as exc:  # pragma: no cover
-            logger.warning("课程播种跳过：%s", exc)
-        # V5.1：给空壳课时补内容 + 回填英文释义（English 版面零中文的数据前提）
-        try:
-            from seed_courses import fill_missing_content
-            fill_missing_content()
-        except Exception as exc:  # pragma: no cover
-            logger.warning("课时内容补齐跳过：%s", exc)
-        try:
-            from translation_service import backfill_english
-            backfill_english(app)
-        except Exception as exc:  # pragma: no cover
-            logger.warning("英文释义回填跳过：%s", exc)
-        # V5.2：等级主数据 + 商业化商品（§17 / §19），均为幂等播种
-        try:
-            from payment_service import ensure_levels, ensure_products
-            ensure_levels()
-            ensure_products()
-        except Exception as exc:  # pragma: no cover
-            logger.warning("levels/products 播种跳过：%s", exc)
+            import fcntl
+            lock_fd = open(lock_path, "w")
+            fcntl.flock(lock_fd, fcntl.LOCK_EX)
+        except (ImportError, OSError):  # pragma: no cover - 平台差异
+            if lock_fd is not None:
+                lock_fd.close()
+            lock_fd = None
+
+    try:
+        _run_startup_initialization(app)
+    finally:
+        if lock_fd is not None:
+            try:
+                import fcntl
+                fcntl.flock(lock_fd, fcntl.LOCK_UN)
+            except (ImportError, OSError):  # pragma: no cover
+                pass
+            lock_fd.close()
 
     # V5.1：English 版面在服务端剥离中文节点（不只是 CSS 隐藏）
     @app.after_request
@@ -172,6 +181,54 @@ def create_app(config_object=None):
 
     _setup_logging(app)
     return app
+
+
+def _run_startup_initialization(app: Flask) -> None:
+    """应用启动期的幂等初始化：建表 → 词库分级 → 课程 → 课时内容 → 主数据。
+
+    每个步骤独立 try/except：某一步失败不得阻断后续步骤。**失败时先
+    db.session.rollback() 再继续**——否则该 Session 停留在 pending-rollback
+    状态，后续步骤的查询/写入全部报「transaction has been rolled back」，
+    课程、课时内容、等级、商品会被连带跳过（V6 已观测的级联故障）。
+    """
+    logger = logging.getLogger("english_app")
+    with app.app_context():
+        db.create_all()
+        # V5：词库 CEFR 分级元数据幂等回填（空表才写）
+        try:
+            from path_service import ensure_word_meta
+            ensure_word_meta()
+        except Exception as exc:  # pragma: no cover
+            db.session.rollback()
+            logger.warning("word_meta 回填跳过：%s", exc)
+        # V5：English / Cantonese 课程体系幂等播种
+        try:
+            from seed_courses import seed_courses
+            seed_courses()
+        except Exception as exc:  # pragma: no cover
+            db.session.rollback()
+            logger.warning("课程播种跳过：%s", exc)
+        # V5.1：给空壳课时补内容 + 回填英文释义（English 版面零中文的数据前提）
+        try:
+            from seed_courses import fill_missing_content
+            fill_missing_content()
+        except Exception as exc:  # pragma: no cover
+            db.session.rollback()
+            logger.warning("课时内容补齐跳过：%s", exc)
+        try:
+            from translation_service import backfill_english
+            backfill_english(app)
+        except Exception as exc:  # pragma: no cover
+            db.session.rollback()
+            logger.warning("英文释义回填跳过：%s", exc)
+        # V5.2：等级主数据 + 商业化商品（§17 / §19），均为幂等播种
+        try:
+            from payment_service import ensure_levels, ensure_products
+            ensure_levels()
+            ensure_products()
+        except Exception as exc:  # pragma: no cover
+            db.session.rollback()
+            logger.warning("levels/products 播种跳过：%s", exc)
 
 
 def _register_blueprints(app: Flask) -> None:
@@ -456,10 +513,26 @@ def _setup_logging(app: Flask) -> None:
 
 # ---------------------------------------------------------------------------
 # WSGI 入口：Gunicorn 使用 `gunicorn -w 2 -b 0.0.0.0:8000 app:app`
+#
+# `app` 采用模块级惰性创建（PEP 562 __getattr__）：只有 Gunicorn 真正
+# 读取 `app:app` 属性时才执行 create_app()。这样 `from app import create_app`
+# （测试进程、脚本）不会在 import 时对真实 instance/ 库执行整套初始化——
+# 避免测试跑一次就在生产库路径上建表、播种课程/等级/商品。
 # ---------------------------------------------------------------------------
-app = create_app()
+_app_instance = None
+
+
+def __getattr__(name: str):
+    if name == "app":
+        global _app_instance
+        if _app_instance is None:
+            _app_instance = create_app()
+        return _app_instance
+    raise AttributeError(f"module 'app' has no attribute {name!r}")
 
 
 if __name__ == "__main__":
     # 仅本地调试用；生产请用 Gunicorn
-    app.run(host="127.0.0.1", port=int(os.environ.get("PORT", 5000)), debug=True)
+    _local_app = create_app()
+    _local_app.run(host="127.0.0.1",
+                   port=int(os.environ.get("PORT", 5000)), debug=True)
