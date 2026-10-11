@@ -44,28 +44,28 @@
   </div>
 
   {% set paths = [
-    ('vocabulary', 'Vocabulary', 'Vocabulary', 'vocab', 'book-open', '📚',
+    ('vocabulary', 'Vocabulary', 'Vocabulary', 'vocab', 'book-open',
      'CEFR-graded vocabulary · A1-C2 step by step', url_for('main.courses'), True),
-    ('listening', 'Listening', 'Listening', 'listen', 'headphones', '🎧',
+    ('listening', 'Listening', 'Listening', 'listen', 'headphones',
      'Podcast study · dictation · speed control', url_for('learn.skill', key='listening'), False),
-    ('reading', 'Reading', 'Reading', 'read', 'book-open', '📖',
+    ('reading', 'Reading', 'Reading', 'read', 'book-open',
      'Levelled passages · tap-to-lookup', url_for('learn.skill', key='reading'), False),
-    ('grammar', 'Grammar', 'Grammar', 'grammar', 'puzzle', '✏️',
+    ('grammar', 'Grammar', 'Grammar', 'grammar', 'puzzle',
      'Grammar in context · rules through examples', url_for('learn.skill', key='grammar'), False),
-    ('speaking', 'Speaking', 'Speaking', 'speak', 'mic', '🎤',
+    ('speaking', 'Speaking', 'Speaking', 'speak', 'mic',
      'Shadow & score · role play', url_for('learn.skill', key='speaking'), False),
-    ('writing', 'Writing', 'Writing', 'write', 'square-pen', '📝',
+    ('writing', 'Writing', 'Writing', 'write', 'pen-line',
      'Sentence drills · essay feedback', url_for('learn.skill', key='writing'), False),
   ] %}
 
   <div class="path-grid stagger">
-    {% for key, en, zh, color, ic, emoji, desc, href, ready in paths %}
+    {% for key, en, zh, color, ic, desc, href, ready in paths %}
     <a class="path-card" href="{{ href }}">
       <div class="path-top">
         <span class="path-ico" style="background:linear-gradient(135deg,var(--c-{{ key }}) 0%,var(--c-{{ key }}-2) 100%)">{{ icon(ic) }}</span>
         {% if not ready %}<span class="path-lock">{{ icon('lock') }}Soon</span>{% endif %}
       </div>
-      <h3>{{ emoji }} {{ pick(en, zh) }}</h3>
+      <h3>{{ pick(en, zh) }}</h3>
       <p class="path-desc">{{ desc }}</p>
       <div class="path-bar"><i style="width:0%;background:linear-gradient(90deg,var(--c-{{ key }}),var(--c-{{ key }}-2))"></i></div>
       <span class="path-cta">{{ 'Start' if ready else 'Preview' }} {{ icon('arrow-right') }}</span>

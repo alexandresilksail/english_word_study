@@ -16,14 +16,14 @@
 </div>
 
 <section class="admin-grid">
-  <div class="admin-stat"><em>👥</em><b>{{ stats.total_users }}</b><span>注册用户数</span></div>
-  <div class="admin-stat"><em>📚</em><b>{{ stats.total_words }}</b><span>词库单词数</span></div>
-  <div class="admin-stat"><em>📝</em><b>{{ stats.answer_count }}</b><span>累计答题次数</span></div>
-  <div class="admin-stat"><em>🏆</em><b>{{ stats.test_count }}</b><span>累计测试次数</span></div>
-  <div class="admin-stat"><em>🔥</em><b>{{ stats.active_today }}</b><span>今日活跃用户</span></div>
-  <div class="admin-stat"><em>🆕</em><b>{{ stats.new_users_today }}</b><span>今日新增注册</span></div>
-  <div class="admin-stat"><em>✅</em><b>{{ stats.mastered }}</b><span>全站掌握单词</span></div>
-  <div class="admin-stat"><em>⭐</em><b>{{ stats.fav_count }}</b><span>收藏总数</span></div>
+  <div class="admin-stat"><em>{{ icon('users') }}</em><b>{{ stats.total_users }}</b><span>注册用户数</span></div>
+  <div class="admin-stat"><em>{{ icon('book') }}</em><b>{{ stats.total_words }}</b><span>词库单词数</span></div>
+  <div class="admin-stat"><em>{{ icon('file-text') }}</em><b>{{ stats.answer_count }}</b><span>累计答题次数</span></div>
+  <div class="admin-stat"><em>{{ icon('trophy') }}</em><b>{{ stats.test_count }}</b><span>累计测试次数</span></div>
+  <div class="admin-stat"><em>{{ icon('flame') }}</em><b>{{ stats.active_today }}</b><span>今日活跃用户</span></div>
+  <div class="admin-stat"><em>{{ icon('user-plus') }}</em><b>{{ stats.new_users_today }}</b><span>今日新增注册</span></div>
+  <div class="admin-stat"><em>{{ icon('circle-check') }}</em><b>{{ stats.mastered }}</b><span>全站掌握单词</span></div>
+  <div class="admin-stat"><em>{{ icon('star') }}</em><b>{{ stats.fav_count }}</b><span>收藏总数</span></div>
 </section>
 
 <div class="grid" style="grid-template-columns:1fr 1fr">

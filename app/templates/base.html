@@ -64,14 +64,14 @@
 
         {# 收藏与错题做成图标快捷入口 #}
         <a class="nav-icon-link" href="{{ url_for('words.favorites') }}"
-           title="{{ bi_plain('nav.favorites') }}">{{ icon('star') }}
+           title="{{ bi_plain('nav.favorites') }}">{{ icon('bookmark') }}<span class="nav-ico-text">{{ bi_plain('nav.favorites') }}</span>
            {% if nav_stats.favorites %}<span class="nav-count">{{ nav_stats.favorites }}</span>{% endif %}</a>
         <a class="nav-icon-link" href="{{ url_for('words.wrong') }}"
-           title="{{ bi_plain('nav.wrong') }}">{{ icon('review') }}
+           title="{{ bi_plain('nav.wrong') }}">{{ icon('list-checks') }}<span class="nav-ico-text">{{ bi_plain('nav.wrong') }}</span>
            {% if nav_stats.wrong %}<span class="nav-count">{{ nav_stats.wrong }}</span>{% endif %}</a>
 
         {% if current_user.is_admin %}
-          <a class="nav-icon-link" href="{{ url_for('admin.console') }}" title="{{ bi_plain('nav.admin') }}">{{ icon('shield') }}</a>
+          <a class="nav-icon-link" href="{{ url_for('admin.console') }}" title="{{ bi_plain('nav.admin') }}">{{ icon('dashboard') }}<span class="nav-ico-text">{{ bi_plain('nav.admin') }}</span></a>
         {% endif %}
       {% else %}
         <a href="{{ url_for('main.index') }}">{{ icon('home') }}{{ bi('nav.home') }}</a>
@@ -105,9 +105,12 @@
           <b>{{ current_user.username }}</b>
           {% if nav_gam %}<span class="chip-lv">Lv {{ nav_gam.level }}</span>{% endif %}
         </a>
-        <a class="icon-btn" href="{{ url_for('auth.logout') }}" title="{{ bi_plain('nav.logout') }}">
-          {{ icon('logout') }}
-        </a>
+        <form method="post" action="{{ url_for('auth.logout') }}" class="logout-form" title="{{ bi_plain('nav.logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="icon-btn" aria-label="{{ bi_plain('nav.logout') }}">
+            {{ icon('logout') }}<span class="nav-ico-text">{{ bi_plain('nav.logout') }}</span>
+          </button>
+        </form>
       {% else %}
         <a class="btn btn-secondary btn-sm" href="{{ url_for('auth.login') }}">{{ bi('nav.login') }}</a>
         <a class="btn btn-primary btn-sm" href="{{ url_for('auth.register') }}">{{ bi('nav.register') }}</a>

@@ -263,7 +263,7 @@ def code_register():
     return render_template("register.html", form=RegistrationForm(), code_form=code_form, mode="code")
 
 
-@auth_bp.route("/logout", methods=["GET", "POST"])
+@auth_bp.route("/logout", methods=["POST"])
 @login_required
 def logout():
     username = current_user.username

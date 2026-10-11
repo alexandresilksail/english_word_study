@@ -304,7 +304,7 @@ def main():
         check("后台 API 返回统计", stats.get("words") == 2000 and stats.get("users") >= 3, stats)
 
         print("\n[12] 退出登录 / 重新登录")
-        r = cb.get("/logout")
+        r = cb.post("/logout")
         check("退出后重定向首页", r.status_code == 302 and (r.headers.get("Location") or "").endswith("/"),
               r.headers.get("Location"))
         check("退出后 dashboard 不可访问", cb.get("/dashboard").status_code == 302)

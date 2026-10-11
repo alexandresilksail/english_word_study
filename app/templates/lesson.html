@@ -152,12 +152,18 @@
 <div style="display:flex;gap:10px;margin-top:20px">
   <a class="btn btn-secondary" href="{{ url_for('main.unit_view', unit_id=unit.id) if unit else url_for('main.courses') }}">
     ← {{ icon('book-open') }} {{ pick('Back to Unit', '返回单元') }}</a>
-  <a class="btn btn-primary" href="{{ url_for('quiz.test_page') }}">🎯 {{ pick('Practice Quiz', '综合测验') }}</a>
+  <a class="btn btn-primary" href="{{ url_for('quiz.test_page') }}">{{ icon('target') }} {{ pick('Practice Quiz', '综合测验') }}</a>
 </div>
 {% endblock %}
 
 {% block scripts %}
+<span id="fb-ok-ic" hidden aria-hidden="true">{{ icon('party-popper') }}</span>
+<span id="fb-no-ic" hidden aria-hidden="true">{{ icon('x') }}</span>
 <script>
+// 反馈图标（服务端渲染的 SVG，避免 JS 字符串内嵌引号冲突）
+const FB_OK = (document.getElementById('fb-ok-ic') || {}).innerHTML || '';
+const FB_NO = (document.getElementById('fb-no-ic') || {}).innerHTML || '';
+
 // 学习流步骤切换
 const steps = Array.from(document.querySelectorAll('.flow-step'));
 function gotoStep(name){
@@ -192,7 +198,7 @@ document.querySelectorAll('[data-practice]').forEach(form => {
         if (fb){
           const ok = (fd.get('correct') || '0') === '1';
           fb.hidden = false;
-          fb.textContent = ok ? '🎉 ' + (j.data ? '' : '') + (window.__l ? '' : 'Correct! +mastery') : '❌ Not quite — keep reviewing';
+          fb.innerHTML = ok ? FB_OK + ' ' + (j.data ? '' : '') + (window.__l ? '' : 'Correct! +mastery') : FB_NO + ' Not quite — keep reviewing';
           fb.style.color = ok ? '#059669' : '#e11d48';
         }
         form.closest('.practice-card')?.classList.add(ok ? 'done' : 'weak');
@@ -213,7 +219,7 @@ document.querySelectorAll('[data-quizopt]').forEach(form => {
     btn.classList.add(ok ? 'right' : 'wrong');
     if (fb){
       fb.hidden = false;
-      fb.textContent = ok ? '🎉 Correct!' : '❌ Not quite — review the card.';
+      fb.innerHTML = ok ? FB_OK + ' Correct!' : FB_NO + ' Not quite — review the card.';
       fb.style.color = ok ? '#059669' : '#e11d48';
     }
     const fd = new FormData(form);

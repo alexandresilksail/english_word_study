@@ -2,6 +2,7 @@
 {% from "_macros.html" import icon %}
 {% block title %}{{ pick('Speaking & Listening', '口语 · 听力') }}{% endblock %}
 {% block content %}
+<span id="ic-check" hidden aria-hidden="true">{{ icon('check') }}</span>
 
 <div class="v3-hero hero-dark">
   <div class="v3-hero-deco">
@@ -224,7 +225,7 @@
             var d = (res && res.data) || {};
             if (d.available && d.text) {
               input.value = d.text;
-              state.textContent = '✓';
+              state.innerHTML = (document.getElementById('ic-check') || {}).innerHTML || '';
             } else {
               // 没有识别引擎：明确提示用户手动输入，不假装成功了
               input.focus();
@@ -240,7 +241,7 @@
         };
         recorder.start();
         stopBtn.disabled = false;
-        state.textContent = '● ' + '{{ pick("recording", "录制中") }}';
+        state.innerHTML = '<span class="rec-dot"></span> ' + '{{ pick("recording", "录制中") }}';
       }).catch(function () {
         // 用户拒绝授权 / 设备被占用：必须把按钮恢复，否则录音功能永久卡死
         state.textContent = '{{ pick("Microphone unavailable", "无法访问麦克风") }}';

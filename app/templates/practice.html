@@ -37,6 +37,7 @@
 {% endblock %}
 
 {% block scripts %}
+<span id="ic-volume" hidden aria-hidden="true">{{ icon('volume-2') }}</span>
 <script>
 const UI_LANG = document.documentElement.getAttribute("data-lang") || "zh";
 const EN = UI_LANG === "en";
@@ -158,7 +159,7 @@ async function playSpeaking() {
     const w = words[i % words.length];
     const p = document.createElement("p"); p.className = "muted"; p.textContent = t("speak"); body.appendChild(p);
     const big = document.createElement("h3"); big.className = "speak-word"; big.textContent = w.word; body.appendChild(big);
-    const listen = document.createElement("button"); listen.className = "btn btn-secondary btn-sm"; listen.textContent = "🔊"; listen.onclick = () => speak(w.word); body.appendChild(listen);
+    const listen = document.createElement("button"); listen.className = "btn btn-secondary btn-sm"; listen.innerHTML = (document.getElementById('ic-volume') || {}).innerHTML || ''; listen.onclick = () => speak(w.word); body.appendChild(listen);
     const inp = document.createElement("input"); inp.className = "input"; inp.placeholder = t("speakInput"); body.appendChild(inp);
     const btn = document.createElement("button"); btn.className = "btn btn-primary btn-sm"; btn.textContent = t("next"); body.appendChild(btn);
     btn.onclick = () => { const ok = inp.value.trim().toLowerCase() === w.word.toLowerCase(); const m = document.createElement("p"); m.textContent = (ok ? t("correct") : t("wrong")) + " " + w.word; body.appendChild(m); if (ok) i++; setTimeout(step, 900); };

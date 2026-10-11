@@ -190,8 +190,8 @@
     <b class="game-name"><span class="bi-en">{{ n_en }}</span><span class="bi-zh">{{ n_zh }}</span></b>
     <span class="game-desc"><span class="bi-en">{{ d_en }}</span><span class="bi-zh">{{ d_zh }}</span></span>
     <div class="game-meta">
-      <span class="pill">🏆 <span class="bi-en">Best</span><span class="bi-zh">最高</span> {{ g.best or 0 }}</span>
-      <span class="pill">🎮 {{ g.plays or 0 }}</span>
+      <span class="pill">{{ icon('trophy') }} <span class="bi-en">Best</span><span class="bi-zh">最高</span> {{ g.best or 0 }}</span>
+      <span class="pill">{{ icon('gamepad') }} {{ g.plays or 0 }}</span>
       <span class="pill">+{{ g.xp }} XP</span>
     </div>
     <span class="game-play">{{ icon('play') }} <span class="bi-en">PLAY</span><span class="bi-zh">开始</span></span>

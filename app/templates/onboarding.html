@@ -3,8 +3,8 @@
 {% block title %}Onboarding · {{ app_title_en }}{% endblock %}
 {% block content %}
 <section class="onb-hero">
-  <span class="eyebrow">🎯 {{ pick('Personalized Learning Path', '个性化学习路径') }}</span>
-  <h1>{{ pick('Let’s get to know you 👋', '先认识你一下 👋') }}</h1>
+  <span class="eyebrow">{{ icon('target') }} {{ pick('Personalized Learning Path', '个性化学习路径') }}</span>
+  <h1>{{ pick('Let’s get to know you', '先认识你一下') }}</h1>
   <p class="muted">{{ pick('Tell us about yourself — we’ll plan the right learning path for you.', '告诉我们一些关于你的情况，我们会为你规划合适的学习路径。') }}</p>
 </section>
 <form method="post" class="onb-card">

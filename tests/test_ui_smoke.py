@@ -127,7 +127,7 @@ def main():
 
     # ---------------------------------------------------------- 退出
     print("\n[7] 退出登录")
-    r = c.get("/logout", follow_redirects=True)
+    r = c.post("/logout", follow_redirects=True)
     check("退出后回到首页", r.status_code == 200, r.status_code)
     r2 = c.get("/dashboard", follow_redirects=False)
     check("退出后 dashboard 重定向", r2.status_code in (301, 302), r2.status_code)

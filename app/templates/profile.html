@@ -130,7 +130,7 @@
           {% for r in recent %}
             <div class="row-between">
               <span class="small">{{ r.word.word if r.word else '(已删除)' }}</span>
-              <span class="tag {{ 'green' if r.is_correct else 'red' }}">{{ '✓ ' ~ t('quiz.correct') if r.is_correct else '✗ ' ~ t('quiz.wrong') }}</span>
+              <span class="tag {{ 'green' if r.is_correct else 'red' }}">{{ icon('check') ~ ' ' ~ t('quiz.correct') if r.is_correct else icon('x') ~ ' ' ~ t('quiz.wrong') }}</span>
               <span class="small muted">{{ r.created_at|dt('%m-%d %H:%M') }}</span>
             </div>
           {% endfor %}
