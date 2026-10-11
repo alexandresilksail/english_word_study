@@ -36,12 +36,14 @@ COPY requirements.txt .
 # 用通配复制根目录模块：新增 i18n.py / mailer.py / schema_compat.py / email_code.py 等
 # 不必再改 Dockerfile，避免"本地能跑、镜像里 ImportError" 的问题
 COPY *.py ./
+COPY lexicon/ ./lexicon/
 COPY routes/ ./routes/
 COPY utils/ ./utils/
 COPY seeds/ ./seeds/
 COPY app/templates/ ./app/templates/
 COPY app/static/ ./app/static/
 COPY app/data/ ./app/data/
+COPY app/translations/ ./app/translations/
 
 # 数据库与日志目录（宿主机 ./data、./logs 会挂载到这里）
 RUN mkdir -p /app/instance /app/logs \
