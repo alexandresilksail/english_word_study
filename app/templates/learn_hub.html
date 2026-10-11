@@ -1,17 +1,18 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon, pic %}
 {% block title %}{{ pick('Learning Hub', '学习中心') }} · Learn{% endblock %}
 {% block content %}
 <div class="v3-hero">
   <div class="v3-hero-deco">
-    <span class="v3-deco-orb">{{ icon('book') }}</span>
-    <span class="v3-deco-orb">{{ icon('headphones') }}</span>
+    <span class="v3-deco-orb">{{ pic('book') }}</span>
+    <span class="v3-deco-orb">{{ pic('headphones') }}</span>
     <span class="v3-deco-orb">{{ icon('sparkles') }}</span>
   </div>
   <h1>{{ pick('Learning Hub', '学习中心') }}</h1>
   <p>{{ pick('Six skills, step by step. Start with Vocabulary — the rest are coming soon.', '六大技能，循序渐进。当前可从「词汇」开始，其余模块正在建设中。') }}</p>
   {% if gamification %}
   <div class="v3-hero-actions">
-    <span class="v3-btn-glass">{{ icon('star') }} Lv {{ gamification.level or 0 }} · {{ gamification.xp or 0 }} XP</span>
+    <span class="v3-btn-glass">{{ pic('star') }} Lv {{ gamification.level or 0 }} · {{ gamification.xp or 0 }} XP</span>
     <span class="v3-btn-ghost-w">{{ icon('flame') }} {{ gamification.streak or 0 }} {{ pick('day streak', '天连续') }}</span>
   </div>
   {% endif %}
@@ -28,7 +29,7 @@
 <div class="skill-grid">
   {% for s in skills %}
   <a class="skill-card c-{{ s.color or 'violet' }}{% if not s.ready %} is-locked{% endif %}" href="{{ s.url }}">
-    <div class="skill-ico">{{ icon(s.icon) }}</div>
+    <div class="skill-ico has-img">{{ pic(s.icon) }}</div>
     <div class="skill-body">
       <div class="skill-name"><span class="bi"><span class="bi-en">{{ s.en }}</span><span class="bi-zh">{{ s.zh }}</span></span></div>
       <div class="skill-desc">{{ pick(s.desc_en, s.desc_zh) }}</div>
@@ -41,7 +42,7 @@
 </div>
 
 <div class="challenge" style="margin-top:22px">
-  <div class="challenge-ico">{{ icon('target') }}</div>
+  <div class="challenge-ico has-img">{{ pic('target') }}</div>
   <div class="challenge-body">
     <b>{{ pick('Daily Challenge', '今日推荐') }}</b>
     <p>{{ pick('Take a vocabulary quiz to lock in today’s words — keep your streak alive.', '完成一组词汇测试，巩固今天学到的单词，连续学习还能点亮连续天数。') }}</p>

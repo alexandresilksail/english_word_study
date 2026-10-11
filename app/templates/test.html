@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import icon %}
+{% from "_macros.html" import icon, pic %}
 {% block title %}{{ pick('Quiz', '测试') }} · {{ app_title_en }}{% endblock %}
 
 {% block content %}
@@ -7,7 +7,7 @@
 {# ============================================================ 视觉头部 #}
 <div class="v3-hero" style="background:linear-gradient(120deg,#4f46e5,#7c3aed 55%,#a855f7)">
   <div class="v3-hero-deco">
-    <span class="v3-deco-orb">{{ icon('practice') }}</span>
+    <span class="v3-deco-orb">{{ pic('practice') }}</span>
     <span class="v3-deco-orb">{{ icon('volume-2') }}</span>
     <span class="v3-deco-orb">{{ icon('edit') }}</span>
   </div>
@@ -15,7 +15,7 @@
   <p>{{ t('quiz.sub') }}</p>
   <div class="v3-hero-actions">
     <a class="v3-btn-glass" href="{{ url_for('words.wrong') }}">{{ icon('review') }}{{ bi('nav.wrong') }}</a>
-    <a class="v3-btn-ghost-w" href="{{ url_for('words.favorites') }}">{{ icon('star') }}{{ bi('nav.favorites') }}</a>
+    <a class="v3-btn-ghost-w" href="{{ url_for('words.favorites') }}">{{ pic('star') }}{{ bi('nav.favorites') }}</a>
   </div>
 </div>
 

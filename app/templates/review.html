@@ -1,4 +1,4 @@
-{% from "_icons.html" import icon %}
+{% from "_icons.html" import icon, pic %}
 {% extends "base.html" %}
 {% block title %}Review · {{ app_title_en }}{% endblock %}
 {% block content %}
@@ -14,10 +14,10 @@
 </div>
 {% endif %}
 <div class="review-summary">
-  <div class="rs-card">{{ icon('book-open') }}<b>{{ counts.vocabulary }}</b><span>Vocabulary</span></div>
+  <div class="rs-card">{{ pic('book-open') }}<b>{{ counts.vocabulary }}</b><span>Vocabulary</span></div>
   <div class="rs-card">{{ icon('chat') }}<b>{{ counts.phrase }}</b><span>Phrases</span></div>
   <div class="rs-card">{{ icon('pen') }}<b>{{ counts.sentence }}</b><span>Sentences</span></div>
-  <div class="rs-card">{{ icon('puzzle') }}<b>{{ counts.grammar }}</b><span>Grammar</span></div>
+  <div class="rs-card">{{ pic('puzzle') }}<b>{{ counts.grammar }}</b><span>Grammar</span></div>
 </div>
 {% if items %}
 <div class="review-list">
@@ -28,7 +28,7 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="content_id" value="{{ it.content_id }}">
       <button class="btn btn-secondary btn-sm" name="correct" value="0">{{ icon('rotate-ccw') }} Still learning</button>
-      <button class="btn btn-primary btn-sm" name="correct" value="1">{{ icon('check') }} Got it</button>
+      <button class="btn btn-primary btn-sm" name="correct" value="1">{{ pic('check') }} Got it</button>
     </form>
   </article>
   {% endfor %}

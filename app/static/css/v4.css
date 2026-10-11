@@ -1448,3 +1448,31 @@ td { padding: 12px; border-bottom: 1px solid var(--line); }
 .adaptive-badge{display:inline-flex;align-items:center;gap:8px;margin:14px 0 0 16px;padding:6px 12px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;font-size:13px;font-weight:600;color:#3730a3;}
 .adaptive-badge a{margin-left:6px;font-weight:600;color:#4f46e5;text-decoration:underline;}
 .assess-actions{display:flex;gap:12px;margin-top:18px;flex-wrap:wrap;}
+
+/* ===== V6.1 主题插画：用图片替代线框图标（功能入口） ===== */
+/* 默认尺寸（防止未单独定义的容器出现巨图） */
+.feat-img { width: 20px; height: 20px; object-fit: contain; display: inline-block; vertical-align: middle; }
+/* 顶部导航 / 底部标签栏：图片图标 20–28px */
+.nav-icon-link .feat-img { width: 22px; height: 22px; }
+.ds-nav .feat-img { width: 20px; height: 20px; margin-right: 6px; }
+.tabbar a .feat-img { width: 24px; height: 24px; }
+.icon-btn .feat-img { width: 18px; height: 18px; margin-right: 6px; }
+.logout-form .icon-btn .feat-img { margin-right: 0; }
+/* 卡片型图标容器：移除渐变底，让插画卡片本身呈现 */
+.skill-ico.has-img, .stat-ico.has-img, .game-ico.has-img,
+.path-ico.has-img, .fi-ico.has-img, .challenge-ico.has-img { background: transparent; }
+.skill-ico.has-img .feat-img, .stat-ico.has-img .feat-img, .game-ico.has-img .feat-img {
+  width: 100%; height: 100%; object-fit: contain; padding: 6px; box-sizing: border-box;
+}
+.path-ico.has-img .feat-img, .fi-ico.has-img .feat-img, .challenge-ico.has-img .feat-img {
+  width: 30px; height: 30px; object-fit: contain;
+}
+/* 行内小场景：标签 / 按钮 / 段标题 */
+.tag .feat-img { width: 14px; height: 14px; vertical-align: -2px; }
+.btn .feat-img { width: 16px; height: 16px; vertical-align: -3px; }
+.btn-sm .feat-img { width: 14px; height: 14px; }
+.pill .feat-img { width: 14px; height: 14px; vertical-align: -2px; }
+.eyebrow .feat-img { width: 14px; height: 14px; vertical-align: -2px; }
+.sec-title .feat-img { width: 20px; height: 20px; vertical-align: -3px; margin-right: 4px; }
+.hero-trust .ht .feat-img { width: 20px; height: 20px; }
+.gam-chip .feat-img { width: 15px; height: 15px; }

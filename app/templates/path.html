@@ -1,11 +1,11 @@
-{% from "_icons.html" import icon %}
+{% from "_icons.html" import icon, pic %}
 {% extends "base.html" %}
 {% block title %}{{ bi_plain('nav.path') }} · {{ app_title_en }}{% endblock %}
 
 {% block content %}
 {# ---------------- Hero ---------------- #}
 <section class="path-hero">
-  <span class="eyebrow">{{ icon('route') }}{{ bi('path.eyebrow') }}</span>
+  <span class="eyebrow">{{ pic('route') }}{{ bi('path.eyebrow') }}</span>
   <h1>{{ bi('path.title') }}</h1>
   <p class="muted">{{ bi('path.sub') }}</p>
   <div class="lang-chips">
@@ -50,7 +50,7 @@
   <div class="lvl {{ 'current' if current and lv.code == current.code }} {{ 'locked' if not lv.unlocked }}">
     <div class="lvl-head">
       <div class="lvl-badge c-{{ lv.color }}">
-        {% if lv.done %}{{ icon('check') }}{% elif not lv.unlocked %}{{ icon('lock') }}{% else %}{{ lv.emoji }}{% endif %}
+        {% if lv.done %}{{ pic('check') }}{% elif not lv.unlocked %}{{ pic('lock') }}{% else %}{{ lv.emoji }}{% endif %}
       </div>
       <div class="lvl-meta">
         <h2>{{ lv.code }} {{ pick(lv.name_en, lv.name_zh) }}</h2>
@@ -78,11 +78,11 @@
         </a>
       {% endfor %}
       <a class="node n-quiz {{ 'off' if not lv.unlocked }}" href="{{ url_for('quiz.test_page') }}">
-        <span class="node-ico">{{ icon('practice') }}</span>
+        <span class="node-ico">{{ pic('practice') }}</span>
         <b>{{ bi('nav.quiz') }}</b><small>Quiz · +XP</small>
       </a>
       <a class="node n-game {{ 'off' if not lv.unlocked }}" href="{{ url_for('games.index') }}">
-        <span class="node-ico">{{ icon('gamepad') }}</span>
+        <span class="node-ico">{{ pic('gamepad') }}</span>
         <b>{{ bi('nav.games') }}</b><small>Mini Game · +XP</small>
       </a>
     </div>

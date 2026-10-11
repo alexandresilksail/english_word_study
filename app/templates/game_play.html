@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon, pic %}
 {% block title %}{{ pick(text.en or meta.en, text.zh or meta.zh) }} · Game{% endblock %}
 {% block content %}
 <script>window.GAME_KEY = "{{ key }}";</script>
@@ -6,7 +7,7 @@
 <div class="v3-hero" style="display:flex;align-items:center;justify-content:space-between;gap:20px">
   <div>
     <div class="v3-hero-deco" style="position:static;margin-bottom:14px">
-      <span class="v3-deco-orb">{{ icon('gamepad') }}</span>
+      <span class="v3-deco-orb">{{ pic('gamepad') }}</span>
     </div>
     <h1><span class="bi"><span class="bi-en">{{ text.en or meta.en }}</span><span class="bi-zh">{{ text.zh or meta.zh }}</span></span></h1>
     <p>{{ pick(text.desc_en, text.desc_zh) }}</p>

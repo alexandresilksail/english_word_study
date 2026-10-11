@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import icon %}
+{% from "_macros.html" import icon, pic %}
 {% block title %}{{ bi_plain('auth.register_title') }} · {{ app_title }}{% endblock %}
 
 {% block content %}
@@ -90,7 +90,7 @@
         <a href="{{ url_for('auth.register') }}">{{ bi('auth.use_code_register') }}</a>
       </div>
 
-      <div class="secure-note">{{ icon('lock') }}<span>{{ t('auth.secure_note') }}</span></div>
+      <div class="secure-note">{{ pic('lock') }}<span>{{ t('auth.secure_note') }}</span></div>
     {% endif %}
 
     <div class="auth-alt">
@@ -102,7 +102,7 @@
     <img src="{{ url_for('static', filename='img/ill-auth.svg') }}" alt="Learn English illustration">
     <div class="perk">{{ icon('speaker') }}<div><b>{{ t('word.pronunciation') }}</b><span>{{ t('footer.offline') }}</span></div></div>
     <div class="perk">{{ icon('review') }}<div><b>{{ t('wrong.title') }}</b><span>{{ t('wrong.sub') }}</span></div></div>
-    <div class="perk">{{ icon('star') }}<div><b>{{ t('fav.title') }}</b><span>{{ t('fav.sub') }}</span></div></div>
+    <div class="perk">{{ pic('star') }}<div><b>{{ t('fav.title') }}</b><span>{{ t('fav.sub') }}</span></div></div>
     <div class="perk">{{ icon('shield') }}<div><b>{{ t('footer.privacy') }}</b><span>{{ t('auth.secure_note') }}</span></div></div>
   </aside>
 </div>

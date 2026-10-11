@@ -1,22 +1,23 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon, pic %}
 {% block title %}{{ pick('Mini Games', '小游戏') }} · Learn{% endblock %}
 {% block content %}
 
 {# ============================================================ 多彩游戏 Hero #}
 <div class="v3-hero" style="background:linear-gradient(120deg,#f43f5e,#d946ef 45%,#8b5cf6 80%,#6366f1)">
   <div class="v3-hero-deco">
-    <span class="v3-deco-orb">{{ icon('gamepad') }}</span>
+    <span class="v3-deco-orb">{{ pic('gamepad') }}</span>
     <span class="v3-deco-orb">{{ icon('bolt') }}</span>
     <span class="v3-deco-orb">{{ icon('trophy') }}</span>
-    <span class="v3-deco-orb">{{ icon('headphones') }}</span>
+    <span class="v3-deco-orb">{{ pic('headphones') }}</span>
   </div>
   <h1><span class="bi"><span class="bi-en">Mini Games</span><span class="bi-zh">小游戏</span></span></h1>
   <p>{{ pick('Learn while you play: four mini-games cover listening, choice and spelling. The longer you play, the more XP you earn — and your streak stays alive.', '边玩边记：四款小游戏覆盖听、选、拼，玩得越久 XP 越多，连续学习天数也不会掉。') }}</p>
   {% if gamification %}
   <div class="v3-hero-actions">
-    <span class="v3-btn-glass">{{ icon('star') }} Lv {{ gamification.level or 0 }} · {{ gamification.xp or 0 }} XP</span>
+    <span class="v3-btn-glass">{{ pic('star') }} Lv {{ gamification.level or 0 }} · {{ gamification.xp or 0 }} XP</span>
     <span class="v3-btn-ghost-w">{{ icon('flame') }} {{ gamification.streak or 0 }} {{ t('dash.streak_unit') }}</span>
-    <span class="v3-btn-ghost-w">{{ icon('target') }} {{ gamification.goal_percent or 0 }}% today</span>
+    <span class="v3-btn-ghost-w">{{ pic('target') }} {{ gamification.goal_percent or 0 }}% today</span>
   </div>
   {% endif %}
 </div>
@@ -37,7 +38,7 @@
       <div class="game-desc">{{ pick(g.desc_en, g.desc_zh) }}</div>
       <div class="game-meta">
         <span class="pill">{{ icon('trophy') }} <span class="bi-en">Best</span><span class="bi-zh">最高</span> {{ g.best or 0 }}</span>
-        <span class="pill">{{ icon('gamepad') }} {{ g.plays or 0 }}</span>
+        <span class="pill">{{ pic('gamepad') }} {{ g.plays or 0 }}</span>
         <span class="pill">+{{ g.xp }} XP</span>
       </div>
       <span class="game-play">{{ icon('play') }} <span class="bi-en">PLAY</span><span class="bi-zh">开始</span></span>

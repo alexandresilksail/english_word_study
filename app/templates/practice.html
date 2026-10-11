@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% from "_icons.html" import icon %}
+{% from "_icons.html" import icon, pic %}
 {% block title %}{{ pick('Practice', '练习中心') }} · {{ app_title_en }}{% endblock %}
 {% block content %}
 <section class="page-head">
   <div>
-    <span class="eyebrow">{{ icon('practice') }} {{ pick('Practice Hub', '练习中心') }}</span>
-    <h2>{{ icon('target') }} {{ pick('Practice Hub', '练习中心') }}</h2>
+    <span class="eyebrow">{{ pic('practice') }} {{ pick('Practice Hub', '练习中心') }}</span>
+    <h2>{{ pic('target') }} {{ pick('Practice Hub', '练习中心') }}</h2>
     <p>{{ pick('Six exercise types to lock in what you learned — pick one to start.',
                 '六种题型，把学过的知识牢牢锁住——选一种开始吧。') }}</p>
   </div>
@@ -14,7 +14,7 @@
 <div class="practice-grid stagger">
   {% for key, en, zh, sub_en, sub_zh, kind in types %}
   <div class="pct-card">
-    <div class="pct-ico c-violet">{{ icon('practice') }}</div>
+    <div class="pct-ico c-violet">{{ pic('practice') }}</div>
     <h3>{{ pick(en, zh) }}</h3>
     <p class="muted">{{ pick(sub_en, sub_zh) }}</p>
     {% if kind == 'quiz' %}

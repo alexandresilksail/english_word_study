@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon, pic %}
 {% block title %}{{ pick(skill.en, skill.zh) }} · Skill{% endblock %}
 {% block content %}
 
@@ -33,13 +34,13 @@
   </div>
   <div class="ec-body">
     <span class="tag" style="background:var(--c-{{ color_key }}-soft);color:var(--c-{{ color_key }})">
-      {{ icon('clock') }} {{ pick('Coming soon', '即将上线') }}
+      {{ pic('clock') }} {{ pick('Coming soon', '即将上线') }}
     </span>
     <h3>{{ pick(skill.en, skill.zh) }}</h3>
     <p>{{ pick('This module is being prepared. The activities listed below are planned — they will appear automatically once ready, no code changes needed.',
                 '这个模块的内容正在制作中。规划中的练习列在下方，上线后会自动出现，无需改代码。') }}</p>
     <div class="row">
-      <a class="btn btn-primary" href="{{ url_for('words.daily') }}">{{ icon('book-open') }} {{ pick('Start with Vocabulary', '先去背单词') }}</a>
+      <a class="btn btn-primary" href="{{ url_for('words.daily') }}">{{ pic('book-open') }} {{ pick('Start with Vocabulary', '先去背单词') }}</a>
       <a class="btn btn-secondary" href="{{ url_for('learn.hub') }}">{{ icon('chevron-left') }} {{ pick('Back to Hub', '返回学习中心') }}</a>
     </div>
     {% if stat %}
@@ -65,7 +66,7 @@
         <div class="skill-name"><span class="bi"><span class="bi-en">{{ m.en }}</span><span class="bi-zh">{{ m.zh }}</span></span></div>
         <div class="skill-desc">{{ pick(m.desc_en, m.desc_zh) }}</div>
       </div>
-      <span class="skill-soon">{{ icon('clock') }} Soon</span>
+      <span class="skill-soon">{{ pic('clock') }} Soon</span>
     </div>
     {% endfor %}
   </div>
@@ -83,15 +84,15 @@
   <div class="rec-grid">
     <a class="rec-card" href="{{ url_for('quiz.test_page') }}">
       <div class="rec-cover"><img src="{{ url_for('static', filename='img/ill-quiz.svg') }}" alt=""><span class="rec-level">Now</span></div>
-      <div class="rec-body"><h3>{{ icon('practice') }} {{ bi('nav.quiz') }}</h3><p>{{ pick('Four question types test your vocabulary mastery', '四种题型检验你的词汇掌握度') }}</p><span class="rec-cta btn btn-secondary btn-sm">{{ bi('act.start') }} {{ icon('arrow-right') }}</span></div>
+      <div class="rec-body"><h3>{{ pic('practice') }} {{ bi('nav.quiz') }}</h3><p>{{ pick('Four question types test your vocabulary mastery', '四种题型检验你的词汇掌握度') }}</p><span class="rec-cta btn btn-secondary btn-sm">{{ bi('act.start') }} {{ icon('arrow-right') }}</span></div>
     </a>
     <a class="rec-card" href="{{ url_for('games.index') }}">
       <div class="rec-cover"><img src="{{ url_for('static', filename='img/ill-games.svg') }}" alt=""><span class="rec-level">+XP</span></div>
-      <div class="rec-body"><h3>{{ icon('gamepad-2') }} {{ bi('nav.games') }}</h3><p>{{ pick('Four mini-games to lock in words while you play', '四款小游戏，边玩边巩固单词') }}</p><span class="rec-cta btn btn-secondary btn-sm">{{ bi('act.start') }} {{ icon('arrow-right') }}</span></div>
+      <div class="rec-body"><h3>{{ pic('gamepad-2') }} {{ bi('nav.games') }}</h3><p>{{ pick('Four mini-games to lock in words while you play', '四款小游戏，边玩边巩固单词') }}</p><span class="rec-cta btn btn-secondary btn-sm">{{ bi('act.start') }} {{ icon('arrow-right') }}</span></div>
     </a>
     <a class="rec-card" href="{{ url_for('words.browse') }}">
       <div class="rec-cover"><img src="{{ url_for('static', filename='img/ill-search.svg') }}" alt=""><span class="rec-level">A–Z</span></div>
-      <div class="rec-body"><h3>{{ icon('search') }} {{ bi('nav.browse') }}</h3><p>{{ pick('Browse by level — audio & examples on tap', '按等级浏览词条，随时查发音与例句') }}</p><span class="rec-cta btn btn-secondary btn-sm">{{ bi('act.start') }} {{ icon('arrow-right') }}</span></div>
+      <div class="rec-body"><h3>{{ pic('search') }} {{ bi('nav.browse') }}</h3><p>{{ pick('Browse by level — audio & examples on tap', '按等级浏览词条，随时查发音与例句') }}</p><span class="rec-cta btn btn-secondary btn-sm">{{ bi('act.start') }} {{ icon('arrow-right') }}</span></div>
     </a>
   </div>
 </section>

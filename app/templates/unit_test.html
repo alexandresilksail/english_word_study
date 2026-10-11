@@ -1,17 +1,17 @@
 {% extends "base.html" %}
-{% from "_icons.html" import icon %}
+{% from "_icons.html" import icon, pic %}
 {% block title %}{{ pick(pick(quiz.title_en, quiz.title_zh), 'Unit Test') }} · {{ app_title_en }}{% endblock %}
 {% block content %}
 <section class="page-head">
   <div>
-    <span class="eyebrow">{{ icon('practice') }} {{ pick('Unit Test', '单元测验') }}</span>
-    <h2>{{ icon('practice') }} {{ pick(quiz.title_en, quiz.title_zh) }}</h2>
+    <span class="eyebrow">{{ pic('practice') }} {{ pick('Unit Test', '单元测验') }}</span>
+    <h2>{{ pic('practice') }} {{ pick(quiz.title_en, quiz.title_zh) }}</h2>
     <p class="muted">
-      {{ icon('book') }} {{ pick(course.title_en, course.title_zh) }}
+      {{ pic('book') }} {{ pick(course.title_en, course.title_zh) }}
       · {{ icon('layers') }} {{ pick(unit.title_en, unit.title_zh) }}
     </p>
     {% if state.mastered %}
-      <p class="badge-ok">{{ icon('check') }} {{ pick('Mastered', '已掌握') }}</p>
+      <p class="badge-ok">{{ pic('check') }} {{ pick('Mastered', '已掌握') }}</p>
     {% endif %}
   </div>
 </section>
@@ -20,7 +20,7 @@
 {# ============================ 判分结果 ============================ #}
 <div class="card ut-result stagger">
   <div class="card-head">
-    <h3>{{ icon('chart') }} {{ pick('Your result', '测验结果') }}</h3>
+    <h3>{{ pic('chart') }} {{ pick('Your result', '测验结果') }}</h3>
   </div>
   <div class="card-body">
     <div class="ut-score">
@@ -31,9 +31,9 @@
       <div class="ut-meta">
         <p class="ut-verdict">
           {% if result.passed %}
-            {{ icon('check') }} {{ pick('Mastered — next unit unlocked!', '已掌握——下一单元已解锁！') }}
+            {{ pic('check') }} {{ pick('Mastered — next unit unlocked!', '已掌握——下一单元已解锁！') }}
           {% else %}
-            {{ icon('target') }} {{ pick('Not yet — review your weak areas and try again.',
+            {{ pic('target') }} {{ pick('Not yet — review your weak areas and try again.',
                                           '还没通过——先复习薄弱项，再来一次。') }}
           {% endif %}
         </p>
@@ -63,7 +63,7 @@
             <li>
               <b>{{ m.prompt }}</b>
               <span class="wrong">{{ icon('close') }} {{ m.given or pick('(no answer)', '（未作答）') }}</span>
-              <span class="right">{{ icon('check') }} {{ m.correct }}</span>
+              <span class="right">{{ pic('check') }} {{ m.correct }}</span>
             </li>
           {% endfor %}
         </ul>
@@ -72,7 +72,7 @@
 
     {% if not result.passed and practice %}
       <div class="ut-block">
-        <h4>{{ icon('book') }} {{ pick('Targeted practice', '针对性练习') }}</h4>
+        <h4>{{ pic('book') }} {{ pick('Targeted practice', '针对性练习') }}</h4>
         <p class="muted">{{ pick('Review these before you retake the test.',
                                   '重测前先过一遍这些内容。') }}</p>
         <ul class="ut-practice">
@@ -137,7 +137,7 @@
   </div>
   <div class="card-foot">
     <button type="submit" class="btn btn-primary">
-      {{ icon('check') }} {{ pick('Submit answers', '提交答案') }}</button>
+      {{ pic('check') }} {{ pick('Submit answers', '提交答案') }}</button>
     <a class="btn btn-ghost" href="{{ url_for('main.unit_view', unit_id=unit.id) }}">
       {{ pick('Back to unit', '返回单元') }}</a>
   </div>

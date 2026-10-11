@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% import "_macros.html" as mm %}
-{% from "_macros.html" import icon %}
+{% from "_macros.html" import icon, pic %}
 {% block title %}{{ bi_plain('nav.dashboard') }} · {{ app_title }}{% endblock %}
 
 {% block content %}
@@ -15,7 +15,7 @@
     <p style="color:rgba(255,255,255,.85);margin:0"><span class="bi"><span class="bi-en">Your personalized learning path · {{ stats.today_answers }} answers today</span><span class="bi-zh">个性化学习路径 · 今日答题 {{ stats.today_answers }} 题</span></span></p>
 
     <div class="goal-row">
-      <span class="goal-label">{{ icon('target') }} <span class="bi"><span class="bi-en">Today's goal · {{ gam.daily_goal or 20 }} tasks</span><span class="bi-zh">今日目标 · 完成 {{ gam.daily_goal or 20 }} 项</span></span></span>
+      <span class="goal-label">{{ pic('target') }} <span class="bi"><span class="bi-en">Today's goal · {{ gam.daily_goal or 20 }} tasks</span><span class="bi-zh">今日目标 · 完成 {{ gam.daily_goal or 20 }} 项</span></span></span>
       <span class="goal-segments" id="goal-segs" data-done="{{ gam.today_done }}" data-goal="{{ gam.daily_goal or 20 }}">
         {% for i in range(10) %}<i{% if i < (gam.goal_percent * 10 / 100)|round|int %} class="on"{% endif %}></i>{% endfor %}
       </span>
@@ -25,7 +25,7 @@
 
   <div class="dash-stats">
     <div class="dash-tile">{{ icon('zap') }}<b data-count="{{ gam.xp }}">0</b><span>XP</span></div>
-    <div class="dash-tile">{{ icon('level') }}<b>{{ gam.level }}</b><span>Level</span></div>
+    <div class="dash-tile">{{ pic('level') }}<b>{{ gam.level }}</b><span>Level</span></div>
     <div class="dash-tile">{{ icon('flame') }}<b>{{ gam.streak }}</b><span>Streak</span></div>
     <div class="dash-tile">{{ icon('trophy') }}<b>{{ badges|selectattr('unlocked')|list|length }}</b><span>Badges</span></div>
   </div>
@@ -35,7 +35,7 @@
 <section class="mypath">
   <div class="sec-head">
     <div>
-      <h2 class="sec-title">{{ icon('route') }}{{ bi('path.mylearning') }}</h2>
+      <h2 class="sec-title">{{ pic('route') }}{{ bi('path.mylearning') }}</h2>
       <p class="muted">{{ bi('path.mylearning_sub') }}</p>
     </div>
     <a class="btn btn-ghost btn-sm" href="{{ url_for('main.learning_path') }}">{{ bi('nav.path') }} →</a>
@@ -45,7 +45,7 @@
       <div class="mp-level c-{{ lv.color }} {{ 'on' if lv.unlocked }} {{ 'off' if not lv.unlocked }}">
         <div class="mp-head">
           <b>{{ lv.emoji }} {{ lv.code }} <span>{{ lv.name_en }}</span></b>
-          {% if not lv.unlocked %}{{ icon('lock') }}{% elif lv.done %}{{ icon('check') }}{% endif %}
+          {% if not lv.unlocked %}{{ pic('lock') }}{% elif lv.done %}{{ pic('check') }}{% endif %}
         </div>
         <div class="mp-units">
           {% for u in range(1, lv.units + 1) %}
@@ -80,7 +80,7 @@
 <section style="margin-top:20px">
   <div class="sec-head">
     <div>
-      <h2 class="sec-title">{{ icon('chart') }} Mastery</h2>
+      <h2 class="sec-title">{{ pic('chart') }} Mastery</h2>
       <p class="sec-sub bi">
         <span class="bi-en">Where everything sits on the 0–4 mastery scale</span>
         <span class="bi-zh">统一掌握度 0–4 分布</span>
@@ -125,7 +125,7 @@
 <section style="margin-top:20px">
   <div class="sec-head">
     <div>
-      <h2 class="sec-title">{{ icon('play-circle') }} Continue Learning</h2>
+      <h2 class="sec-title">{{ pic('play-circle') }} Continue Learning</h2>
       <p class="sec-sub bi"><span class="bi-en">Pick up where you left off</span><span class="bi-zh">从上次停下的地方继续</span></p>
     </div>
     <a class="sec-more" href="{{ url_for('words.daily') }}">{{ bi('act.continue') }} {{ icon('chevron-right') }}</a>
@@ -138,9 +138,9 @@
     </div>
     <div class="cont-body">
       <div class="row" style="gap:8px;margin-bottom:2px">
-        <span class="tag violet">{{ icon('book-open') }}Vocabulary</span>
+        <span class="tag violet">{{ pic('book-open') }}Vocabulary</span>
         <span class="tag">Beginner · A1</span>
-        <span class="tag amber">{{ icon('clock') }}~10 min</span>
+        <span class="tag amber">{{ pic('clock') }}~10 min</span>
       </div>
       <h3><span class="bi"><span class="bi-en">A1 Unit 1 · Getting Started</span><span class="bi-zh">A1 第 1 单元 · 开始学习</span></span></h3>
       <p class="small muted" style="margin:0 0 8px"><span class="bi"><span class="bi-en">Your progress · {{ stats.progress_percent }}% complete</span><span class="bi-zh">学习进度 · 已完成 {{ stats.progress_percent }}%</span></span></p>
@@ -160,7 +160,7 @@
   </div>
 
   <div class="challenge">
-    <span class="challenge-ico">{{ icon('target') }}</span>
+    <span class="challenge-ico">{{ pic('target') }}</span>
     <div class="challenge-body">
       <b>{{ pick(challenge.title_en, challenge.title_zh) }}</b>
       <p>{{ pick(challenge.desc_en, challenge.desc_zh) }}</p>
@@ -193,7 +193,7 @@
     <a class="rec-card" href="{{ url_for('quiz.test_page', mode='choice') }}">
       <div class="rec-cover"><img src="{{ url_for('static', filename='img/ill-quiz.svg') }}" alt=""><span class="rec-level">A1–B1</span></div>
       <div class="rec-body">
-        <h3>{{ icon('practice') }} {{ bi('nav.quiz') }} · {{ pick('EN → CN', '英译中') }}</h3>
+        <h3>{{ pic('practice') }} {{ bi('nav.quiz') }} · {{ pick('EN → CN', '英译中') }}</h3>
         <p>{{ pick('Read the English, choose the meaning', '看英文选中文，检验掌握度') }}</p>
         <span class="rec-cta btn btn-secondary btn-sm">{{ bi('act.start') }} {{ icon('arrow-right') }}</span>
       </div>
@@ -201,7 +201,7 @@
     <a class="rec-card" href="{{ url_for('quiz.test_page', mode='listen') }}">
       <div class="rec-cover"><img src="{{ url_for('static', filename='img/ill-listening.svg') }}" alt=""><span class="rec-level">A2</span></div>
       <div class="rec-body">
-        <h3>{{ icon('headphones') }} {{ pick('Listening Quiz', '听音测试') }}</h3>
+        <h3>{{ pic('headphones') }} {{ pick('Listening Quiz', '听音测试') }}</h3>
         <p>{{ pick('Hear the UK pronunciation, pick the right word', '听英式发音，选出正确的单词') }}</p>
         <span class="rec-cta btn btn-secondary btn-sm">{{ bi('act.start') }} {{ icon('arrow-right') }}</span>
       </div>
@@ -209,7 +209,7 @@
     <a class="rec-card" href="{{ url_for('games.index') }}">
       <div class="rec-cover"><img src="{{ url_for('static', filename='img/ill-games.svg') }}" alt=""><span class="rec-level">+XP</span></div>
       <div class="rec-body">
-        <h3>{{ icon('gamepad-2') }} {{ bi('nav.games') }} · {{ pick('Learn by playing', '边玩边学') }}</h3>
+        <h3>{{ pic('gamepad-2') }} {{ bi('nav.games') }} · {{ pick('Learn by playing', '边玩边学') }}</h3>
         <p>{{ pick('Match, sprint, listen, build — earn XP as you play', '配对、抢答、听音、拼词，玩着就把分拿了') }}</p>
         <span class="rec-cta btn btn-secondary btn-sm">{{ bi('act.start') }} {{ icon('arrow-right') }}</span>
       </div>
@@ -221,7 +221,7 @@
 <section style="margin-top:28px">
   <div class="sec-head">
     <div>
-      <h2 class="sec-title">{{ icon('chart') }} Your Stats</h2>
+      <h2 class="sec-title">{{ pic('chart') }} Your Stats</h2>
       <p class="sec-sub bi"><span class="bi-en">Your learning at a glance</span><span class="bi-zh">学习概览</span></p>
     </div>
   </div>

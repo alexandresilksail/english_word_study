@@ -1,13 +1,13 @@
 {% extends "base.html" %}
-{% from "_macros.html" import icon %}
+{% from "_macros.html" import icon, pic %}
 {% block title %}{{ pick('Speaking & Listening', '口语 · 听力') }}{% endblock %}
 {% block content %}
-<span id="ic-check" hidden aria-hidden="true">{{ icon('check') }}</span>
+<span id="ic-check" hidden aria-hidden="true">{{ pic('check') }}</span>
 
 <div class="v3-hero hero-dark">
   <div class="v3-hero-deco">
-    <span class="v3-deco-orb">{{ icon('mic') }}</span>
-    <span class="v3-deco-orb">{{ icon('headphones') }}</span>
+    <span class="v3-deco-orb">{{ pic('mic') }}</span>
+    <span class="v3-deco-orb">{{ pic('headphones') }}</span>
     <span class="v3-deco-orb">{{ icon('audio-lines') }}</span>
   </div>
   <h1>{{ pick('Speaking & Listening', '口语 · 听力') }}</h1>
@@ -53,7 +53,7 @@
 {# ============================================================ 口语练习 #}
 <section style="margin-top:22px">
   <div class="sec-head">
-    <h2 class="sec-title">{{ icon('mic') }} {{ pick('Speaking drill', '口语练习') }}</h2>
+    <h2 class="sec-title">{{ pic('mic') }} {{ pick('Speaking drill', '口语练习') }}</h2>
   </div>
 
   <div class="spk-card">
@@ -64,7 +64,7 @@
         {{ icon('speaker') }} {{ pick('Listen', '听原句') }}
       </button>
       <button type="button" class="btn btn-outline btn-sm" id="btn-rec">
-        {{ icon('mic') }} {{ pick('Record', '录音') }}
+        {{ pic('mic') }} {{ pick('Record', '录音') }}
       </button>
       <button type="button" class="btn btn-outline btn-sm" id="btn-stop" disabled>
         {{ icon('square') }} {{ pick('Stop', '停止') }}
@@ -80,7 +80,7 @@
 
     <div class="spk-actions">
       <button type="button" class="btn btn-primary" id="btn-score">
-        {{ icon('check-circle') }} {{ pick('Score it', '评分') }}
+        {{ pic('check-circle') }} {{ pick('Score it', '评分') }}
       </button>
       <button type="button" class="btn btn-secondary" id="btn-retry">
         {{ icon('rotate-ccw') }} {{ pick('Retry', '重练') }}
@@ -95,7 +95,7 @@
 <section style="margin-top:26px">
   <div class="sec-head">
     <div>
-      <h2 class="sec-title">{{ icon('headphones') }} {{ pick('Listening', '听力练习') }}</h2>
+      <h2 class="sec-title">{{ pic('headphones') }} {{ pick('Listening', '听力练习') }}</h2>
       <p class="sec-sub">{{ pick('Built from the audio files already in this site.',
                                   '素材来自站内已有音频文件。') }}</p>
     </div>

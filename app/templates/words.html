@@ -1,24 +1,24 @@
 {% extends "base.html" %}
 {% import "_macros.html" as mm %}
-{% from "_macros.html" import icon %}
+{% from "_macros.html" import icon, pic %}
 {% block title %}{{ pick('Word Bank', '单词本') }} · {{ app_title_en }}{% endblock %}
 
 {% block content %}
 <div class="page-head">
   <div>
-    <span class="eyebrow">{{ icon('search') }} A–Z Browse</span>
-    <h2>{{ icon('book') }} {{ pick('Word Bank', '单词本') }} <span class="small muted" style="font-weight:700">Word Bank</span></h2>
+    <span class="eyebrow">{{ pic('search') }} A–Z Browse</span>
+    <h2>{{ pic('book') }} {{ pick('Word Bank', '单词本') }} <span class="small muted" style="font-weight:700">Word Bank</span></h2>
     <p>{{ pick('Browse A–Z and full-text search: search by English word, Chinese meaning or English example.',
                 'A-Z 浏览与全文检索：支持按英文单词、中文释义或英文例句搜索') }}</p>
   </div>
-  <span class="tag violet">{{ icon('book-open') }} {{ t('learn.total') }} {{ total }} {{ t('learn.words_unit') }}</span>
+  <span class="tag violet">{{ pic('book-open') }} {{ t('learn.total') }} {{ total }} {{ t('learn.words_unit') }}</span>
 </div>
 
 <div class="toolbar">
   <form method="get" action="{{ url_for('words.browse') }}" class="field" style="flex:1">
     <div class="row" style="gap:8px;align-items:stretch">
       <input class="input" style="flex:1;min-width:260px" name="q" placeholder="{{ pick('e.g. water / ability / time is…', '例如：water / 能力 / time is…') }}" value="{{ q }}">
-      <button class="btn btn-primary btn-sm" type="submit">{{ icon('search') }} {{ pick('Search', '搜索') }}</button>
+      <button class="btn btn-primary btn-sm" type="submit">{{ pic('search') }} {{ pick('Search', '搜索') }}</button>
       {% if q %}<a class="btn btn-ghost btn-sm" href="{{ url_for('words.browse') }}">{{ pick('Clear', '清空') }}</a>{% endif %}
     </div>
   </form>

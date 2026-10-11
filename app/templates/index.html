@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import icon %}
+{% from "_macros.html" import icon, pic %}
 {% block title %}{{ pick(app_title_en, app_title) }}{% endblock %}
 
 {% block content %}
@@ -18,9 +18,9 @@
     </div>
 
     <div class="hero-trust">
-      <span class="ht">{{ icon('route') }}<span>CEFR A1–C2</span></span>
-      <span class="ht">{{ icon('book-open') }}<span>{{ t('nav.courses') if 'nav.courses' in {} else 'Courses' }}</span></span>
-      <span class="ht">{{ icon('gamepad-2') }}<span>4 {{ t('nav.games') }}</span></span>
+      <span class="ht">{{ pic('route') }}<span>CEFR A1–C2</span></span>
+      <span class="ht">{{ pic('book-open') }}<span>{{ t('nav.courses') if 'nav.courses' in {} else 'Courses' }}</span></span>
+      <span class="ht">{{ pic('gamepad-2') }}<span>4 {{ t('nav.games') }}</span></span>
       <span class="ht">{{ icon('zap') }}<span>XP · Streak · Badges</span></span>
     </div>
   </div>
@@ -29,7 +29,7 @@
     <img src="{{ url_for('static', filename='img/ill-hero.svg') }}" alt="English learning illustration">
     <span class="float-badge fb-1">{{ icon('bolt') }} +25 XP</span>
     <span class="float-badge fb-2">{{ icon('flame') }} 7-day streak</span>
-    <span class="float-badge fb-3">{{ icon('headphones') }} Listening</span>
+    <span class="float-badge fb-3">{{ pic('headphones') }} Listening</span>
   </div>
 </section>
 
@@ -62,8 +62,8 @@
     {% for key, en, zh, color, ic, desc, href, ready in paths %}
     <a class="path-card" href="{{ href }}">
       <div class="path-top">
-        <span class="path-ico" style="background:linear-gradient(135deg,var(--c-{{ key }}) 0%,var(--c-{{ key }}-2) 100%)">{{ icon(ic) }}</span>
-        {% if not ready %}<span class="path-lock">{{ icon('lock') }}Soon</span>{% endif %}
+        <span class="path-ico has-img" style="background:linear-gradient(135deg,var(--c-{{ key }}) 0%,var(--c-{{ key }}-2) 100%)">{{ pic(ic) }}</span>
+        {% if not ready %}<span class="path-lock">{{ pic('lock') }}Soon</span>{% endif %}
       </div>
       <h3>{{ pick(en, zh) }}</h3>
       <p class="path-desc">{{ desc }}</p>
@@ -81,11 +81,11 @@
     <div><b>CEFR 分级内容</b><p>Pre-A1 → C2，每级独立单元与例句</p></div>
   </div>
   <div class="feature-item">
-    <span class="fi-ico" style="background:linear-gradient(135deg,#06b6d4,#14b8a6)">{{ icon('practice') }}</span>
+    <span class="fi-ico has-img" style="background:linear-gradient(135deg,#06b6d4,#14b8a6)">{{ pic('practice') }}</span>
     <div><b>4 种测试模式</b><p>英译中 · 中译英 · 听音 · 拼写</p></div>
   </div>
   <div class="feature-item">
-    <span class="fi-ico" style="background:linear-gradient(135deg,#f59e0b,#f97316)">{{ icon('gamepad-2') }}</span>
+    <span class="fi-ico has-img" style="background:linear-gradient(135deg,#f59e0b,#f97316)">{{ pic('gamepad-2') }}</span>
     <div><b>4 款小游戏</b><p>配对 · 抢答 · 听音 · 拼词</p></div>
   </div>
   <div class="feature-item">
@@ -98,7 +98,7 @@
 {% if rec_unit %}
 <section class="daily-word">
   <div>
-    <span class="eyebrow">{{ icon('route') }}推荐单元 · Recommended Unit</span>
+    <span class="eyebrow">{{ pic('route') }}推荐单元 · Recommended Unit</span>
     <div class="dw-word" style="margin-top:8px">{{ rec_unit.emoji }} A1 · Unit {{ rec_unit.no }} {{ rec_unit.title_en }}</div>
     <div class="wc-ipa">{{ title_of(rec_unit) }}</div>
     <p style="margin:8px 0 0;color:var(--ink-2)">{{ rec_lessons|length }} lessons:

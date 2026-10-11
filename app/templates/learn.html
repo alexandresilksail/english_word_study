@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% import "_macros.html" as mm %}
-{% from "_macros.html" import icon %}
+{% from "_macros.html" import icon, pic %}
 {% block title %}{{ pick('Learn', '学习') }} · {{ app_title_en }}{% endblock %}
 
 {% block content %}
@@ -13,7 +13,7 @@
     <p style="color:var(--ink-2);margin:0">{{ t('learn.sub') }}</p>
     <div class="row" style="gap:6px;margin-top:12px">
       <span class="tag violet">{{ t('learn.scope') }}: {{ pick(scopes_en.get(scope, scope), scopes.get(scope, scope)) }}</span>
-      <span class="tag">{{ icon('book-open') }} {{ t('learn.total') }} {{ total }} {{ t('learn.words_unit') }}</span>
+      <span class="tag">{{ pic('book-open') }} {{ t('learn.total') }} {{ total }} {{ t('learn.words_unit') }}</span>
     </div>
   </div>
   <img src="{{ url_for('static', filename='img/ill-word.svg') }}" alt="Vocabulary">

@@ -1,16 +1,17 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon, pic %}
 {% block title %}{{ pick('Podcast & Audio Learning', '播客与音频学习') }} · Learn{% endblock %}
 {% block content %}
 
 {# ============================================================ Podcast Hero（紫粉媒体感） #}
 <div class="pod-hero">
   <div>
-    <span class="eyebrow">{{ icon('headphones') }} Podcast / Audio Learning</span>
+    <span class="eyebrow">{{ pic('headphones') }} Podcast / Audio Learning</span>
     <h1><span class="bi"><span class="bi-en">Podcast &amp; Audio Learning</span><span class="bi-zh">播客与音频学习</span></span></h1>
     <p style="color:var(--ink-2);margin:0">{{ pick('Turn any audio into a full study kit: transcript → vocabulary → grammar → intensive listening → quiz. The architecture is ready; the content library is coming soon.', '把一段音频变成一套学习材料：文稿 → 生词 → 语法 → 精听 → 测验。架构已就绪，内容库即将上线。') }}</p>
     <div class="pod-cta">
       <a class="btn btn-primary" href="#episodes">{{ icon('play') }} {{ pick('Browse Episodes', '浏览剧集') }}</a>
-      <a class="btn btn-secondary" href="{{ url_for('words.daily') }}">{{ icon('book-open') }} {{ pick('Start with Vocabulary', '先去背单词') }}</a>
+      <a class="btn btn-secondary" href="{{ url_for('words.daily') }}">{{ pic('book-open') }} {{ pick('Start with Vocabulary', '先去背单词') }}</a>
     </div>
   </div>
   <img src="{{ url_for('static', filename='img/ill-podcast.svg') }}" alt="Podcast illustration">
@@ -45,7 +46,7 @@
   <div class="grid" style="grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px">
     <div class="stat-card c-sky"><span class="stat-ico">{{ icon('cloud') }}</span><b class="stat-val">Object Storage</b><span class="stat-label">{{ pick('Object Storage', '对象存储') }} · {{ pick('reserved', '预留') }}</span></div>
     <div class="stat-card c-violet"><span class="stat-ico">{{ icon('globe') }}</span><b class="stat-val">CDN</b><span class="stat-label">{{ pick('Global acceleration', '全球加速') }} · {{ pick('reserved', '预留') }}</span></div>
-    <div class="stat-card c-emerald"><span class="stat-ico">{{ icon('check') }}</span><b class="stat-val">{{ storage.provider or '未配置' }}</b><span class="stat-label">{{ pick('Current Provider', '当前 Provider') }}</span></div>
+    <div class="stat-card c-emerald"><span class="stat-ico">{{ pic('check') }}</span><b class="stat-val">{{ storage.provider or '未配置' }}</b><span class="stat-label">{{ pick('Current Provider', '当前 Provider') }}</span></div>
   </div>
   <p class="muted small" style="margin-top:12px">{{ pick('Base URL', '基地址') }}：<span class="mono">{{ storage.base }}</span></p>
 </div>
@@ -70,7 +71,7 @@
       {% else %}
         <span class="ep-play" style="cursor:default;opacity:.85" title="{{ pick('Coming soon', '即将上线') }}">{{ icon('play') }}</span>
       {% endif %}
-      <span class="ep-duration">{{ icon('clock') }}{{ e.duration or '—' }}</span>
+      <span class="ep-duration">{{ pic('clock') }}{{ e.duration or '—' }}</span>
     </div>
     <div class="ep-body">
       <h3>{{ e.title }}</h3>
@@ -86,12 +87,12 @@
     <img src="{{ url_for('static', filename='img/ill-listening.svg') }}" alt="Listening illustration">
   </div>
   <div class="ec-body">
-    <span class="tag" style="background:#f5f3ff;color:#7c3aed">{{ icon('clock') }} {{ pick('Coming soon', '即将上线') }}</span>
+    <span class="tag" style="background:#f5f3ff;color:#7c3aed">{{ pic('clock') }} {{ pick('Coming soon', '即将上线') }}</span>
     <h3>{{ pick('The podcast content library is in production', 'Podcast 内容库正在制作中') }}</h3>
     <p>{{ pick('When episodes go live you will get: cover art, an audio player, full transcript, a vocabulary list, grammar points and an intensive-listening quiz. For now you can listen to word audio or play the listening game.', '单集上线后，你将得到：节目封面、音频播放器、逐字稿、生词表、语法点与精听测验。现在可以先听单词发音，或者去玩听音游戏。') }}</p>
     <div class="row">
-      <a class="btn btn-primary" href="{{ url_for('quiz.test_page', mode='listen') }}">{{ icon('headphones') }} {{ pick('Listening Quiz', '听音测试') }}</a>
-      <a class="btn btn-secondary" href="{{ url_for('words.browse') }}">{{ icon('book-open') }} {{ pick('Browse Words', '浏览单词') }}</a>
+      <a class="btn btn-primary" href="{{ url_for('quiz.test_page', mode='listen') }}">{{ pic('headphones') }} {{ pick('Listening Quiz', '听音测试') }}</a>
+      <a class="btn btn-secondary" href="{{ url_for('words.browse') }}">{{ pic('book-open') }} {{ pick('Browse Words', '浏览单词') }}</a>
     </div>
   </div>
 </div>

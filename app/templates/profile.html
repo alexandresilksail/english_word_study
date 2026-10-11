@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% import "_macros.html" as mm %}
-{% from "_macros.html" import icon %}
+{% from "_macros.html" import icon, pic %}
 {% block title %}{{ pick('Profile', '个人资料') }} · {{ app_title_en }}{% endblock %}
 
 {% block content %}
@@ -16,7 +16,7 @@
   </div>
   <div class="dash-stats">
     <div class="dash-tile">{{ icon('zap') }}<b data-count="{{ gam.xp }}">0</b><span>XP</span></div>
-    <div class="dash-tile">{{ icon('level') }}<b>{{ gam.level }}</b><span>Level</span></div>
+    <div class="dash-tile">{{ pic('level') }}<b>{{ gam.level }}</b><span>Level</span></div>
     <div class="dash-tile">{{ icon('flame') }}<b>{{ gam.streak }}</b><span>Streak</span></div>
     <div class="dash-tile">{{ icon('trophy') }}<b>{{ badges|selectattr('unlocked')|list|length }}</b><span>Badges</span></div>
   </div>
@@ -41,7 +41,7 @@
           <span class="small muted">{{ t('auth.verify_title') }} / Email</span>
           <span>
             {% if current_user.email_verified %}
-              <span class="tag green">{{ icon('check-circle') }}{{ bi('auth.verified') }}</span>
+              <span class="tag green">{{ pic('check-circle') }}{{ bi('auth.verified') }}</span>
             {% else %}
               <span class="tag amber">{{ bi('auth.unverified') }}</span>
               <form method="post" action="{{ url_for('auth.resend_verification') }}" style="display:inline;margin-left:6px">
@@ -73,10 +73,10 @@
     <div class="card">
       <div class="card-head"><h3>{{ bi('prof.my_data') }}</h3></div>
       <div class="stat-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
-        <div class="stat">{{ icon('book') }}<b>{{ stats.learned }}</b><span>{{ bi('dash.words_learned') }}</span></div>
-        <div class="stat">{{ icon('check-circle') }}<b>{{ stats.mastered }}</b><span>{{ bi('dash.words_mastered') }}</span></div>
-        <div class="stat">{{ icon('quiz') }}<b>{{ stats.accuracy }}%</b><span>{{ bi('prog.accuracy') }}</span></div>
-        <div class="stat">{{ icon('clock') }}<b>{{ stats.streak }}</b><span>{{ bi('dash.streak') }}</span></div>
+        <div class="stat">{{ pic('book') }}<b>{{ stats.learned }}</b><span>{{ bi('dash.words_learned') }}</span></div>
+        <div class="stat">{{ pic('check-circle') }}<b>{{ stats.mastered }}</b><span>{{ bi('dash.words_mastered') }}</span></div>
+        <div class="stat">{{ pic('quiz') }}<b>{{ stats.accuracy }}%</b><span>{{ bi('prog.accuracy') }}</span></div>
+        <div class="stat">{{ pic('clock') }}<b>{{ stats.streak }}</b><span>{{ bi('dash.streak') }}</span></div>
       </div>
     </div>
   </div>
@@ -120,7 +120,7 @@
         </div>
         <button type="submit" class="btn btn-primary">{{ pick('Change password', '修改密码') }}</button>
       </form>
-      <div class="secure-note">{{ icon('lock') }}<span>{{ t('auth.secure_note') }}</span></div>
+      <div class="secure-note">{{ pic('lock') }}<span>{{ t('auth.secure_note') }}</span></div>
     </div>
 
     <div class="card">
@@ -130,7 +130,7 @@
           {% for r in recent %}
             <div class="row-between">
               <span class="small">{{ r.word.word if r.word else '(已删除)' }}</span>
-              <span class="tag {{ 'green' if r.is_correct else 'red' }}">{{ icon('check') ~ ' ' ~ t('quiz.correct') if r.is_correct else icon('x') ~ ' ' ~ t('quiz.wrong') }}</span>
+              <span class="tag {{ 'green' if r.is_correct else 'red' }}">{{ pic('check') ~ ' ' ~ t('quiz.correct') if r.is_correct else icon('x') ~ ' ' ~ t('quiz.wrong') }}</span>
               <span class="small muted">{{ r.created_at|dt('%m-%d %H:%M') }}</span>
             </div>
           {% endfor %}

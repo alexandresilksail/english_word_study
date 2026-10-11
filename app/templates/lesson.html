@@ -1,4 +1,4 @@
-{% from "_icons.html" import icon %}
+{% from "_icons.html" import icon, pic %}
 {% extends "base.html" %}
 {% block title %}{{ lesson.title_en }} · {{ app_title_en }}{% endblock %}
 {% block content %}
@@ -143,7 +143,7 @@
                              '完成课时即可获得 XP，并把内容排入复习队列。') }}</p>
     <form method="post" action="{{ url_for('main.lesson_complete', lesson_id=lesson.id) }}" class="complete-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button class="btn btn-primary btn-lg">{{ icon('check') }} {{ pick('Complete Lesson', '完成课时') }}</button>
+      <button class="btn btn-primary btn-lg">{{ pic('check') }} {{ pick('Complete Lesson', '完成课时') }}</button>
     </form>
   </section>
 
@@ -151,8 +151,8 @@
 
 <div style="display:flex;gap:10px;margin-top:20px">
   <a class="btn btn-secondary" href="{{ url_for('main.unit_view', unit_id=unit.id) if unit else url_for('main.courses') }}">
-    ← {{ icon('book-open') }} {{ pick('Back to Unit', '返回单元') }}</a>
-  <a class="btn btn-primary" href="{{ url_for('quiz.test_page') }}">{{ icon('target') }} {{ pick('Practice Quiz', '综合测验') }}</a>
+    ← {{ pic('book-open') }} {{ pick('Back to Unit', '返回单元') }}</a>
+  <a class="btn btn-primary" href="{{ url_for('quiz.test_page') }}">{{ pic('target') }} {{ pick('Practice Quiz', '综合测验') }}</a>
 </div>
 {% endblock %}
 

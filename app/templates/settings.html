@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_icons.html" import icon %}
+{% from "_icons.html" import icon, pic %}
 {% block title %}{{ pick(title_en, title_zh) }} · {{ app_title_en }}{% endblock %}
 {% block content %}
 <section class="page-head">
@@ -37,7 +37,7 @@
     </div>
 
     <div class="card-head">
-      <h3>{{ icon('target') }} {{ pick('Daily Goal', '每日目标') }}</h3>
+      <h3>{{ pic('target') }} {{ pick('Daily Goal', '每日目标') }}</h3>
     </div>
     <div class="card-body">
       <p class="muted">{{ pick('How many new words do you want to learn each day?',
@@ -67,7 +67,7 @@
     </div>
 
     <div class="card-foot">
-      <button type="submit" class="btn btn-primary">{{ icon('check') }} {{ pick('Save changes', '保存设置') }}</button>
+      <button type="submit" class="btn btn-primary">{{ pic('check') }} {{ pick('Save changes', '保存设置') }}</button>
       <a class="btn btn-ghost" href="{{ url_for('main.profile') }}">{{ pick('Back to profile', '返回个人资料') }}</a>
     </div>
   </form>

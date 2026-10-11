@@ -6,7 +6,7 @@
    ========================================================================== #}
 
 {# ---------------------------------------------------------- 自制 SVG 图标（Lucide ISC，见 _icons.html） #}
-{% from "_icons.html" import icon %}
+{% from "_icons.html" import icon, pic %}
 
 {# ---------------------------------------------------------- 单词卡
    结构：Word → Pronunciation → Meaning → Example → Learning Action
@@ -153,7 +153,7 @@
 {% macro stat_card(icon_name, value, label_zh, label_en, color='violet', href=None) %}
 {% set el = 'a' if href else 'div' %}
 <{{ el }} class="stat-card c-{{ color }}" {% if href %}href="{{ href }}"{% endif %}>
-  <span class="stat-ico">{{ icon(icon_name) }}</span>
+  <span class="stat-ico has-img">{{ pic(icon_name) }}</span>
   <b class="stat-val">{{ value }}</b>
   <span class="stat-label"><span class="bi-en">{{ label_en }}</span><span class="bi-zh">{{ label_zh }}</span></span>
 </{{ el }}>
@@ -163,7 +163,7 @@
 {% macro skill_card(s) %}
 {% set ready = s.get('ready') %}
 <a class="skill-card c-{{ s.color }} {{ 'is-locked' if not ready }}" href="{{ s.url }}">
-  <span class="skill-ico">{{ icon(s.icon) }}</span>
+  <span class="skill-ico has-img">{{ pic(s.icon) }}</span>
   <div class="skill-body">
     {% set n_en = s.get('name_en') or s.get('en') or '' %}
     {% set n_zh = s.get('name_zh') or s.get('zh') or '' %}
@@ -181,7 +181,7 @@
 {# 游戏卡 #}
 {% macro game_card(g) %}
 <a class="game-card c-{{ g.color }}" href="{{ g.url }}">
-  <span class="game-ico">{{ icon(g.icon) }}</span>
+  <span class="game-ico has-img">{{ pic(g.icon) }}</span>
   <div class="game-body">
     {% set n_en = g.get('name_en') or g.get('en') or '' %}
     {% set n_zh = g.get('name_zh') or g.get('zh') or '' %}

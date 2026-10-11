@@ -1,4 +1,4 @@
-{% from "_icons.html" import icon %}
+{% from "_icons.html" import icon, pic %}
 {% extends "base.html" %}
 {% block title %}{{ unit.title_en }} · {{ app_title_en }}{% endblock %}
 {% block content %}
@@ -20,7 +20,7 @@
 {# 单元测验入口（规格 §5）：学完本课时的 8 类内容后进入 Unit Test #}
 <section class="card unit-test-cta">
   <div class="card-head">
-    <h3>{{ icon('practice') }} {{ pick('Unit Test', '单元测验') }}</h3>
+    <h3>{{ pic('practice') }} {{ pick('Unit Test', '单元测验') }}</h3>
   </div>
   <div class="card-body">
     <p class="muted">{{ pick('Finish the lessons above, then take the test. Pass to master this unit and unlock the next one.',

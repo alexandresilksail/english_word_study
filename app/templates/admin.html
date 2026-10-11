@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import icon %}
+{% from "_macros.html" import icon, pic %}
 {% block title %}管理员后台 · {{ app_title }}{% endblock %}
 
 {% block content %}
@@ -17,18 +17,18 @@
 
 <section class="admin-grid">
   <div class="admin-stat"><em>{{ icon('users') }}</em><b>{{ stats.total_users }}</b><span>注册用户数</span></div>
-  <div class="admin-stat"><em>{{ icon('book') }}</em><b>{{ stats.total_words }}</b><span>词库单词数</span></div>
+  <div class="admin-stat"><em>{{ pic('book') }}</em><b>{{ stats.total_words }}</b><span>词库单词数</span></div>
   <div class="admin-stat"><em>{{ icon('file-text') }}</em><b>{{ stats.answer_count }}</b><span>累计答题次数</span></div>
   <div class="admin-stat"><em>{{ icon('trophy') }}</em><b>{{ stats.test_count }}</b><span>累计测试次数</span></div>
   <div class="admin-stat"><em>{{ icon('flame') }}</em><b>{{ stats.active_today }}</b><span>今日活跃用户</span></div>
   <div class="admin-stat"><em>{{ icon('user-plus') }}</em><b>{{ stats.new_users_today }}</b><span>今日新增注册</span></div>
-  <div class="admin-stat"><em>{{ icon('circle-check') }}</em><b>{{ stats.mastered }}</b><span>全站掌握单词</span></div>
-  <div class="admin-stat"><em>{{ icon('star') }}</em><b>{{ stats.fav_count }}</b><span>收藏总数</span></div>
+  <div class="admin-stat"><em>{{ pic('circle-check') }}</em><b>{{ stats.mastered }}</b><span>全站掌握单词</span></div>
+  <div class="admin-stat"><em>{{ pic('star') }}</em><b>{{ stats.fav_count }}</b><span>收藏总数</span></div>
 </section>
 
 <div class="grid" style="grid-template-columns:1fr 1fr">
   <div class="card">
-    <div class="section-title"><h3>{{ icon('chart') }} 近 7 天注册趋势</h3></div>
+    <div class="section-title"><h3>{{ pic('chart') }} 近 7 天注册趋势</h3></div>
     <div class="mini-chart">
       {% set maxv = days|map(attribute='count')|max or 1 %}
       {% for d in days %}
@@ -40,8 +40,8 @@
     </div>
     <div class="tags" style="margin-top:14px">
       <span class="tag amber">{{ icon('review') }} 错题总数 {{ stats.wrong_count }}</span>
-      <span class="tag blue">{{ icon('practice') }} 今日答题 {{ stats.answers_today }}</span>
-      <span class="tag">{{ icon('check') }} 今日测试 {{ stats.tests_today }}</span>
+      <span class="tag blue">{{ pic('practice') }} 今日答题 {{ stats.answers_today }}</span>
+      <span class="tag">{{ pic('check') }} 今日测试 {{ stats.tests_today }}</span>
       <span class="tag">{{ icon('shield') }} 管理员 {{ stats.admins }} 位</span>
     </div>
   </div>

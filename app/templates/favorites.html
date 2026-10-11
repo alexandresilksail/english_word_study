@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% import "_macros.html" as mm %}
-{% from "_macros.html" import icon %}
+{% from "_macros.html" import icon, pic %}
 {% block title %}{{ bi_plain('fav.title') }} · {{ app_title }}{% endblock %}
 
 {% block content %}
@@ -16,7 +16,7 @@
 
 {% if words %}
   <div class="row" style="margin-bottom:var(--ds-sp-5);gap:8px">
-    <a class="btn btn-primary" href="{{ url_for('quiz.test_page', scope='favorites') }}">{{ icon('quiz') }}{{ bi('fav.practice') }}</a>
+    <a class="btn btn-primary" href="{{ url_for('quiz.test_page', scope='favorites') }}">{{ pic('quiz') }}{{ bi('fav.practice') }}</a>
     <a class="btn btn-secondary" href="{{ url_for('words.browse') }}">{{ icon('list') }}{{ bi('fav.browse') }}</a>
   </div>
 

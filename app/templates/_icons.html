@@ -1174,3 +1174,38 @@
 } %}
 <svg class="{{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">{{ I.get(name, "")|safe }}</svg>
 {% endmacro %}
+
+{# ---------------------------------------------------------- 主题插画（替代线框图标，用于功能入口）
+    pic(name) 将“功能语义名”映射到项目内已授权的主题插画（ill-*.svg 或生成图 themes/*.png）；
+    未命中映射时回退为语义 SVG 图标，保证不丢失任何图标。 #}
+{% macro pic(name, alt="", cls="feat-img") %}
+{%- set M = {
+  "vocabulary":"ill-word.svg","word":"ill-word.svg","book":"ill-book.svg","book-open":"ill-book.svg",
+  "listening":"ill-listening.svg","headphones":"ill-listening.svg",
+  "speaking":"ill-speaking.svg","mic":"ill-speaking.svg",
+  "reading":"ill-reading.svg",
+  "grammar":"ill-grammar.svg","puzzle":"ill-grammar.svg",
+  "writing":"ill-writing.svg","pen-line":"ill-writing.svg",
+  "games":"ill-games.svg","gamepad":"ill-games.svg","gamepad-2":"ill-games.svg",
+  "ai":"ill-tutor.svg","ai_tutor":"ill-tutor.svg","bot":"ill-tutor.svg",
+  "stats":"ill-achieve.svg","chart":"ill-achieve.svg","progress":"ill-achieve.svg","achieve":"ill-achieve.svg",
+  "quiz":"ill-quiz.svg","practice":"ill-quiz.svg",
+  "podcast":"ill-podcast.svg",
+  "favorites":"themes/favorites.png","bookmark":"themes/favorites.png",
+  "wrong":"themes/wrong.png","list-checks":"themes/wrong.png",
+  "admin":"themes/admin.png","dashboard":"themes/admin.png",
+  "logout":"themes/logout.png",
+  "profile":"themes/profile.png","user":"themes/profile.png",
+  "continue":"ill-continue.svg","play-circle":"ill-continue.svg",
+  "path":"ill-goal.svg","route":"ill-goal.svg","target":"ill-goal.svg","goal":"ill-goal.svg",
+  "level":"ill-level.svg","star":"ill-star.svg",
+  "check":"ill-check.svg","check-circle":"ill-check.svg","circle-check":"ill-check.svg",
+  "clock":"ill-clock.svg","auth":"ill-lock.svg","lock":"ill-lock.svg","search":"ill-search.svg","hero":"ill-hero.svg"
+} -%}
+{%- set img = M.get(name) -%}
+{%- if img -%}
+  <img class="{{ cls }}" src="{{ url_for('static', filename='img/' ~ img) }}" alt="{{ alt or name }}" loading="lazy">
+{%- else -%}
+  {{ icon(name, cls="icon") }}
+{%- endif -%}
+{% endmacro %}

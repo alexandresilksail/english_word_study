@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% import "_macros.html" as mm %}
-{% from "_macros.html" import icon %}
+{% from "_macros.html" import icon, pic %}
 {% block title %}{{ bi_plain('prog.title') }} · {{ app_title }}{% endblock %}
 
 {% block content %}
@@ -16,11 +16,11 @@
 
 {# ---------------------------------------------------------- 关键数据 #}
 <section class="stat-grid" style="margin-bottom:var(--ds-sp-5)">
-  <div class="stat">{{ icon('book') }}<b>{{ stats.learned }}</b><span>{{ bi('dash.words_learned') }}</span></div>
-  <div class="stat">{{ icon('check-circle') }}<b>{{ stats.mastered }}</b><span>{{ bi('dash.words_mastered') }}</span></div>
-  <div class="stat">{{ icon('quiz') }}<b>{{ stats.accuracy }}%</b><span>{{ bi('prog.accuracy') }}</span></div>
+  <div class="stat">{{ pic('book') }}<b>{{ stats.learned }}</b><span>{{ bi('dash.words_learned') }}</span></div>
+  <div class="stat">{{ pic('check-circle') }}<b>{{ stats.mastered }}</b><span>{{ bi('dash.words_mastered') }}</span></div>
+  <div class="stat">{{ pic('quiz') }}<b>{{ stats.accuracy }}%</b><span>{{ bi('prog.accuracy') }}</span></div>
   <div class="stat">{{ icon('edit') }}<b>{{ stats.total_answers }}</b><span>{{ bi('prog.total_answers') }}</span></div>
-  <div class="stat">{{ icon('chart') }}<b>{{ stats.tests }}</b><span>{{ bi('dash.tests_count') }}</span></div>
+  <div class="stat">{{ pic('chart') }}<b>{{ stats.tests }}</b><span>{{ bi('dash.tests_count') }}</span></div>
 </section>
 
 <div class="grid-2" style="grid-template-columns:1.3fr .7fr">
@@ -77,7 +77,7 @@
   <div class="stack">
     <div class="card">
       <div class="row" style="gap:var(--ds-sp-3)">
-        <span style="color:var(--ds-brand)">{{ icon('clock') }}</span>
+        <span style="color:var(--ds-brand)">{{ pic('clock') }}</span>
         <div>
           <b style="display:block;font-size:15px">{{ t('dash.streak') }} {{ stats.streak }} {{ t('dash.streak_unit') }}</b>
           <span class="small muted">{{ t('prog.sub') }}</span>

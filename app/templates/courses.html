@@ -1,9 +1,9 @@
-{% from "_icons.html" import icon %}
+{% from "_icons.html" import icon, pic %}
 {% extends "base.html" %}
 {% block title %}Courses · {{ app_title_en }}{% endblock %}
 {% block content %}
 <section class="path-hero">
-  <span class="eyebrow">{{ icon('book-open') }} {{ pick('Courses', '课程') }}</span>
+  <span class="eyebrow">{{ pic('book-open') }} {{ pick('Courses', '课程') }}</span>
   <h1>{{ pick('Choose a language to start learning', '选择一门语言开始学习') }}</h1>
   <p class="muted">{{ pick('Pick a language — your path unlocks level by level.',
                            '选择一门语言 —— 你的学习路径会逐级解锁。') }}</p>

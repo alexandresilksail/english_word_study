@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% from "_macros.html" import icon %}
+{% from "_macros.html" import icon, pic %}
 {% block title %}{{ w.word }} · {{ pick('Word Detail', '单词详情') }} · {{ pick(app_title_en, app_title) }}{% endblock %}
 
 {% block content %}
 <div class="page-head">
   <div>
-    <span class="eyebrow">{{ icon('book') }} Word Detail</span>
+    <span class="eyebrow">{{ pic('book') }} Word Detail</span>
     <h2>{{ pick('Word Detail', '单词详情') }}</h2>
     <p>{{ pick('UK phonetics · bilingual examples · local UK audio', '英式音标 · 中英双语例句 · 本地英式发音') }}</p>
   </div>
@@ -25,11 +25,11 @@
       <div class="tags" style="margin-top:10px">
         {% if w.pos %}<span class="tag violet">{{ pos_label(w.pos) }}</span>{% endif %}
         <span class="tag {{ 'green' if w.status=='mastered' else ('amber' if w.status=='learning' else '') }}">{{ w.status_label }}</span>
-        {% if w.fav %}<span class="tag amber">{{ icon('star') }} {{ pick('Favorited', '已收藏') }}</span>{% endif %}
+        {% if w.fav %}<span class="tag amber">{{ pic('star') }} {{ pick('Favorited', '已收藏') }}</span>{% endif %}
         {% if w.in_wrong %}<span class="tag red">{{ icon('review') }} {{ pick('Mistakes', '错题本') }} · {{ w.wrong_count }} {{ pick('times', '次') }}</span>{% endif %}
         {% if w.level %}<span class="tag">{{ w.level.replace('|', ' / ') }}</span>{% endif %}
-        <span class="tag">{{ icon('check') }} {{ w.correct }} / {{ icon('x') }} {{ w.wrong }}</span>
-        {% if w.last_studied %}<span class="tag">{{ icon('clock') }} {{ w.last_studied }}</span>{% endif %}
+        <span class="tag">{{ pic('check') }} {{ w.correct }} / {{ icon('x') }} {{ w.wrong }}</span>
+        {% if w.last_studied %}<span class="tag">{{ pic('clock') }} {{ w.last_studied }}</span>{% endif %}
       </div>
     </div>
     <button class="speak big" data-play="{{ w.audio }}" title="{{ pick('Play UK pronunciation', '播放英式发音') }}">{{ icon('speaker') }}</button>
@@ -52,13 +52,13 @@
       <form method="post" action="{{ url_for('words.toggle_favorite', word_id=w.id) }}">
         {{ form.hidden_tag() }}
         <input type="hidden" name="word_id" value="{{ w.id }}">
-        <button class="btn {{ 'btn-outline' if not w.fav else 'btn-primary' }}">{{ icon('star') }}{{ pick('Favorited — click to remove' if w.fav else 'Add to favorites', '已收藏，点击取消' if w.fav else '加入收藏') }}</button>
+        <button class="btn {{ 'btn-outline' if not w.fav else 'btn-primary' }}">{{ pic('star') }}{{ pick('Favorited — click to remove' if w.fav else 'Add to favorites', '已收藏，点击取消' if w.fav else '加入收藏') }}</button>
       </form>
       <form method="post" action="{{ url_for('words.set_status', word_id=w.id) }}">
         {{ form.hidden_tag() }}
         <input type="hidden" name="word_id" value="{{ w.id }}">
         <input type="hidden" name="status" value="mastered">
-        <button class="btn btn-outline">{{ icon('check') }} {{ pick('Mark as mastered', '标记为已掌握') }}</button>
+        <button class="btn btn-outline">{{ pic('check') }} {{ pick('Mark as mastered', '标记为已掌握') }}</button>
       </form>
       <form method="post" action="{{ url_for('words.set_status', word_id=w.id) }}">
         {{ form.hidden_tag() }}
@@ -74,9 +74,9 @@
 </section>
 
 <section class="grid" style="grid-template-columns:repeat(4,1fr);margin-top:14px">
-  <a class="feature" href="{{ url_for('quiz.test_page', mode='choice') }}"><span class="feature-icon" style="color:#6366f1">{{ icon('book') }}</span><h4>{{ pick('EN → CN', '英译中练习') }}</h4><p>{{ pick('See English, pick Chinese', '看英文选中文') }}</p></a>
+  <a class="feature" href="{{ url_for('quiz.test_page', mode='choice') }}"><span class="feature-icon" style="color:#6366f1">{{ pic('book') }}</span><h4>{{ pick('EN → CN', '英译中练习') }}</h4><p>{{ pick('See English, pick Chinese', '看英文选中文') }}</p></a>
   <a class="feature" href="{{ url_for('quiz.test_page', mode='zh_en') }}"><span class="feature-icon" style="color:#0ea5e9">{{ icon('list') }}</span><h4>{{ pick('CN → EN', '中译英练习') }}</h4><p>{{ pick('See Chinese, pick English', '看中文选英文') }}</p></a>
-  <a class="feature" href="{{ url_for('quiz.test_page', mode='listen') }}"><span class="feature-icon" style="color:#06b6d4">{{ icon('headphones') }}</span><h4>{{ pick('Listening', '听音练习') }}</h4><p>{{ pick('Hear the word, pick it', '听发音选单词') }}</p></a>
+  <a class="feature" href="{{ url_for('quiz.test_page', mode='listen') }}"><span class="feature-icon" style="color:#06b6d4">{{ pic('headphones') }}</span><h4>{{ pick('Listening', '听音练习') }}</h4><p>{{ pick('Hear the word, pick it', '听发音选单词') }}</p></a>
   <a class="feature" href="{{ url_for('quiz.test_page', mode='spell') }}"><span class="feature-icon" style="color:#f59e0b">{{ icon('edit') }}</span><h4>{{ pick('Spelling', '拼写练习') }}</h4><p>{{ pick('Type the word by ear', '手动拼出单词') }}</p></a>
 </section>
 {% endblock %}
