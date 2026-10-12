@@ -1,0 +1,44 @@
+<!-- pages/quiz-result/quiz-result.wxml -->
+<view class="page">
+
+  <!-- 成绩总览 -->
+  <view class="card result-hero">
+    <image class="ill ill-hero" src="/images/progress.png" mode="aspectFit" />
+    <view class="result-score">{{ score }}</view>
+    <view class="result-total">/ {{ total }} 题</view>
+    <view class="result-comment {{ commentClass }}">{{ commentText }}</view>
+    <view class="result-meta">
+      <view class="meta-item">
+        <view class="meta-num">{{ percent }}%</view>
+        <view class="meta-label">正确率</view>
+      </view>
+      <view class="meta-divider"></view>
+      <view class="meta-item">
+        <view class="meta-num">{{ durationText }}</view>
+        <view class="meta-label">用时</view>
+      </view>
+      <view class="meta-divider"></view>
+      <view class="meta-item">
+        <view class="meta-num">{{ modeName }}</view>
+        <view class="meta-label">模式</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 按成绩给出的下一步建议 -->
+  <view class="card">
+    <view class="title" style="margin-bottom: 16rpx;">学习建议</view>
+    <view class="suggest-item" wx:for="{{ tips }}" wx:key="*this">
+      <view class="suggest-dot"></view>
+      <view class="flex-1">{{ item }}</view>
+    </view>
+  </view>
+
+  <!-- 操作 -->
+  <view class="card">
+    <button class="btn btn-primary btn-block" bindtap="retry">再测一轮</button>
+    <button class="btn btn-ghost btn-block" bindtap="goWrong" style="margin-top: 20rpx;">查看错题本</button>
+    <button class="btn btn-ghost btn-block" bindtap="goHome" style="margin-top: 20rpx;">返回首页</button>
+  </view>
+  <view class="safe-bottom"></view>
+</view>

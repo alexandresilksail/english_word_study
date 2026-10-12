@@ -1,0 +1,42 @@
+/* pages/words/words.wxss */
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  background: #ffffff;
+  border-radius: 999rpx;
+  padding: 12rpx 12rpx 12rpx 28rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(99, 102, 241, 0.06);
+}
+.search-input { flex: 1; font-size: 28rpx; height: 56rpx; }
+
+.alpha-bar { white-space: nowrap; margin-bottom: 20rpx; }
+.alpha-item {
+  display: inline-block;
+  min-width: 56rpx;
+  height: 56rpx;
+  line-height: 56rpx;
+  text-align: center;
+  margin-right: 12rpx;
+  border-radius: 16rpx;
+  background: #ffffff;
+  color: #64748b;
+  font-size: 26rpx;
+}
+.alpha-active {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.list-card { padding: 8rpx 28rpx; }
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-top: 8rpx;
+}

@@ -1,0 +1,24 @@
+{
+  "description": "English Word Study 微信小程序（V6.1）",
+  "packOptions": {
+    "ignore": [
+      { "type": "folder", "value": "images/optimize.py" },
+      { "type": "file", "value": "README.md" }
+    ],
+    "include": []
+  },
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "newFeature": true,
+    "nodeModules": false
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.4.10",
+  "appid": "touristappid",
+  "projectname": "english-word-study-miniprogram",
+  "condition": {}
+}

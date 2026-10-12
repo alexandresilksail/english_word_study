@@ -36,6 +36,7 @@ Assessment → Learner Model → Learning Path → Learning → Practice
 | **V6.0.2** | **Learner Model**：`LearnerProfile`（六维等级 + 母语/目标语 + 弱项 + 偏好）与 `Assessment` 快照 | ✅ 已落地 |
 | **V6.0.3** | **AI Learning Path**：规则引擎 + 可选 AI 推荐，产出每日个性化计划（弱项专项 / CEFR 单元 / 间隔复习） | ✅ 已落地 |
 | **V6.0.4** | **Adaptive Review**：综合弱项优先级 + 逾期程度重排到期复习队列 | ✅ 已落地 |
+| **V6.1** | **微信小程序**：原生小程序（10 页面全功能）+ 独立 JWT 认证 API（`/api/wx/v1`，22 接口） | ✅ 已落地 |
 | V6.0.5 | AI Tutor 2.0：读取 LearnerProfile，新增 Hint / Correct Me / Role Play / Review Mistakes | 🚧 待开发 |
 | V6.0.6 | AI Conversation：场景对话，按 CEFR 控难度 | 🚧 待开发 |
 | V6.0.7 | Speaking Coach：六维语音分析（Mock 可切换真实 STT） | 🚧 待开发 |
@@ -48,6 +49,24 @@ Assessment → Learner Model → Learning Path → Learning → Practice
 `New → Learning → Familiar → Strong → Mastered`，由三类证据综合判定：
 练习表现（正确率 / 连对 / 练习次数）+ 课时小测 + **单元测试（权威）**。
 `Mastered` 需要「练习到位 **且** 有测验佐证」，杜绝靠刷练习量刷出「已掌握」。
+
+### V6.1 微信小程序
+`miniprogram/` 是与网站并行的原生微信小程序（WXML/WXSS/JS，零框架依赖、零假数据）：
+
+- **认证**：Web 继续 Flask-Login Session；小程序用独立 Bearer Token
+  （PyJWT 标准 JWT，HS256；Access 2h / Refresh 30d，旋转 + 黑名单撤销）。
+  出题状态用 itsdangerous 签名令牌（**不是 JWT**，两套机制各司其职）。
+- **安全**：`wx.login()` code → 服务端 `code2Session`，session_key 不返回不落库；
+  绑定已有账户**必须验证邮箱控制权**（密码或验证码），禁止仅凭邮箱自动关联；
+  所有私有数据按服务端验签后的 user ID 查询，不信任客户端提交的 user_id。
+- **功能**：登录/绑定、首页概览、词库浏览搜索、单词详情（真实音频）、
+  测试中心（4 模式 × 6 范围）、测试结果、收藏、错题本、进度统计、个人中心。
+- **测试**：`tests/test_wx_api.py` 72 项 + `tests/integration_miniprogram.py`
+  真实 HTTP 全链路 75 项，全量套件 395/395 通过。
+
+详见 [docs/api-wx-v1.md](docs/api-wx-v1.md)（API 文档）、
+[miniprogram/README.md](miniprogram/README.md)（导入运行教程）、
+[migrations/README.md](migrations/README.md)（迁移与回滚）。
 
 ### AI 与语音：默认 mock，且如实标注
 本项目遵循**诚实原则** —— 任何没有真实引擎支撑的能力都会明确标注，绝不冒充 AI：
@@ -262,6 +281,18 @@ python tests/test_flow.py
 | 14 | 个人资料 | 改用户名、改密码、旧密码失效 |
 | + | CSRF | 缺 token 的 POST 返回 400 |
 
+### 全量测试（含小程序）
+
+```bash
+python tests/run_all.py                 # 8 个套件全量：395/395
+python tests/test_wx_api.py             # 仅小程序 API：72 项
+python tests/integration_miniprogram.py # 端到端 HTTP 联调（起真实服务）：75 项
+```
+
+小程序测试覆盖：未登录 401 / 伪造与过期令牌 / 微信登录闭环 / 绑定必须验证控制权 /
+重复绑定拦截 / 跨用户数据隔离 / 四模式答题全链路 / 状态令牌防篡改 /
+Refresh 旋转 / 登出撤销 / Web session 不受影响。
+
 ---
 
 ## 六、环境变量（`.env`）
@@ -280,10 +311,17 @@ python tests/test_flow.py
 | `EMAIL` | | 证书到期通知邮箱（`deploy.sh` 会提示写入） |
 | `SESSION_COOKIE_SECURE` | | HTTPS 下建议 `true` |
 | `SKIP_HTTPS` | | 设为 `1` 时 `deploy.sh` 跳过证书申请，保持 HTTP（内网测试用） |
+| `WX_APPID` | | 微信小程序 AppID（小程序功能必填） |
+| `WX_SECRET` | | 微信小程序 AppSecret（**仅存服务端**，绝不下发客户端） |
+| `WX_TOKEN_SECRET` | | JWT 签名密钥，`secrets.token_hex(32)` 生成；生产缺失将拒绝启动 |
+| `WX_QUIZ_STATE_SECRET` | | 出题状态签名密钥，缺省回落 `WX_TOKEN_SECRET` |
+| `WX_ACCESS_TTL` | | Access Token 有效期（秒），默认 7200 |
+| `WX_REFRESH_TTL` | | Refresh Token 有效期（秒），默认 2592000（30 天） |
+| `WX_AUTO_REGISTER` | | 默认 `true`：微信首次登录自动建号；`false` 时必须走邮箱绑定 |
 
 ---
 
-## 七、数据模型（7 张表）
+## 七、数据模型（9 张表）
 
 | 表名 | 作用 | 关键字段 |
 |---|---|---|
@@ -291,9 +329,11 @@ python tests/test_flow.py
 | `words` | 词库 | word(唯一)、phonetic_uk、pos、meaning_cn、example_en、example_cn、level tags、freq |
 | `user_word_progress` | 每用户每词进度 | (user_id, word_id) 唯一、status(new/learning/mastered)、study_count、wrong_count、last_studied_at |
 | `favorites` | 收藏 | (user_id, word_id) 唯一、created_at |
-| `wrong_answers` | 错题本 | user_id、word_id、mode、user_answer、correct、created_at |
-| `test_records` | 测试记录 | user_id、mode、scope、total、correct、accuracy、duration、created_at |
+| `wrong_answers` | 错题本 | (user_id, word_id) 唯一、wrong_count、last_answer、first_wrong_at、last_wrong_at |
+| `test_records` | 测试记录 | user_id、mode、total、score、duration_sec、created_at |
 | `study_records` | 学习记录 | user_id、word_id、action、created_at |
+| `wechat_identities` | 微信身份 ↔ 账户（V6.1） | (openid, appid) 唯一、(user_id, appid) 唯一、FK CASCADE |
+| `wx_token_revocations` | JWT 撤销黑名单（V6.1） | jti 主键、user_id、token_type、expires_at |
 
 **迁移 MySQL / PostgreSQL 无需改任何模型代码**（不依赖 SQLite 专有字段），只需改 `.env`：
 
@@ -339,6 +379,12 @@ DATABASE_URL=postgresql+psycopg2://user:password@host:5432/dbname
 | `/admin/users` | GET | 用户列表 | 管理员 |
 | `/admin/api/stats` | GET | 统计 JSON | 管理员 |
 | `/healthz` | GET | 健康检查（容器 healthcheck 用） | — |
+
+### 小程序 API（`/api/wx/v1`，Bearer Token 认证，22 个接口）
+
+微信小程序的 JSON API 与上表**完全独立**（不共用 Session / CSRF），
+含登录、绑定、学习、测试、统计全链路。完整文档见
+[docs/api-wx-v1.md](docs/api-wx-v1.md)。
 
 ---
 

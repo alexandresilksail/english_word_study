@@ -1,0 +1,149 @@
+<!-- pages/quiz/quiz.wxml -->
+<view class="page">
+
+  <!-- ========== 阶段一：测试设置 ========== -->
+  <block wx:if="{{ phase === 'setup' }}">
+    <view class="card">
+      <view class="row-between" style="margin-bottom: 24rpx;">
+        <text class="title">选择模式</text>
+        <text class="muted">共 4 种</text>
+      </view>
+      <view class="mode-grid">
+        <view
+          wx:for="{{ modes }} wx:key="key"
+          class="mode-card {{ mode === item.key ? 'mode-active' : '' }}"
+          data-key="{{ item.key }}"
+          bindtap="selectMode">
+          <image class="ill mode-ill" src="/images/quiz.png" mode="aspectFit" />
+          <view class="mode-name">{{ item.name }}</view>
+          <view class="mode-desc">{{ item.desc }}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="title" style="margin-bottom: 24rpx;">出题范围</view>
+      <view class="chip-row">
+        <view
+          wx:for="{{ scopes }} wx:key="key"
+          class="chip {{ scope === item.key ? 'chip-active' : '' }}"
+          data-key="{{ item.key }}"
+          bindtap="selectScope">{{ item.name }}</view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="title" style="margin-bottom: 24rpx;">题目数量</view>
+      <view class="chip-row">
+        <view
+          wx:for="{{ sizeOptions }} wx:key="*this"
+          class="chip {{ size === item ? 'chip-active' : '' }}"
+          data-size="{{ item }}"
+          bindtap="selectSize">{{ item }} 题</view>
+      </view>
+    </view>
+
+    <button class="btn btn-primary btn-block" bindtap="startQuiz" disabled="{{ starting }}">
+      {{ starting ? '正在出题…' : '开始测试' }}
+    </button>
+    <view class="safe-bottom"></view>
+  </block>
+
+  <!-- ========== 阶段二：答题中 ========== -->
+  <block wx:if="{{ phase === 'playing' }}">
+    <!-- 进度 -->
+    <view class="card quiz-head">
+      <view class="row-between" style="margin-bottom: 16rpx;">
+        <text class="strong">第 {{ index + 1 }} / {{ total }} 题</text>
+        <text class="muted">{{ modeName }}</text>
+      </view>
+      <view class="bar"><view class="bar-fill" style="width: {{ progressPercent }}%"></view></view>
+    </view>
+
+    <!-- 题干 -->
+    <view class="card stem-card">
+      <!-- listen：听音选词 -->
+      <block wx:if="{{ q.mode === 'listen' }}">
+        <view class="listen-box" bindtap="playQuestionAudio">
+          <image class="ill listen-ill" src="/images/listening.png" mode="aspectFit" />
+          <view class="listen-btn {{ playingAudio ? 'listen-playing' : '' }}">
+            {{ playingAudio ? '播放中…' : '点击播放发音' }}
+          </view>
+          <view class="muted" wx:if="{{ audioError }}">{{ audioError }}</view>
+        </view>
+      </block>
+      <!-- choice：英译汉 -->
+      <block wx:elif="{{ q.mode === 'choice' }}">
+        <view class="stem-en">{{ q.stem }}</view>
+        <view class="stem-sub" wx:if="{{ q.stem_sub }}">{{ q.stem_sub }}</view>
+      </block>
+      <!-- zh_en：汉译英 -->
+      <block wx:elif="{{ q.mode === 'zh_en' }}">
+        <view class="stem-cn">{{ q.stem }}</view>
+        <view class="stem-sub" wx:if="{{ q.stem_sub }}">{{ q.stem_sub }}</view>
+      </block>
+      <!-- spell：拼写 -->
+      <block wx:elif="{{ q.mode === 'spell' }}">
+        <view class="stem-cn">{{ q.stem }}</view>
+        <view class="stem-sub" wx:if="{{ q.stem_sub }}">{{ q.stem_sub }}</view>
+        <view class="spell-hint">首字母 {{ q.first }} · 共 {{ q.length }} 个字母</view>
+      </block>
+    </view>
+
+    <!-- 选项 / 拼写输入 -->
+    <view class="card" wx:if="{{ q.mode !== 'spell' }}">
+      <view
+        wx:for="{{ q.options }}" wx:key="*this"
+        class="option {{ selected === index ? 'option-selected' : '' }}
+               {{ feedback && selected === index ? (feedback.correct ? 'option-right' : 'option-wrong') : '' }}"
+        data-index="{{ index }}"
+        bindtap="selectOption">
+        <view class="option-letter">{{ 'ABCD'[index] }}</view>
+        <view class="option-text">{{ item }}</view>
+      </view>
+    </view>
+
+    <view class="card" wx:else>
+      <input
+        class="spell-input"
+        placeholder="请输入英文单词"
+        value="{{ spellInput }}"
+        confirm-type="done"
+        disabled="{{ !!feedback }}"
+        bindinput="onSpellInput"
+        bindconfirm="submitSpell" />
+      <button class="btn btn-primary btn-block" bindtap="submitSpell"
+              disabled="{{ !!feedback || !spellInput.trim() || submitting }}">
+        提交答案
+      </button>
+    </view>
+
+    <!-- 判题反馈 -->
+    <view class="card feedback {{ feedback.correct ? 'feedback-right' : 'feedback-wrong' }}"
+          wx:if="{{ feedback }}">
+      <view class="row gap-12">
+        <image class="ill" src="{{ feedback.correct ? '/images/progress.png' : '/images/wrong.png' }}"
+               mode="aspectFit" style="width:80rpx;height:80rpx;" />
+        <view class="flex-1">
+          <view class="feedback-title">{{ feedback.correct ? '回答正确' : '回答错误' }}</view>
+          <view class="feedback-sub" wx:if="{{ !feedback.correct }}">正确答案：{{ feedback.expected }}</view>
+        </view>
+      </view>
+      <view class="feedback-word">
+        <text class="word-en">{{ feedback.word }}</text>
+        <text class="muted" wx:if="{{ feedback.phonetic }}"> /{{ feedback.phonetic }}/</text>
+      </view>
+      <view class="word-cn">{{ feedback.meaning }}</view>
+      <view class="feedback-example" wx:if="{{ feedback.example_en }}">{{ feedback.example_en }}</view>
+      <button class="btn btn-primary btn-block" bindtap="nextQuestion" style="margin-top: 24rpx;">
+        {{ index + 1 >= total ? '查看测试结果' : '下一题' }}
+      </button>
+    </view>
+
+    <!-- 退出 -->
+    <view class="quit-row" bindtap="quitQuiz">
+      <text class="muted">退出测试</text>
+    </view>
+    <view class="safe-bottom"></view>
+  </block>
+</view>

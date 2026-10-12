@@ -1,0 +1,57 @@
+/* pages/quiz-result/quiz-result.wxss */
+
+.result-hero { text-align: center; padding: 56rpx 28rpx; }
+.result-score {
+  font-size: 96rpx;
+  font-weight: 800;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1.1;
+}
+.result-total { font-size: 26rpx; color: #94a3b8; margin-top: 4rpx; }
+.result-comment {
+  display: inline-block;
+  margin-top: 20rpx;
+  padding: 10rpx 32rpx;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+.comment-outstanding { background: #dcfce7; color: #16a34a; }
+.comment-good { background: #eef2ff; color: #4f46e5; }
+.comment-pass { background: #fef3c7; color: #d97706; }
+.comment-retry { background: #fee2e2; color: #dc2626; }
+
+.result-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 36rpx;
+  padding-top: 28rpx;
+  border-top: 1rpx solid #f1f5f9;
+}
+.meta-item { flex: 1; }
+.meta-num { font-size: 32rpx; font-weight: 700; color: #0f172a; }
+.meta-label { font-size: 20rpx; color: #94a3b8; margin-top: 4rpx; }
+.meta-divider { width: 1rpx; height: 48rpx; background: #e2e8f0; }
+
+/* ---------- 学习建议 ---------- */
+.suggest-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+  padding: 12rpx 0;
+  font-size: 26rpx;
+  color: #475569;
+  line-height: 1.6;
+}
+.suggest-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  margin-top: 14rpx;
+  flex-shrink: 0;
+}

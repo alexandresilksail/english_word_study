@@ -1154,3 +1154,79 @@ class LexiconEntry(db.Model):
 
     def __repr__(self) -> str:
         return f"<LexiconEntry {self.language_code}:{self.normalized!r} [{self.kind}/{self.pos}]>"
+
+
+# ==========================================================================
+# 微信小程序（V6.1 新增，纯增量表，不动任何既有表）
+#
+# 设计约束（与 Web 端完全解耦，禁止改动既有表结构）：
+# 1. 只新增表，不 ALTER users / words / user_word_progress 等任何线上表；
+#    create_all() 自动建表，老用户零影响，删除即可完整回滚。
+# 2. 只用 SQLAlchemy 通用类型，SQLite → PostgreSQL 迁移无需改模型。
+# 3. openid 加唯一约束：同一微信身份只能绑定一个账户，防止重复绑定。
+# 4. 所有按用户维度的查询都必须带 user_id —— 与既有模型保持同一隔离纪律。
+# ==========================================================================
+class WeChatIdentity(db.Model):
+    """微信小程序身份 ↔ 站点账户 的关联表。
+
+    为什么不复用 users 表加列：users 是线上生产表，任何 ALTER 都有风险；
+    独立建表可以随时整表回滚，且天然支持「一个账户将来绑多个微信身份」。
+
+    唯一约束说明
+    -----------
+    ``openid`` 全局唯一（一个小程序 AppID 下 openid 唯一），
+    ``(openid, appid)`` 再冗余一道，防止同一部署切换 AppID 时串号。
+    """
+
+    __tablename__ = "wechat_identities"
+
+    id = db.Column(Integer, primary_key=True)
+    user_id = db.Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),
+                        nullable=False, index=True)
+    # 微信 openid：同一 AppID 下唯一，作为关联主键
+    openid = db.Column(String(64), nullable=False, index=True)
+    # 小程序 AppID：换号重签时用于区分，避免不同小程序互相串号
+    appid = db.Column(String(32), nullable=False, default="", index=True)
+    # unionid：同一主体下多个应用共享，可为空（未绑定开放平台时微信不返回）
+    unionid = db.Column(String(64), nullable=True, index=True)
+    # 微信侧资料快照（用户授权后回填，仅展示用途）
+    nickname = db.Column(String(64), nullable=False, default="")
+    avatar_url = db.Column(String(512), nullable=False, default="")
+
+    created_at = db.Column(DateTime, nullable=False, default=utcnow, server_default=func.now())
+    updated_at = db.Column(DateTime, nullable=False, default=utcnow,
+                           server_default=func.now(), onupdate=utcnow)
+    last_login_at = db.Column(DateTime, nullable=True)
+
+    user = relationship("User")
+
+    __table_args__ = (
+        UniqueConstraint("openid", "appid", name="uq_wx_openid_appid"),
+        UniqueConstraint("user_id", "appid", name="uq_wx_user_appid"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<WeChatIdentity user={self.user_id} openid={self.openid[:8]}…>"
+
+
+class WxTokenRevocation(db.Model):
+    """小程序 JWT 撤销表（jti 黑名单）。
+
+    为什么需要：JWT 本身无状态，登出 / 封号 / 改密码后无法「作废」已签发的令牌。
+    做法是签发时记录 jti，撤销时写一张表，校验令牌时查表。
+
+    过期清理：``expires_at`` 早于当前时间的行已自然失效，
+    可由维护任务定期 DELETE，表不会无限增长（见 wx_auth.purge_expired_revocations）。
+    """
+
+    __tablename__ = "wx_token_revocations"
+
+    jti = db.Column(String(64), primary_key=True)      # 被撤销令牌的唯一标识
+    user_id = db.Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),
+                        nullable=False, index=True)
+    token_type = db.Column(String(16), nullable=False, default="access")  # access / refresh
+    revoked_at = db.Column(DateTime, nullable=False, default=utcnow, server_default=func.now())
+    expires_at = db.Column(DateTime, nullable=False)   # 原令牌到期时间（到期后可删）
+
+    def __repr__(self) -> str:
+        return f"<WxTokenRevocation {self.jti[:8]}… user={self.user_id}>"

@@ -1,0 +1,117 @@
+<!-- pages/home/home.wxml -->
+<view class="page">
+
+  <!-- 加载态 -->
+  <view wx:if="{{ loading }}" class="state-box">
+    <image class="ill ill-empty" src="/images/home.png" mode="aspectFit" />
+    <view class="state-text">正在加载学习数据…</view>
+  </view>
+
+  <!-- 错误态 -->
+  <view wx:elif="{{ error }}" class="state-box">
+    <image class="ill ill-empty" src="/images/empty.png" mode="aspectFit" />
+    <view class="state-text">{{ error }}</view>
+    <button class="btn btn-primary" bindtap="loadData">重新加载</button>
+  </view>
+
+  <block wx:else>
+    <!-- 问候 + 今日目标 -->
+    <view class="card hero">
+      <view class="row-between">
+        <view class="flex-1">
+          <view class="hero-greet">{{ greeting }}，{{ nickname }}</view>
+          <view class="subtitle">坚持第 {{ streak }} 天 · 等级 Lv.{{ level }}</view>
+        </view>
+        <image class="ill" src="/images/profile.png" mode="aspectFit"
+               style="width:96rpx;height:96rpx;" />
+      </view>
+
+      <view class="goal">
+        <view class="row-between" style="margin-bottom: 12rpx;">
+          <text class="muted">今日目标</text>
+          <text class="strong">{{ todayDone }} / {{ dailyGoal }} 词</text>
+        </view>
+        <view class="bar"><view class="bar-fill" style="width: {{ goalPercent }}%"></view></view>
+      </view>
+    </view>
+
+    <!-- 核心统计 -->
+    <view class="stat-grid">
+      <view class="stat">
+        <view class="stat-num">{{ stats.learned || 0 }}</view>
+        <view class="stat-label">已学单词</view>
+      </view>
+      <view class="stat">
+        <view class="stat-num">{{ stats.mastered || 0 }}</view>
+        <view class="stat-label">已掌握</view>
+      </view>
+      <view class="stat">
+        <view class="stat-num">{{ stats.accuracy || 0 }}%</view>
+        <view class="stat-label">答题正确率</view>
+      </view>
+    </view>
+
+    <!-- 功能入口 -->
+    <view class="card">
+      <view class="row-between" style="margin-bottom: 24rpx;">
+        <text class="title">学习入口</text>
+        <text class="muted">词库共 {{ stats.total_words || 0 }} 词</text>
+      </view>
+
+      <view class="entry-grid">
+        <view class="entry" bindtap="goWords">
+          <image class="ill ill-entry" src="/images/word.png" mode="aspectFit" />
+          <text>单词学习</text>
+        </view>
+        <view class="entry" bindtap="goQuiz">
+          <image class="ill ill-entry" src="/images/quiz.png" mode="aspectFit" />
+          <text>测试中心</text>
+        </view>
+        <view class="entry" bindtap="goFavorites">
+          <image class="ill ill-entry" src="/images/favorites.png" mode="aspectFit" />
+          <text>我的收藏</text>
+        </view>
+        <view class="entry" bindtap="goWrong">
+          <image class="ill ill-entry" src="/images/wrong.png" mode="aspectFit" />
+          <text>错题本</text>
+        </view>
+        <view class="entry" bindtap="goProgress">
+          <image class="ill ill-entry" src="/images/progress.png" mode="aspectFit" />
+          <text>学习统计</text>
+        </view>
+        <view class="entry" bindtap="goCourses">
+          <image class="ill ill-entry" src="/images/course.png" mode="aspectFit" />
+          <text>课程单元</text>
+        </view>
+        <view class="entry" bindtap="goListening">
+          <image class="ill ill-entry" src="/images/listening.png" mode="aspectFit" />
+          <text>听力练习</text>
+        </view>
+        <view class="entry" bindtap="goSpeaking">
+          <image class="ill ill-entry" src="/images/speaking.png" mode="aspectFit" />
+          <text>口语跟读</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 继续学习 -->
+    <view class="card" bindtap="goWords">
+      <view class="row gap-12">
+        <image class="ill ill-card" src="/images/course.png" mode="aspectFit" />
+        <view class="flex-1">
+          <view class="title">继续学习</view>
+          <view class="subtitle" style="margin-top: 8rpx;">
+            还有 {{ stats.new_words || 0 }} 个新单词等待解锁
+          </view>
+          <view class="row gap-8" style="margin-top: 16rpx;">
+            <text class="tag">已学 {{ stats.learned || 0 }}</text>
+            <text class="tag tag-green">掌握 {{ stats.mastered || 0 }}</text>
+            <text class="tag tag-amber">错题 {{ stats.wrong || 0 }}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="safe-bottom"></view>
+  </block>
+</view>

@@ -1,0 +1,80 @@
+<!-- pages/wrong/wrong.wxml -->
+<view class="page">
+
+  <!-- 搜索 -->
+  <view class="search-bar">
+    <input
+      class="search-input"
+      placeholder="搜索错题单词"
+      value="{{ keyword }}"
+      confirm-type="search"
+      bindinput="onKeywordInput"
+      bindconfirm="onSearch" />
+    <button class="btn btn-ghost btn-sm" bindtap="onSearch">搜索</button>
+  </view>
+
+  <!-- 汇总 -->
+  <view class="card summary" wx:if="{{ loaded && items.length }}">
+    <view class="row gap-12">
+      <image class="ill" src="/images/wrong.png" mode="aspectFit" style="width:96rpx;height:96rpx;" />
+      <view class="flex-1">
+        <view class="title">共 {{ total }} 道错题</view>
+        <view class="subtitle" style="margin-top: 6rpx;">
+          答对一次即可移出错题本，优先消灭错误次数多的
+        </view>
+      </view>
+      <button class="btn btn-primary btn-sm" bindtap="goQuizWrong">练这些</button>
+    </view>
+  </view>
+
+  <!-- 加载态 -->
+  <view wx:if="{{ loading && !items.length }}" class="state-box">
+    <image class="ill ill-empty" src="/images/wrong.png" mode="aspectFit" />
+    <view class="state-text">正在加载错题…</view>
+  </view>
+
+  <!-- 错误态 -->
+  <view wx:elif="{{ error }}" class="state-box">
+    <image class="ill ill-empty" src="/images/empty.png" mode="aspectFit" />
+    <view class="state-text">{{ error }}</view>
+    <button class="btn btn-primary" bindtap="reload">重新加载</button>
+  </view>
+
+  <!-- 空态 -->
+  <view wx:elif="{{ !items.length && loaded }}" class="state-box">
+    <image class="ill ill-empty" src="/images/wrong.png" mode="aspectFit" />
+    <view class="state-text">错题本是空的，继续保持！</view>
+    <button class="btn btn-primary" bindtap="goQuiz">去测试中心</button>
+  </view>
+
+  <!-- 列表 -->
+  <block wx:else>
+    <view class="card">
+      <view
+        wx:for="{{ items }}" wx:key="id"
+        class="list-item">
+        <view class="flex-1" bindtap="goDetail" data-id="{{ item.id }}">
+          <view class="row gap-8">
+            <text class="word-en">{{ item.word }}</text>
+            <text class="muted" wx:if="{{ item.phonetic_uk }}">/{{ item.phonetic_uk }}/</text>
+          </view>
+          <view class="word-cn ellipsis">{{ item.meaning_cn }}</view>
+          <view class="row gap-8" style="margin-top: 8rpx;">
+            <text class="tag tag-red">错 {{ item.wrong_count }} 次</text>
+            <text class="muted" wx:if="{{ item.last_answer }}">上次答：{{ item.last_answer }}</text>
+          </view>
+          <view class="muted" style="margin-top: 4rpx;">最近错误：{{ item.last_wrong_at_text }}</view>
+        </view>
+        <button class="btn btn-ghost btn-sm" bindtap="removeWrong" data-id="{{ item.id }}">移除</button>
+      </view>
+    </view>
+
+    <!-- 分页 -->
+    <view class="pager row-between" wx:if="{{ pages > 1 }}">
+      <button class="btn btn-ghost btn-sm" bindtap="prevPage" disabled="{{ page <= 1 }}">上一页</button>
+      <text class="muted">{{ page }} / {{ pages }}</text>
+      <button class="btn btn-ghost btn-sm" bindtap="nextPage" disabled="{{ page >= pages }}">下一页</button>
+    </view>
+    <view class="safe-bottom"></view>
+  </block>
+</view>

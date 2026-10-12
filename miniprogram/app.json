@@ -1,0 +1,41 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/home/home",
+    "pages/words/words",
+    "pages/word-detail/word-detail",
+    "pages/quiz/quiz",
+    "pages/quiz-result/quiz-result",
+    "pages/favorites/favorites",
+    "pages/wrong/wrong",
+    "pages/progress/progress",
+    "pages/profile/profile"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#6366f1",
+    "navigationBarTitleText": "英语单词学习",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f6fb",
+    "backgroundTextStyle": "dark",
+    "enablePullDownRefresh": false
+  },
+  "tabBar": {
+    "color": "#94a3b8",
+    "selectedColor": "#6366f1",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/home/home", "text": "首页" },
+      { "pagePath": "pages/words/words", "text": "词库" },
+      { "pagePath": "pages/quiz/quiz", "text": "测试" },
+      { "pagePath": "pages/progress/progress", "text": "进度" },
+      { "pagePath": "pages/profile/profile", "text": "我的" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents",
+  "permission": {},
+  "requiredPrivateInfos": [],
+  "usingComponents": {}
+}

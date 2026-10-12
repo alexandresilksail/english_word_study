@@ -1,0 +1,112 @@
+<!-- pages/progress/progress.wxml -->
+<view class="page">
+
+  <!-- 加载态 -->
+  <view wx:if="{{ loading && !loaded }}" class="state-box">
+    <image class="ill ill-empty" src="/images/progress.png" mode="aspectFit" />
+    <view class="state-text">正在统计学习数据…</view>
+  </view>
+
+  <!-- 错误态 -->
+  <view wx:elif="{{ error }}" class="state-box">
+    <image class="ill ill-empty" src="/images/empty.png" mode="aspectFit" />
+    <view class="state-text">{{ error }}</view>
+    <button class="btn btn-primary" bindtap="reload">重新加载</button>
+  </view>
+
+  <block wx:else>
+    <!-- 等级卡片 -->
+    <view class="card">
+      <view class="row-between" style="margin-bottom: 20rpx;">
+        <view>
+          <view class="title">Lv.{{ game.level }} · {{ game.title }}</view>
+          <view class="subtitle" style="margin-top: 6rpx;">累计 {{ game.xp }} XP</view>
+        </view>
+        <view class="level-badge">
+          <image class="ill" src="/images/progress.png" mode="aspectFit" style="width:96rpx;height:96rpx;" />
+        </view>
+      </view>
+      <view class="bar"><view class="bar-fill" style="width: {{ game.level_percent }}%"></view></view>
+      <view class="row-between" style="margin-top: 12rpx;">
+        <text class="muted">距离 Lv.{{ game.level + 1 }}</text>
+        <text class="muted">还需 {{ game.xp_to_next }} XP</text>
+      </view>
+    </view>
+
+    <!-- 核心统计 -->
+    <view class="stat-grid">
+      <view class="stat">
+        <view class="stat-num">{{ stats.learned || 0 }}</view>
+        <view class="stat-label">已学单词</view>
+      </view>
+      <view class="stat">
+        <view class="stat-num">{{ stats.mastered || 0 }}</view>
+        <view class="stat-label">已掌握</view>
+      </view>
+      <view class="stat">
+        <view class="stat-num">{{ stats.accuracy || 0 }}%</view>
+        <view class="stat-label">总正确率</view>
+      </view>
+      <view class="stat">
+        <view class="stat-num">{{ streak }}</view>
+        <view class="stat-label">连续天数</view>
+      </view>
+      <view class="stat">
+        <view class="stat-num">{{ stats.total_answers || 0 }}</view>
+        <view class="stat-label">累计答题</view>
+      </view>
+      <view class="stat">
+        <view class="stat-num">{{ stats.tests || 0 }}</view>
+        <view class="stat-label">测试场次</view>
+      </view>
+    </view>
+
+    <!-- 14 天趋势 -->
+    <view class="card">
+      <view class="row-between" style="margin-bottom: 28rpx;">
+        <text class="title">近 14 天答题量</text>
+        <text class="muted">柱子越高答得越多</text>
+      </view>
+      <view class="chart">
+        <view class="chart-col" wx:for="{{ trend }}" wx:key="day">
+          <view class="chart-bar-wrap">
+            <view class="chart-bar" style="height: {{ item.height }}%;"></view>
+          </view>
+          <view class="chart-label">{{ item.label }}</view>
+        </view>
+      </view>
+      <view class="chart-legend">
+        <view class="legend-item"><view class="legend-dot legend-dot-total"></view>答题数</view>
+        <view class="legend-item"><view class="legend-dot legend-dot-zero"></view>无记录</view>
+      </view>
+    </view>
+
+    <!-- 徽章 -->
+    <view class="card">
+      <view class="row-between" style="margin-bottom: 24rpx;">
+        <text class="title">成就徽章</text>
+        <text class="muted">已解锁 {{ badgeUnlocked }} / {{ badges.length }}</text>
+      </view>
+      <view class="badge-grid">
+        <view class="badge {{ item.unlocked ? 'badge-on' : 'badge-off' }}"
+              wx:for="{{ badges }}" wx:key="name">
+          <view class="badge-icon">{{ item.icon }}</view>
+          <view class="badge-name">{{ item.name }}</view>
+          <view class="badge-desc">{{ item.unlocked ? item.desc : '未解锁' }}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 技能分布 -->
+    <view class="card" wx:if="{{ skills.length }}">
+      <view class="title" style="margin-bottom: 24rpx;">技能训练分布</view>
+      <view class="skill-row" wx:for="{{ skills }}" wx:key="skill">
+        <text class="skill-name">{{ item.skillName }}</text>
+        <view class="bar skill-bar"><view class="bar-fill" style="width: {{ item.percent }}%"></view></view>
+        <text class="skill-xp">{{ item.xp }} XP</text>
+      </view>
+    </view>
+
+    <view class="safe-bottom"></view>
+  </block>
+</view>

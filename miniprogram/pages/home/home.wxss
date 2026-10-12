@@ -1,0 +1,18 @@
+/* pages/home/home.wxss */
+
+.hero {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  color: #ffffff;
+}
+.hero .subtitle { color: rgba(255, 255, 255, 0.85); }
+.hero .muted { color: rgba(255, 255, 255, 0.85); }
+.hero-greet { font-size: 36rpx; font-weight: 700; margin-bottom: 8rpx; }
+
+.goal {
+  margin-top: 28rpx;
+  padding: 20rpx;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 16rpx;
+}
+.goal .bar { background: rgba(255, 255, 255, 0.3); }
+.goal .bar-fill { background: #ffffff; }

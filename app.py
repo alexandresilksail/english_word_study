@@ -246,6 +246,7 @@ def _register_blueprints(app: Flask) -> None:
     from routes.quiz import quiz_bp
     from routes.settings import settings_bp
     from routes.words import words_bp
+    from wx_api import wx_api_bp      # 微信小程序 JSON API（独立 Bearer Token 认证）
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -261,6 +262,12 @@ def _register_blueprints(app: Flask) -> None:
     app.register_blueprint(speaking_bp)  # V5.8 Speaking / Listening API
     app.register_blueprint(assessment_bp)  # V6.0.1 AI Assessment
     app.register_blueprint(admin_bp)
+    # 小程序 API 必须在 CSRF 豁免名单里：它用 Bearer Token 认证，
+    # 没有 Cookie / session，CSRF 令牌无处可取；强行套 CSRF 只会让
+    # 小程序所有写操作必然失败。Bearer Token 本身就是防 CSRF 的
+    # （攻击者无法在跨站请求里带上受害者 localStorage/Storage 里的令牌）。
+    app.register_blueprint(wx_api_bp)
+    csrf.exempt(wx_api_bp)
 
 
 def _register_security(app: Flask) -> None:

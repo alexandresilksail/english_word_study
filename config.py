@@ -97,6 +97,24 @@ class Config:
     MEDIA_PROVIDER = (os.environ.get("MEDIA_PROVIDER") or "local").strip().lower()
     MEDIA_BASE_URL = (os.environ.get("MEDIA_BASE_URL") or "").strip()
 
+    # ---------------- 微信小程序（V6.1 新增） ----------------
+    # AppID / AppSecret：只能存在于服务端环境变量，**绝不**进代码库、不进客户端。
+    # 小程序端只需要 AppID（它在客户端本来就是公开的），AppSecret 必须保密。
+    WX_APPID = (os.environ.get("WX_APPID") or "").strip()
+    WX_SECRET = (os.environ.get("WX_SECRET") or "").strip()
+    # JWT 签名密钥。生产缺失时 wx_auth 直接拒绝签发令牌（快速失败），
+    # 不会静默降级成一个不安全的默认值。
+    WX_TOKEN_SECRET = (os.environ.get("WX_TOKEN_SECRET") or "").strip()
+    # 测试状态令牌（itsdangerous 签名）的独立密钥；留空则回落到 WX_TOKEN_SECRET。
+    # 分开配置的好处：轮换小程序登录密钥时，不影响进行中的测试会话。
+    WX_QUIZ_STATE_SECRET = (os.environ.get("WX_QUIZ_STATE_SECRET") or "").strip()
+    # Access / Refresh Token 时效（秒）
+    WX_ACCESS_TTL = _env_int("WX_ACCESS_TTL", 2 * 60 * 60)          # 2 小时
+    WX_REFRESH_TTL = _env_int("WX_REFRESH_TTL", 30 * 24 * 60 * 60)  # 30 天
+    # 首次微信登录是否自动建号。True = 小程序标准体验（先能用，再引导绑邮箱）；
+    # False = 必须先绑定已有账户，适合内部/邀请制场景。
+    WX_AUTO_REGISTER = _env_bool("WX_AUTO_REGISTER", True)
+
     # ---------------- 产品版本（UI / API 展示用） ----------------
     APP_VERSION = os.environ.get("APP_VERSION") or "3.0.0"
     APP_TITLE_EN = os.environ.get("APP_TITLE_EN") or "English Learning Platform"

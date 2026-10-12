@@ -1,0 +1,105 @@
+/* pages/progress/progress.wxss */
+
+.level-badge {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ede9fe, #e0e7ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- 趋势柱状图 ---------- */
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8rpx;
+  height: 240rpx;
+}
+.chart-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+.chart-bar-wrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.chart-bar {
+  width: 70%;
+  min-height: 4rpx;
+  background: linear-gradient(180deg, #8b5cf6, #6366f1);
+  border-radius: 8rpx 8rpx 4rpx 4rpx;
+}
+.chart-label {
+  font-size: 16rpx;
+  color: #94a3b8;
+  margin-top: 10rpx;
+  transform: scale(0.9);
+}
+.chart-legend {
+  display: flex;
+  gap: 32rpx;
+  margin-top: 20rpx;
+  justify-content: center;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 20rpx;
+  color: #94a3b8;
+}
+.legend-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 4rpx;
+}
+.legend-dot-total { background: linear-gradient(135deg, #8b5cf6, #6366f1); }
+.legend-dot-zero { background: #e2e8f0; }
+
+/* ---------- 徽章 ---------- */
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20rpx;
+}
+.badge {
+  text-align: center;
+  padding: 24rpx 8rpx;
+  border-radius: 20rpx;
+}
+.badge-on { background: #eef2ff; }
+.badge-off { background: #f8fafc; opacity: 0.6; }
+.badge-icon { font-size: 48rpx; line-height: 1.2; }
+.badge-name {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #0f172a;
+  margin-top: 8rpx;
+}
+.badge-desc {
+  font-size: 18rpx;
+  color: #94a3b8;
+  margin-top: 4rpx;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ---------- 技能分布 ---------- */
+.skill-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 14rpx 0;
+}
+.skill-name { width: 120rpx; font-size: 24rpx; color: #475569; flex-shrink: 0; }
+.skill-bar { flex: 1; }
+.skill-xp { width: 110rpx; font-size: 22rpx; color: #94a3b8; text-align: right; flex-shrink: 0; }

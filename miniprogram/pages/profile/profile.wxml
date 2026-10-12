@@ -1,0 +1,160 @@
+<!-- pages/profile/profile.wxml -->
+<view class="page">
+
+  <!-- 用户信息 -->
+  <view class="card">
+    <view class="row gap-12">
+      <image class="ill avatar" src="/images/profile.png" mode="aspectFit" />
+      <view class="flex-1">
+        <view class="title">{{ user.username || '同学' }}</view>
+        <view class="subtitle" style="margin-top: 6rpx;">
+          {{ user.email_bound ? user.email : '未绑定邮箱' }}
+        </view>
+        <view class="row gap-8" style="margin-top: 12rpx;">
+          <text class="tag">Lv.{{ user.level }}</text>
+          <text class="tag tag-green">{{ user.xp }} XP</text>
+          <text class="tag tag-amber" wx:if="{{ user.streak_days }}">连续 {{ user.streak_days }} 天</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 每日目标 -->
+  <view class="card">
+    <view class="row-between" style="margin-bottom: 20rpx;">
+      <text class="title">每日目标</text>
+      <text class="muted">当前 {{ user.daily_goal }} 词/天</text>
+    </view>
+    <view class="chip-row">
+      <view
+        wx:for="{{ goalOptions }}" wx:key="*this"
+        class="chip {{ user.daily_goal === item ? 'chip-active' : '' }}"
+        data-goal="{{ item }}"
+        bindtap="setGoal">{{ item }}</view>
+    </view>
+    <view class="row" style="margin-top: 24rpx;">
+      <input class="goal-input" placeholder="自定义 1-500"
+             type="number" value="{{ customGoal }}"
+             bindinput="onGoalInput" />
+      <button class="btn btn-ghost btn-sm" bindtap="submitCustomGoal">设置</button>
+    </view>
+  </view>
+
+  <!-- 账户与安全 -->
+  <view class="card">
+    <view class="title" style="margin-bottom: 8rpx;">账户与安全</view>
+
+    <view class="menu-item" bindtap="openBind" wx:if="{{ !user.email_bound }}">
+      <image class="ill menu-ill" src="/images/word.png" mode="aspectFit" />
+      <view class="flex-1">
+        <view class="menu-title">绑定邮箱</view>
+        <view class="menu-desc">验证邮箱控制权后，可用网站版账户登录</view>
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
+
+    <view class="menu-item" bindtap="openUnbind" wx:else>
+      <image class="ill menu-ill" src="/images/word.png" mode="aspectFit" />
+      <view class="flex-1">
+        <view class="menu-title">解绑微信</view>
+        <view class="menu-desc">换绑或退出小程序，需验证原账户</view>
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
+
+    <view class="menu-item" bindtap="goFavorites">
+      <image class="ill menu-ill" src="/images/favorites.png" mode="aspectFit" />
+      <view class="flex-1">
+        <view class="menu-title">我的收藏</view>
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
+
+    <view class="menu-item" bindtap="goWrong">
+      <image class="ill menu-ill" src="/images/wrong.png" mode="aspectFit" />
+      <view class="flex-1">
+        <view class="menu-title">错题本</view>
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 关于 -->
+  <view class="card">
+    <view class="row-between">
+      <text class="subtitle">版本</text>
+      <text class="muted">V6.0 小程序版</text>
+    </view>
+    <view class="row-between" style="margin-top: 16rpx;">
+      <text class="subtitle">数据同步</text>
+      <text class="muted">与网站版实时同步</text>
+    </view>
+  </view>
+
+  <button class="btn btn-danger btn-block" bindtap="logout">退出登录</button>
+  <view class="safe-bottom"></view>
+
+  <!-- ========== 绑定邮箱弹窗 ========== -->
+  <view class="modal-mask" wx:if="{{ showBind }}" bindtap="closeModals">
+    <view class="modal" catchtap="noop">
+      <view class="title" style="margin-bottom: 8rpx;">绑定已有账户</view>
+      <view class="subtitle" style="margin-bottom: 24rpx;">
+        输入网站版账户的邮箱，并验证你对该邮箱的控制权
+      </view>
+
+      <input class="modal-input" placeholder="邮箱地址"
+             value="{{ bindEmail }}" bindinput="onBindEmailInput" />
+
+      <block wx:if="{{ !useCode }}">
+        <input class="modal-input" placeholder="原账户密码" password="true"
+               value="{{ bindPassword }}" bindinput="onBindPasswordInput" />
+      </block>
+      <block wx:else>
+        <view class="row gap-12">
+          <input class="modal-input flex-1" placeholder="邮箱验证码"
+                 value="{{ bindCode }}" bindinput="onBindCodeInput" />
+          <button class="btn btn-ghost btn-sm" bindtap="sendCode"
+                  disabled="{{ sendingCode }}">{{ sendingCode ? '发送中' : '获取验证码' }}</button>
+        </view>
+        <view class="muted" wx:if="{{ devCode }}">开发环境验证码：{{ devCode }}</view>
+      </block>
+
+      <view class="modal-link" bindtap="toggleUseCode">
+        {{ useCode ? '改用密码验证' : '收不到邮件？改用验证码' }}
+      </view>
+
+      <button class="btn btn-primary btn-block" bindtap="submitBind"
+              disabled="{{ binding }}">{{ binding ? '绑定中…' : '确认绑定' }}</button>
+    </view>
+  </view>
+
+  <!-- ========== 解绑弹窗 ========== -->
+  <view class="modal-mask" wx:if="{{ showUnbind }}" bindtap="closeModals">
+    <view class="modal" catchtap="noop">
+      <view class="title" style="margin-bottom: 8rpx;">解绑微信</view>
+      <view class="subtitle" style="margin-bottom: 24rpx;">
+        解绑只解除微信与账户的关联，不会删除任何学习数据
+      </view>
+
+      <block wx:if="{{ !unbindUseCode }}">
+        <input class="modal-input" placeholder="原账户密码" password="true"
+               value="{{ unbindPassword }}" bindinput="onUnbindPasswordInput" />
+      </block>
+      <block wx:else>
+        <view class="row gap-12">
+          <input class="modal-input flex-1" placeholder="邮箱验证码"
+                 value="{{ unbindCode }}" bindinput="onUnbindCodeInput" />
+          <button class="btn btn-ghost btn-sm" bindtap="sendUnbindCode"
+                  disabled="{{ sendingCode }}">{{ sendingCode ? '发送中' : '获取验证码' }}</button>
+        </view>
+      </block>
+
+      <view class="modal-link" bindtap="toggleUnbindUseCode">
+        {{ unbindUseCode ? '改用密码验证' : '收不到邮件？改用验证码' }}
+      </view>
+
+      <button class="btn btn-danger btn-block" bindtap="submitUnbind"
+              disabled="{{ unbinding }}">{{ unbinding ? '解绑中…' : '确认解绑' }}</button>
+    </view>
+  </view>
+</view>

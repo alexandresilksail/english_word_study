@@ -1,0 +1,75 @@
+<!-- pages/word-detail/word-detail.wxml -->
+<view class="page">
+
+  <view wx:if="{{ loading }}" class="state-box">
+    <view class="state-text">正在加载…</view>
+  </view>
+
+  <view wx:elif="{{ !word }}" class="state-box">
+    <image class="ill ill-empty" src="/images/empty.png" mode="aspectFit" />
+    <view class="state-text">单词不存在或已下架</view>
+    <button class="btn btn-primary" bindtap="goBack">返回</button>
+  </view>
+
+  <block wx:else>
+    <!-- 主卡片：单词 + 发音 -->
+    <view class="card word-card">
+      <image class="ill ill-card word-ill" src="/images/word.png" mode="aspectFit" />
+      <view class="word-main">{{ word.word }}</view>
+      <view class="row-center gap-8">
+        <text class="word-phonetic">{{ word.phonetic_uk }}</text>
+        <text class="tag">{{ word.pos }}</text>
+      </view>
+      <view class="word-meaning">{{ word.meaning_cn }}</view>
+
+      <!-- 发音按钮：调用真实音频地址播放 -->
+      <button class="btn btn-primary pronounce-btn" bindtap="playAudio" disabled="{{ playing }}">
+        {{ playing ? '播放中…' : '🔊 播放发音' }}
+      </button>
+      <view wx:if="{{ audioError }}" class="audio-error">{{ audioError }}</view>
+    </view>
+
+    <!-- 例句 -->
+    <view class="card" wx:if="{{ word.example_en }}">
+      <view class="row-between" style="margin-bottom: 20rpx;">
+        <text class="title">例句</text>
+        <image class="ill" src="/images/speaking.png" mode="aspectFit"
+               style="width:48rpx;height:48rpx;" />
+      </view>
+      <view class="example-en">{{ word.example_en }}</view>
+      <view class="example-cn">{{ word.example_cn }}</view>
+    </view>
+
+    <!-- 学习状态 -->
+    <view class="card">
+      <view class="row-between" style="margin-bottom: 20rpx;">
+        <text class="title">学习状态</text>
+        <image class="ill" src="/images/progress.png" mode="aspectFit"
+               style="width:48rpx;height:48rpx;" />
+      </view>
+      <view class="row gap-8" style="flex-wrap: wrap;">
+        <text class="tag {{ word.status === 'mastered' ? 'tag-green' : (word.status === 'learning' ? 'tag-amber' : '') }}">
+          {{ word.status_label || word.status }}
+        </text>
+        <text class="tag">答对 {{ word.correct || 0 }}</text>
+        <text class="tag">答错 {{ word.wrong || 0 }}</text>
+        <text class="tag">浏览 {{ word.view_count || 0 }}</text>
+      </view>
+      <view wx:if="{{ word.last_studied }}" class="muted" style="margin-top: 16rpx;">
+        最近学习：{{ word.last_studied }}
+      </view>
+    </view>
+
+    <!-- 操作 -->
+    <view class="row gap-12">
+      <button class="btn btn-ghost flex-1" bindtap="toggleFavorite" disabled="{{ favPending }}">
+        {{ word.fav ? '★ 已收藏' : '☆ 收藏' }}
+      </button>
+      <button class="btn btn-primary flex-1" bindtap="goQuizThisWord">
+        测试这个词
+      </button>
+    </view>
+
+    <view class="safe-bottom"></view>
+  </block>
+</view>

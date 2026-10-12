@@ -10,6 +10,9 @@ python-dotenv==1.2.4
 email-validator==2.3.0
 gunicorn==23.0.0
 
+# V6.1 微信小程序：标准 JWT（PyJWT）签发 / 校验 Bearer Token
+PyJWT==2.10.1
+
 # 测试
 pytest==8.3.4
 

@@ -1,0 +1,70 @@
+<!-- pages/favorites/favorites.wxml -->
+<view class="page">
+
+  <!-- 搜索 -->
+  <view class="search-bar">
+    <input
+      class="search-input"
+      placeholder="搜索收藏的单词"
+      value="{{ keyword }}"
+      confirm-type="search"
+      bindinput="onKeywordInput"
+      bindconfirm="onSearch" />
+    <button class="btn btn-ghost btn-sm" bindtap="onSearch">搜索</button>
+  </view>
+
+  <!-- 加载态 -->
+  <view wx:if="{{ loading && !items.length }}" class="state-box">
+    <image class="ill ill-empty" src="/images/favorites.png" mode="aspectFit" />
+    <view class="state-text">正在加载收藏…</view>
+  </view>
+
+  <!-- 错误态 -->
+  <view wx:elif="{{ error }}" class="state-box">
+    <image class="ill ill-empty" src="/images/empty.png" mode="aspectFit" />
+    <view class="state-text">{{ error }}</view>
+    <button class="btn btn-primary" bindtap="reload">重新加载</button>
+  </view>
+
+  <!-- 空态 -->
+  <view wx:elif="{{ !items.length && loaded }}" class="state-box">
+    <image class="ill ill-empty" src="/images/favorites.png" mode="aspectFit" />
+    <view class="state-text">还没有收藏单词</view>
+    <button class="btn btn-primary" bindtap="goWords">去词库看看</button>
+  </view>
+
+  <!-- 列表 -->
+  <block wx:else>
+    <view class="card">
+      <view class="row-between" style="margin-bottom: 8rpx;">
+        <text class="title">共 {{ total }} 个收藏</text>
+        <text class="muted" wx:if="{{ keyword }}">关键词：{{ keyword }}</text>
+      </view>
+      <view
+        wx:for="{{ items }}" wx:key="id"
+        class="list-item">
+        <view class="flex-1" bindtap="goDetail" data-id="{{ item.id }}">
+          <view class="row gap-8">
+            <text class="word-en">{{ item.word }}</text>
+            <text class="muted" wx:if="{{ item.phonetic_uk }}">/{{ item.phonetic_uk }}/</text>
+          </view>
+          <view class="word-cn ellipsis">{{ item.meaning_cn }}</view>
+          <view class="row gap-8" style="margin-top: 8rpx;">
+            <text class="tag" wx:if="{{ item.status === 'mastered' }}">已掌握</text>
+            <text class="tag tag-amber" wx:elif="{{ item.status === 'learning' }}">学习中</text>
+            <text class="muted">收藏于 {{ item.favorited_at_text }}</text>
+          </view>
+        </view>
+        <button class="btn btn-danger btn-sm" bindtap="removeFavorite" data-id="{{ item.id }}">取消</button>
+      </view>
+    </view>
+
+    <!-- 分页 -->
+    <view class="pager row-between" wx:if="{{ pages > 1 }}">
+      <button class="btn btn-ghost btn-sm" bindtap="prevPage" disabled="{{ page <= 1 }}">上一页</button>
+      <text class="muted">{{ page }} / {{ pages }}</text>
+      <button class="btn btn-ghost btn-sm" bindtap="nextPage" disabled="{{ page >= pages }}">下一页</button>
+    </view>
+    <view class="safe-bottom"></view>
+  </block>
+</view>

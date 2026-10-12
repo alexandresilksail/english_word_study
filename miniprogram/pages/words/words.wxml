@@ -1,0 +1,76 @@
+<!-- pages/words/words.wxml -->
+<view class="page">
+
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <image class="ill" src="/images/word.png" mode="aspectFit"
+           style="width:44rpx;height:44rpx;" />
+    <input class="search-input" placeholder="搜索单词或中文释义"
+           value="{{ keyword }}" confirm-type="search"
+           bindinput="onKeywordInput" bindconfirm="onSearch" />
+    <button class="btn btn-primary btn-sm" bindtap="onSearch" disabled="{{ searching }}">
+      搜索
+    </button>
+  </view>
+
+  <!-- A-Z 字母索引 -->
+  <scroll-view scroll-x class="alpha-bar" enhanced show-scrollbar="{{ false }}">
+    <view class="alpha-item {{ initial === activeInitial ? 'alpha-active' : '' }}"
+          wx:for="{{ alphabet }}" wx:key="*this"
+          bindtap="onInitialTap" data-initial="{{ item }}">
+      {{ item }}
+    </view>
+  </scroll-view>
+
+  <!-- 加载态 -->
+  <view wx:if="{{ loading && items.length === 0 }}" class="state-box">
+    <image class="ill ill-empty" src="/images/word.png" mode="aspectFit" />
+    <view class="state-text">正在加载词库…</view>
+  </view>
+
+  <!-- 错误态 -->
+  <view wx:elif="{{ error }}" class="state-box">
+    <image class="ill ill-empty" src="/images/empty.png" mode="aspectFit" />
+    <view class="state-text">{{ error }}</view>
+    <button class="btn btn-primary" bindtap="reload">重新加载</button>
+  </view>
+
+  <!-- 空态 -->
+  <view wx:elif="{{ items.length === 0 }}" class="state-box">
+    <image class="ill ill-empty" src="/images/empty.png" mode="aspectFit" />
+    <view class="state-text">没有找到相关单词，换个关键词试试</view>
+  </view>
+
+  <!-- 列表 -->
+  <view wx:else class="card list-card">
+    <view class="list-item" wx:for="{{ items }}" wx:key="id"
+          bindtap="goDetail" data-id="{{ item.id }}">
+      <image class="ill" src="/images/word.png" mode="aspectFit"
+             style="width:72rpx;height:72rpx;flex-shrink:0;" />
+      <view class="flex-1">
+        <view class="row-between">
+          <text class="word-en">{{ item.word }}</text>
+          <text class="muted">{{ item.phonetic_uk }}</text>
+        </view>
+        <view class="word-cn ellipsis">{{ item.meaning_cn }}</view>
+        <view class="row gap-8" style="margin-top: 10rpx;">
+          <text class="tag {{ item.status === 'mastered' ? 'tag-green' : (item.status === 'learning' ? 'tag-amber' : '') }}">
+            {{ item.status_label || item.status }}
+          </text>
+          <text wx:if="{{ item.fav }}" class="tag tag-red">已收藏</text>
+          <text wx:if="{{ item.in_wrong }}" class="tag tag-red">错题</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 分页 -->
+  <view wx:if="{{ items.length > 0 }}" class="pager">
+    <button class="btn btn-ghost btn-sm" bindtap="prevPage" disabled="{{ page <= 1 }}">上一页</button>
+    <text class="muted">第 {{ page }} / {{ pages }} 页 · 共 {{ total }} 词</text>
+    <button class="btn btn-ghost btn-sm" bindtap="nextPage"
+            disabled="{{ page >= pages }}">下一页</button>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>
