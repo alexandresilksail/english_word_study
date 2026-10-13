@@ -77,6 +77,15 @@
       </view>
       <text class="menu-arrow">›</text>
     </view>
+
+    <view class="menu-item" bindtap="openLegal">
+      <image class="ill menu-ill" src="/images/profile.png" mode="aspectFit" />
+      <view class="flex-1">
+        <view class="menu-title">隐私政策与用户协议</view>
+        <view class="menu-desc">我们收集什么、如何保护、如何注销</view>
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
   </view>
 
   <!-- 关于 -->

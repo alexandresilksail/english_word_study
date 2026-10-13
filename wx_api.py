@@ -54,8 +54,10 @@ from models import (SKILLS, Favorite, TestRecord, User, UserStat, UserWordProgre
 from services import (build_question, build_word_view, daily_trend,
                       dashboard_stats, learning_streak, record_answer,
                       touch_word, _pick_word_ids)
+from utils.ratelimit import clear_login_failures, register_login_failure
 from wx_auth import (AuthError, code2session, find_or_create_wx_user,
-                     issue_tokens, refresh_access_token, revoke_token,
+                     issue_tokens, logout_refresh_claims,
+                     refresh_access_token, revoke_token,
                      wx_login_optional, wx_login_required)
 from wx_quiz_state import QuizStateError, build_item, create_state, expected_text, load_state
 from services import judge
@@ -69,6 +71,8 @@ MAX_PAGE_SIZE = 50
 # 与 utils.ratelimit 的 IP 闸门同一思路，但独立实现避免跨蓝图耦合）
 _LOGIN_WINDOW_SEC = 60
 _LOGIN_MAX_PER_WINDOW = 30
+# 内存 IP 表上限：防止攻击者伪造海量 X-Forwarded-For 把字典撑爆
+_LOGIN_MAX_TRACKED_IPS = 10000
 _login_hits: dict[str, list[float]] = {}
 
 
@@ -80,8 +84,23 @@ def _json() -> dict:
 
 
 def _client_ip() -> str:
-    return (request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
-            or request.remote_addr or "")[:64]
+    """取客户端真实 IP。
+
+    优先级：X-Real-IP（Nginx 用 $remote_addr **覆盖写入**，客户端伪造不了）
+    → request.remote_addr（无反向代理时）→ X-Forwarded-For 最后一段。
+
+    绝不取 XFF 第一个值：Nginx 默认 append 客户端提交的 XFF，
+    第一个值就是攻击者随便填的字符串，取它等于让限流形同虚设。
+    """
+    for candidate in (
+        request.headers.get("X-Real-IP"),
+        request.remote_addr,
+        (request.headers.get("X-Forwarded-For") or "").split(",")[-1].strip(),
+    ):
+        candidate = (candidate or "").strip()
+        if candidate:
+            return candidate[:64]
+    return ""
 
 
 def _too_many_logins() -> bool:
@@ -91,6 +110,9 @@ def _too_many_logins() -> bool:
     if len(hits) >= _LOGIN_MAX_PER_WINDOW:
         _login_hits[ip] = hits
         return True
+    if len(_login_hits) > _LOGIN_MAX_TRACKED_IPS:
+        # 超过追踪上限：整体清一次（限流是尽力而为的闸门，宁可误放也不可被撑爆）
+        _login_hits.clear()
     hits.append(now)
     _login_hits[ip] = hits
     return False
@@ -212,11 +234,10 @@ def wx_logout():
     """登出：把当前 Access / Refresh 令牌加入撤销黑名单。
 
     Access 令牌的 claims 已由 ``wx_login_required`` 验签后放入 ``g.wx_claims``；
-    Refresh 令牌由客户端在 body 里回传，这里仅解出 jti / exp 用于撤销
-    （不解签：它可能已过期，而「把过期的令牌也登记撤销」正是为了立刻失效）。
+    Refresh 令牌由客户端在 body 里回传，经 :func:`wx_auth.logout_refresh_claims`
+    验签 + 归属校验通过后才撤销——否则拿到他人 jti 的人就能借道把别人的
+    登录状态提前作废（DoS 面）。
     """
-    import jwt as _jwt
-
     revoked = []
     access_claims = g.wx_claims or {}
     if access_claims.get("jti"):
@@ -226,14 +247,13 @@ def wx_logout():
 
     refresh_token = (_json().get("refresh_token") or "").strip()
     if refresh_token:
-        try:
-            rc = _jwt.decode(refresh_token, options={"verify_signature": False})
-            if rc.get("typ") == "refresh" and rc.get("jti"):
-                revoke_token(str(rc["jti"]), g.wx_user.id, "refresh",
-                             datetime.utcfromtimestamp(int(rc["exp"])))
-                revoked.append("refresh")
-        except Exception:  # noqa: BLE001  解析失败不影响 access 已撤销的事实
-            logger.info("[wx_api] 登出时 refresh_token 解析失败，仅撤销 access")
+        rc = logout_refresh_claims(refresh_token, g.wx_user.id)
+        if rc is not None:
+            revoke_token(str(rc["jti"]), g.wx_user.id, "refresh",
+                         datetime.utcfromtimestamp(int(rc["exp"])))
+            revoked.append("refresh")
+        else:
+            logger.info("[wx_api] 登出时 refresh_token 验签或归属校验未过，仅撤销 access")
 
     return ok({"revoked": revoked})
 
@@ -249,10 +269,13 @@ def wx_send_code():
     """发送绑定用邮箱验证码（复用 email_code 的限流 / 一次性 / TTL 机制）。
 
     请求 ``{"email": "..."}``
+
+    生产环境未配置 SMTP 时本接口返回 429（绝不下发验证码明文，
+    否则等于把任意邮箱的验证码公开给 API 调用方）。
     """
     body = _json()
     email = (body.get("email") or "").strip().lower()
-    if not email or "@" not in email:
+    if not email or "@" not in email or len(email) > 254:
         return fail("请输入有效的邮箱地址", code="bad_request")
     purpose = "login"
     sent, message, dev_code = issue_code(email, purpose, ip=_client_ip())
@@ -260,7 +283,7 @@ def wx_send_code():
         return fail(message, code="rate_limited", status=429)
     payload = {"message": message}
     if dev_code:
-        # 仅未配置 SMTP 时出现（本地自测），生产环境绝不下发
+        # 仅开发 / 测试环境（未配置 SMTP）出现；生产环境 email_code 直接拒绝下发
         payload["dev_code"] = dev_code
     return ok(payload)
 
@@ -290,20 +313,28 @@ def wx_bind_email():
         return fail("请提供原账户密码，或该邮箱收到的验证码", code="bad_request")
 
     target = User.query.filter_by(email=email).first()
-    if target is None:
-        # 统一提示，避免邮箱枚举
-        return fail("邮箱或密码不正确", code="invalid_credentials", status=401)
 
     # ---- 验证对原账户的控制权 ----
+    # 密码路径对「邮箱不存在 / 密码错」返回完全一致的消息，避免邮箱枚举；
+    # 验证码路径不存在枚举面（能收到码 = 已控制该邮箱），可以给出可读提示。
     if code:
-        ok_code, msg = verify_code(email, code, "login")
+        ok_code, code_msg = verify_code(email, code, "login")
         if not ok_code:
-            return fail(msg, code="invalid_code", status=401)
+            return fail(code_msg or "验证码不正确或已过期",
+                        code="invalid_code", status=401)
+        if target is None:
+            return fail("该邮箱尚未注册账户，请先在网站注册",
+                        code="email_not_registered", status=409)
     else:
-        if target.is_locked:
-            return fail("账户已临时锁定，请稍后再试", code="locked", status=429)
-        if not target.check_password(password):
+        if target is None or target.is_locked or not target.check_password(password):
+            if target is not None and not target.is_locked:
+                # 与 Web 登录同一套锁定机制（5 次失败锁 15 分钟），
+                # 否则此路径可被无限爆破（wx-login 的 IP 限流并不覆盖本路由）
+                register_login_failure(target)
+            if target is not None and target.is_locked:
+                return fail("账户已临时锁定，请稍后再试", code="locked", status=429)
             return fail("邮箱或密码不正确", code="invalid_credentials", status=401)
+        clear_login_failures(target)
 
     if target.id == g.wx_user.id:
         return fail("该邮箱已绑定到当前账户", code="already_bound", status=409)
@@ -375,14 +406,20 @@ def wx_unbind():
         if not password and not code:
             return fail("请提供原账户密码，或该邮箱收到的验证码", code="bad_request")
         if code:
-            ok_code, msg = verify_code(user.email, code, "login")
+            ok_code, code_msg = verify_code(user.email, code, "login")
             if not ok_code:
-                return fail(msg, code="invalid_code", status=401)
+                return fail(code_msg or "验证码不正确或已过期",
+                            code="invalid_code", status=401)
         else:
             if user.is_locked:
                 return fail("账户已临时锁定，请稍后再试", code="locked", status=429)
             if not user.check_password(password):
+                # 与 bind-email 同一套锁定机制，防止把解绑当爆破面
+                register_login_failure(user)
+                if user.is_locked:
+                    return fail("账户已临时锁定，请稍后再试", code="locked", status=429)
                 return fail("密码不正确", code="invalid_credentials", status=401)
+            clear_login_failures(user)
 
     from models import WeChatIdentity
     appid = (current_app.config.get("WX_APPID") or "").strip()

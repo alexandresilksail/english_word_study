@@ -29,3 +29,5 @@
 }
 
 button[disabled] { opacity: 0.55; }
+
+.link { color: #4f46e5; text-decoration: underline; }

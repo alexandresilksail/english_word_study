@@ -21,7 +21,7 @@
       {{ logging ? '登录中…' : '微信一键登录' }}
     </button>
     <view class="muted text-center" style="margin-top: 16rpx;">
-      登录即表示同意《用户协议》与《隐私政策》
+      登录即表示同意<text class="link" bindtap="openLegal">《用户协议》</text>与<text class="link" bindtap="openLegal">《隐私政策》</text>
     </view>
   </view>
 

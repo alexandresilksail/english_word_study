@@ -134,6 +134,11 @@
     <p class="muted">{{ pick('English · Cantonese · more languages coming · spaced review keeps your memory',
                               '英语 · 粤语 · 更多语言即将上线 · 间隔复习记得更牢') }}</p>
     <p class="muted">{{ t('footer.privacy') }}</p>
+    <p class="muted legal-links">
+      <a href="{{ url_for('main.privacy') }}">隐私政策 / Privacy</a>
+      <span aria-hidden="true">·</span>
+      <a href="{{ url_for('main.terms') }}">用户协议 / Terms</a>
+    </p>
   </footer>
 </main>
 

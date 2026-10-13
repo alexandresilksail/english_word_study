@@ -1,0 +1,31 @@
+<view class="legal">
+  <view class="card section">
+    <view class="section-title">我们收集的信息</view>
+    <view class="item"><text class="k">微信 OpenID</text><text class="v">来自 wx.login，用于标识你的身份，仅保存在服务端</text></view>
+    <view class="item"><text class="k">邮箱地址</text><text class="v">仅在你主动绑定邮箱时收集，用于账户绑定与找回</text></view>
+    <view class="item"><text class="k">昵称 / 头像</text><text class="v">仅在你主动填写时收集，用于个人资料展示</text></view>
+    <view class="item"><text class="k">学习数据</text><text class="v">学习、测试记录，用于进度统计、错题本与复习安排</text></view>
+  </view>
+
+  <view class="card section">
+    <view class="section-title">我们不做的</view>
+    <view class="plain">· 不收集手机号、地理位置、通讯录、相册</view>
+    <view class="plain">· 不获取微信好友关系，不使用任何微信社交接口</view>
+    <view class="plain">· 不保存微信 session_key，AppSecret 只存在服务端</view>
+    <view class="plain">· 不使用第三方统计 / 广告 / 推送 SDK</view>
+  </view>
+
+  <view class="card section">
+    <view class="section-title">数据保护</view>
+    <view class="plain">· 你的学习数据仅本人可见，用户之间严格隔离</view>
+    <view class="plain">· 登录凭证采用短时效 Access Token（2 小时）+ 可撤销 Refresh Token</view>
+    <view class="plain">· 全链路 HTTPS，服务端每日自动备份数据库</view>
+  </view>
+
+  <view class="card section">
+    <view class="section-title">账号注销与数据删除</view>
+    <view class="plain">当前版本暂未提供自助注销。如需注销账户或删除个人数据，请在小程序「我的」页面联系管理员，核实身份后 15 个工作日内处理。</view>
+  </view>
+
+  <view class="tip">完整版隐私政策与用户协议可在网站端查看（个人中心 → 隐私政策）。</view>
+</view>

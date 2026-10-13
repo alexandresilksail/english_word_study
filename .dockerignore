@@ -21,3 +21,5 @@ tests/**
 *.db
 *.db-journal
 *.md
+# 本地运维脚本：含本机路径 / token 文件引用，绝不入库、不进镜像
+_push_*.py

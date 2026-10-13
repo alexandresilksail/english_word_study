@@ -9,7 +9,8 @@
     "pages/favorites/favorites",
     "pages/wrong/wrong",
     "pages/progress/progress",
-    "pages/profile/profile"
+    "pages/profile/profile",
+    "pages/legal/legal"
   ],
   "window": {
     "navigationBarBackgroundColor": "#6366f1",
@@ -25,11 +26,26 @@
     "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [
-      { "pagePath": "pages/home/home", "text": "首页" },
-      { "pagePath": "pages/words/words", "text": "词库" },
-      { "pagePath": "pages/quiz/quiz", "text": "测试" },
-      { "pagePath": "pages/progress/progress", "text": "进度" },
-      { "pagePath": "pages/profile/profile", "text": "我的" }
+      {
+        "pagePath": "pages/home/home",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/words/words",
+        "text": "词库"
+      },
+      {
+        "pagePath": "pages/quiz/quiz",
+        "text": "测试"
+      },
+      {
+        "pagePath": "pages/progress/progress",
+        "text": "进度"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的"
+      }
     ]
   },
   "style": "v2",

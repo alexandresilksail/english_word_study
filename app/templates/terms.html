@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .legal-doc { max-width: 860px; margin: 0 auto; padding: 24rpx 20rpx 64rpx; line-height: 1.75; }
+  .legal-doc h1 { font-size: 30px; margin-bottom: 4px; }
+  .legal-doc h2 { font-size: 19px; margin: 28px 0 10px; }
+  .legal-updated { color: var(--muted, #888); font-size: 13px; }
+  .legal-doc a { color: #6d5bd0; }
+  .legal-doc code { background: rgba(128,128,128,.18); padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+</style>
+<div class="legal-doc">
+  <h1>用户服务协议 <span class="muted">/ Terms of Service</span></h1>
+  <p class="legal-updated">最近更新 / Last updated：2026-10-13</p>
+
+  <h2>一、服务说明</h2>
+  <p>本站及配套微信小程序（以下统称"本服务"）提供英语单词学习、测试与进度管理功能。词库、发音与学习内容仅供个人学习使用。</p>
+
+  <h2>二、账户</h2>
+  <ul>
+    <li>你应对账户下的所有操作负责，请妥善保管登录凭证，勿将验证码、密码告知他人。</li>
+    <li>微信小程序登录通过 <code>wx.login</code> 动态凭证完成，服务端换取身份标识；<b>任何人（包括平台方）都不会向你索要密码或验证码</b>。</li>
+    <li>发现账户异常时，请立即修改密码或联系管理员。</li>
+  </ul>
+
+  <h2>三、可接受使用</h2>
+  <ul>
+    <li>禁止破解、爬取、批量灌水、传播违规内容或干扰服务正常运行。</li>
+    <li>禁止使用他人账户或尝试访问他人数据；系统会记录异常访问并可能锁定账户。</li>
+    <li>词库与音频内容不得用于再分发、售卖或商用二次产品。</li>
+  </ul>
+
+  <h2>四、学习数据</h2>
+  <p>你的学习记录、收藏、错题本与统计数据归属你本人，与其他用户相互隔离。详见<a href="{{ url_for('main.privacy') }}">《隐私政策》</a>。</p>
+
+  <h2>五、服务变更与免责</h2>
+  <ul>
+    <li>本服务按"现状"提供，可能因维护、升级而临时中断，我们会提前公告。</li>
+    <li>因不可抗力、基础网络故障造成的数据丢失，我们将以最近可用备份尽力恢复，但不对间接损失承担责任。</li>
+    <li>学习内容经过人工校对与自动化校验，仍可能存在个别疏漏，欢迎反馈指正。</li>
+  </ul>
+
+  <h2>六、协议更新与终止</h2>
+  <p>协议更新会在本页公示。若你违反本协议，我们可暂停或终止你的账户；你也可随时停止使用并联系管理员处理数据。</p>
+</div>
+{% endblock %}

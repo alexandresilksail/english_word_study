@@ -27,6 +27,7 @@ instance/*.db-journal
 nginx/conf.d/app.conf
 # 本地预览/推送辅助脚本（含本地路径，不入库）
 /preview_server.py
+/_push_*.py
 # 运行时语音资产（2000 MP3，二进制，留存磁盘但不入库，避免仓库膨胀）
 /app/static/audio/
 

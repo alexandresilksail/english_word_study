@@ -284,6 +284,44 @@ def refresh_access_token(refresh_token: str) -> dict:
     return issue_tokens(user.id)
 
 
+def logout_refresh_claims(refresh_token: str, user_id: int) -> dict | None:
+    """登出场景下校验客户端回传的 Refresh Token，返回可撤销的 claims。
+
+    为什么不能像早期版本那样「不解签直接取 jti」：
+    撤销表按 jti 主键检索、不校验归属，任意提交他人令牌就能把别人的
+    登录状态提前作废。因此这里必须满足全部条件才允许撤销：
+
+    1. 能验签通过（签名无效的一律拒绝，防止改 ``sub`` 伪造归属）；
+       唯独 ``ExpiredSignatureError`` 放行——过期令牌的合法持有者
+       同样有「立刻失效」的需求，此时才退化为不验签读取 claims；
+    2. ``typ`` 必须是 ``refresh``；
+    3. ``sub`` 必须等于当前登录用户（归属校验）。
+
+    返回 None 表示拒绝撤销该令牌。
+    """
+    try:
+        claims = jwt.decode(refresh_token, _secret(), algorithms=["HS256"])
+    except jwt.ExpiredSignatureError:
+        try:
+            claims = jwt.decode(refresh_token,
+                                options={"verify_signature": False})
+        except jwt.PyJWTError:
+            return None
+    except jwt.PyJWTError:
+        return None
+
+    if not isinstance(claims, dict):
+        return None
+    if claims.get("typ") != "refresh":
+        return None
+    if str(claims.get("sub") or "") != str(user_id):
+        return None
+    jti, exp = claims.get("jti"), claims.get("exp")
+    if not jti or not isinstance(exp, int):
+        return None
+    return claims
+
+
 # --------------------------------------------------------------------------
 # 微信 code2Session
 # --------------------------------------------------------------------------
@@ -402,6 +440,6 @@ def find_or_create_wx_user(openid: str, unionid: str = "", nickname: str = "",
 
 __all__ = [
     "AuthError", "code2session", "find_or_create_wx_user", "issue_tokens",
-    "purge_expired_revocations", "refresh_access_token", "revoke_all_for_user",
-    "revoke_token", "verify_bearer", "wx_login_required",
+    "logout_refresh_claims", "purge_expired_revocations", "refresh_access_token",
+    "revoke_all_for_user", "revoke_token", "verify_bearer", "wx_login_required",
 ]

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .legal-doc { max-width: 860px; margin: 0 auto; padding: 24rpx 20rpx 64rpx; line-height: 1.75; }
+  .legal-doc h1 { font-size: 30px; margin-bottom: 4px; }
+  .legal-doc h2 { font-size: 19px; margin: 28px 0 10px; }
+  .legal-updated { color: var(--muted, #888); font-size: 13px; }
+  .legal-links a { color: inherit; }
+  .legal-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 12px 0; }
+  .legal-table th, .legal-table td { border: 1px solid rgba(128,128,128,.35); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .legal-table th { background: rgba(128,128,128,.12); }
+  .legal-doc code { background: rgba(128,128,128,.18); padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+</style>
+<div class="legal-doc">
+  <h1>隐私政策 <span class="muted">/ Privacy Policy</span></h1>
+  <p class="legal-updated">最近更新 / Last updated：2026-10-13 · 适用于本网站及「英语单词学习」微信小程序 / Applies to this website and the WeChat mini program.</p>
+
+  <h2>一、我们收集哪些信息</h2>
+  <table class="legal-table">
+    <thead><tr><th>信息项</th><th>来源</th><th>用途</th><th>是否必须</th></tr></thead>
+    <tbody>
+      <tr><td>邮箱地址</td><td>注册 / 绑定 / 修改资料时你填写</td><td>账户标识、登录验证、密码找回</td><td>网站端必须；小程序端可选</td></tr>
+      <tr><td>密码哈希</td><td>你设置的密码（pbkdf2 加盐哈希，<b>不存明文</b>）</td><td>密码登录校验</td><td>网站端可选（也可用邮箱验证码登录）</td></tr>
+      <tr><td>微信 OpenID</td><td>小程序 <code>wx.login</code> 经服务端换取</td><td>标识你的微信身份、保持登录状态</td><td>小程序端必须</td></tr>
+      <tr><td>微信昵称 / 头像</td><td>仅在你主动填写时</td><td>个人资料展示</td><td>可选</td></tr>
+      <tr><td>学习数据</td><td>学习、测试、游戏行为</td><td>进度统计、错题本、复习安排、徽章与等级</td><td>使用即产生</td></tr>
+      <tr><td>访问日志（IP、时间、请求路径）</td><td>服务器自动记录</td><td>安全审计、异常排查、防滥用限流</td><td>自动</td></tr>
+      <tr><td>邮箱验证码记录（哈希、有效期、IP）</td><td>请求验证码时</td><td>验证邮箱归属、限流</td><td>自动</td></tr>
+    </tbody>
+  </table>
+
+  <h2>二、我们<b>不</b>收集的信息</h2>
+  <ul>
+    <li><b>不收集</b>手机号、地理位置、通讯录、相册、摄像头 / 麦克风数据；小程序未申请上述任何权限。</li>
+    <li><b>不获取</b>你的微信好友关系、群列表；小程序未使用任何微信社交接口。</li>
+    <li><b>不保存</b>微信 <code>session_key</code>、<code>AppSecret</code> 出现在服务端之外；二者均不会下发到任何客户端。</li>
+    <li><b>不使用</b>第三方统计 / 广告 / 推送 SDK；无跨站跟踪 Cookie。</li>
+  </ul>
+
+  <h2>三、信息如何保护</h2>
+  <ul>
+    <li>全站强制 HTTPS；会话 Cookie 设置 <code>HttpOnly</code> + <code>SameSite=Lax</code> + <code>Secure</code>。</li>
+    <li>小程序端使用独立的 Bearer Token（JWT）认证，与网站登录状态互不影响；Access Token 2 小时、Refresh Token 30 天，支持刷新、旋转与撤销。</li>
+    <li>密码与验证码均以 pbkdf2 加盐哈希存储；验证码一次性、10 分钟有效、错误 5 次作废。</li>
+    <li>所有私有数据查询均以服务端认证得到的用户 ID 为条件，<b>用户之间数据严格隔离</b>。</li>
+    <li>数据库每日自动备份（保留 14 天），仅部署者本人可访问。</li>
+  </ul>
+
+  <h2>四、数据保留与删除</h2>
+  <ul>
+    <li>学习数据与账户信息保留至你主动删除账户为止。</li>
+    <li>访问日志保留 90 天；过期验证码记录自动清理。</li>
+    <li><b>账号注销与个人数据删除</b>：当前版本暂未提供自助注销入口。如需注销账户或导出 / 删除个人数据，请通过页脚所列联系方式联系部署者，我们将在核实身份后 15 个工作日内处理。</li>
+  </ul>
+
+  <h2>五、未成年人</h2>
+  <p>本服务面向语言学习者，不面向 14 岁以下儿童。若你未满 14 周岁，请在监护人陪同下使用。</p>
+
+  <h2>六、政策更新</h2>
+  <p>政策变更会在本页公示，重大变更会通过站内通知提示。继续使用即表示接受更新后的政策。</p>
+
+  <h2>七、联系我们</h2>
+  <p>对隐私问题有任何疑问、意见或投诉，请联系站点管理员（见页脚联系方式）。</p>
+</div>
+{% endblock %}

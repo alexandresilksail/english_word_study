@@ -6,8 +6,10 @@
 - **明文不落库**：库中只保存 pbkdf2 哈希，明文只出现在邮件里
 - **有效期**：10 分钟；错误 5 次即失效
 - **限流**：60 秒内不可重发；同一邮箱 1 小时内最多 10 次
-- **降级**：未配置 SMTP 时返回明文码（dev_code）交给页面展示，
-  保证本地开发与自测能走通，不会因缺邮件服务而卡死注册/登录
+  （旧码改为「立即置过期」而非删除，否则每小时计数永远 ≤ 2，限流形同虚设）
+- **降级**：未配置 SMTP 时**仅开发 / 测试环境**返回明文码（dev_code）；
+  生产环境绝不下发——否则等于把任意邮箱的验证码公开给 API 调用方，
+  可直接用于账户绑定接管（OWASP：失败开放）
 """
 from __future__ import annotations
 
@@ -18,6 +20,7 @@ from datetime import timedelta
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from extensions import db
+from flask import current_app
 from mailer import send_email
 from models import EmailCode, utcnow
 
@@ -28,6 +31,17 @@ RESEND_INTERVAL_SEC = 60       # 两次发送的最小间隔
 MAX_ATTEMPTS = 5               # 单个验证码最多可错次数
 MAX_PER_HOUR = 10              # 同一邮箱 1 小时内最多发送次数
 CODE_LENGTH = 6                # 6 位数字
+
+
+def _dev_codes_allowed() -> bool:
+    """是否允许把验证码明文回显给客户端。
+
+    仅测试 / 调试环境允许（本地没有 SMTP 也要能跑通流程）。
+    生产环境一律禁止：那等于把「任意邮箱的验证码」公开给 API 调用方，
+    攻击者可借此走通邮箱验证流程、绑定 / 接管他人账户。
+    """
+    return bool(current_app.config.get("TESTING")
+                or current_app.config.get("DEBUG"))
 
 
 def generate_code() -> str:
@@ -59,7 +73,8 @@ def issue_code(email: str, purpose: str, ip: str | None = None) -> tuple[bool, s
 
     返回 ``(ok, message, dev_code)``：
     - ``ok`` 为 True 表示已发出（或已降级给出 dev_code）
-    - ``dev_code`` 仅在未配置 SMTP 时非空，供页面提示使用
+    - ``dev_code`` 仅在**开发 / 测试环境**且未配置 SMTP 时非空，供页面提示使用；
+      生产环境绝不下发（见 :func:`_dev_codes_allowed`）
     """
     email = (email or "").strip().lower()
     purpose = purpose if purpose in ("login", "register") else "login"
@@ -84,7 +99,12 @@ def issue_code(email: str, purpose: str, ip: str | None = None) -> tuple[bool, s
         return False, "请求过于频繁，请稍后再试 / Too many requests, try later", None
 
     # ---- 作废该邮箱该用途的旧码，保证同时只有一个有效 ----
-    EmailCode.query.filter_by(email=email, purpose=purpose).delete()
+    # 注意：不能 delete。MAX_PER_HOUR 的计数依赖 created_at 在 1 小时内的
+    # 历史记录，删了就永远数不到 10，限流会被「交替 purpose 重发」绕过
+    # （每小时可发出约 120 封，形成邮件轰炸面）。
+    # 改为「立即置过期」：既保证同时只有一个有效码，又保留计数。
+    EmailCode.query.filter_by(email=email, purpose=purpose).update(
+        {"expires_at": now}, synchronize_session=False)
     db.session.flush()
 
     code = generate_code()
@@ -105,8 +125,11 @@ def issue_code(email: str, purpose: str, ip: str | None = None) -> tuple[bool, s
         logger.info("[email_code] 已向 %s 发送 %s 验证码", email, purpose)
         return True, "验证码已发送，请查收邮箱 / Code sent, please check your inbox", None
 
-    # 未配置 SMTP：降级，把明文码交给页面（仅本地/自测使用）
-    logger.warning("[email_code] 未配置 SMTP，验证码降级为页面展示：%s -> %s", email, code)
+    # 未配置 SMTP：仅开发 / 测试环境把明文码交给页面，生产环境明确失败
+    if not _dev_codes_allowed():
+        logger.error("[email_code] 生产环境未配置 SMTP，拒绝下发验证码（email=%s）", email)
+        return False, "邮件服务暂不可用，请稍后再试 / Email service unavailable", None
+    logger.warning("[email_code] 开发环境未配置 SMTP，验证码降级为页面展示：%s -> %s", email, code)
     return True, "（未配置邮件服务）验证码已在下方显示 / Email not configured, code shown below", code
 
 

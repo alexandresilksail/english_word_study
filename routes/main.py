@@ -85,6 +85,18 @@ def index():
     return render_template("index.html", rec_unit=rec_unit, rec_lessons=rec_lessons)
 
 
+@main_bp.route("/privacy")
+def privacy():
+    """隐私政策（内容与实际代码行为一一对应，见模板内注释）。"""
+    return render_template("privacy.html")
+
+
+@main_bp.route("/terms")
+def terms():
+    """用户服务协议。"""
+    return render_template("terms.html")
+
+
 @main_bp.route("/set-lang")
 def set_lang():
     """界面语言切换：zh / en / yue / both。登录用户写账号，未登录写 Cookie。

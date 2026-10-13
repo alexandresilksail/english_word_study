@@ -216,6 +216,9 @@ Page({
   // ---------- 导航 ----------
   goFavorites() { wx.navigateTo({ url: '/pages/favorites/favorites' }) },
   goWrong() { wx.navigateTo({ url: '/pages/wrong/wrong' }) },
+
+  // 隐私政策与用户协议（小程序内嵌页，内容与 Web 端一致）
+  openLegal() { wx.navigateTo({ url: '/pages/legal/legal' }) },
   closeModals() {
     this.setData({ showBind: false, showUnbind: false })
   },

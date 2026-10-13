@@ -22,6 +22,7 @@ MODULES = [
     "test_api_v1",
     "test_v3_pages",
     "test_wx_api",      # V6.1 微信小程序：认证 / 权限 / 数据隔离 / 学习闭环
+    "test_wx_security_audit",  # 独立审计安全回归：防爆破 / 限流 / 令牌归属 / 防枚举
 ]
 
 

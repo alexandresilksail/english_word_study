@@ -166,5 +166,10 @@ Page({
         wx.showToast({ title: '微信登录失败，请重试', icon: 'none' })
       }
     })
+  },
+
+  // 打开隐私政策 / 用户协议（小程序内嵌页）
+  openLegal() {
+    wx.navigateTo({ url: '/pages/legal/legal' })
   }
 })
