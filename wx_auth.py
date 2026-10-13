@@ -26,6 +26,7 @@
 from __future__ import annotations
 
 import logging
+import random
 import secrets
 import time
 import urllib.error
@@ -36,6 +37,8 @@ from functools import wraps
 
 import jwt
 from flask import current_app, g, request
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 from extensions import db
 from models import User, WxTokenRevocation, WeChatIdentity, utcnow
@@ -125,6 +128,13 @@ def issue_tokens(user_id: int) -> dict:
     """为一对「access + refresh」签发令牌，返回可直接下发给客户端的结构。"""
     access, access_jti, access_exp = _issue(user_id, "access", access_ttl())
     refresh, refresh_jti, refresh_exp = _issue(user_id, "refresh", refresh_ttl())
+    # 撤销表低频清理：无外部调度器时按 1% 概率顺手清理过期行，
+    # 避免表只增不减（清理本身是一次 DELETE，低频无感）。
+    if random.random() < 0.01:
+        try:
+            purge_expired_revocations()
+        except SQLAlchemyError:  # noqa: BLE001  清理失败不影响签发主流程
+            db.session.rollback()
     return {
         "access_token": access,
         "refresh_token": refresh,
@@ -156,6 +166,38 @@ def revoke_token(jti: str, user_id: int, token_type: str, expires_at: datetime) 
             revoked_at=utcnow(), expires_at=expires_at,
         ))
         db.session.commit()
+
+
+def claim_token(jti: str, user_id: int, token_type: str,
+                expires_at: datetime) -> bool:
+    """原子占用一枚令牌的 jti（刷新旋转的并发安全闸门）。
+
+    ``revoke_token`` 的「先查后插」在并发下有窗口：两个请求持同一枚
+    refresh 并发刷新时，可能都通过黑名单检查、都签发新令牌——旧令牌
+    被重放了一次。这里用 ``INSERT OR IGNORE`` + 主键冲突判定把
+    「检查 + 占用」合并为一次原子写：
+
+    - 返回 True：首次占用成功，调用方可以继续签发新令牌；
+    - 返回 False：该 jti 已被占用（已撤销 / 已旋转过），必须拒绝。
+
+    SQLite 的写锁会把第二个并发 INSERT 序列化，``OR IGNORE`` 命中已有
+    主键时 rowcount=0，语义正确。
+    """
+    try:
+        res = db.session.execute(
+            text(
+                "INSERT OR IGNORE INTO wx_token_revocations "
+                "(jti, user_id, token_type, revoked_at, expires_at) "
+                "VALUES (:jti, :uid, :typ, :now, :exp)"
+            ),
+            {"jti": jti, "uid": user_id, "typ": token_type,
+             "now": utcnow(), "exp": expires_at},
+        )
+        db.session.commit()
+        return bool(res.rowcount)
+    except SQLAlchemyError:
+        db.session.rollback()
+        raise
 
 
 def revoke_all_for_user(user_id: int, token_type: str = "") -> None:
@@ -271,43 +313,52 @@ def wx_login_optional(fn):
 
 
 def refresh_access_token(refresh_token: str) -> dict:
-    """用 Refresh Token 换一对新令牌（旋转：旧 refresh 立即进黑名单）。"""
+    """用 Refresh Token 换一对新令牌（旋转：旧 refresh 立即进黑名单）。
+
+    并发安全：旧 refresh 的 jti 占用是**原子**的（:func:`claim_token`），
+    两把相同的 refresh 同时刷新，只有一个请求能占用成功并拿到新令牌；
+    另一个得到 ``token_revoked``，旧令牌不会被重放签发两套令牌。
+    """
     result = verify_bearer(refresh_token, expect_type="refresh")
     claims = result["claims"]
     user = result["user"]
 
-    # 旋转：旧 refresh 作废，防止重放
-    revoke_token(
+    if not claim_token(
         str(claims["jti"]), user.id, "refresh",
         datetime.utcfromtimestamp(int(claims["exp"])),
-    )
+    ):
+        raise AuthError("token_revoked", "登录状态已失效，请重新登录")
     return issue_tokens(user.id)
 
 
 def logout_refresh_claims(refresh_token: str, user_id: int) -> dict | None:
     """登出场景下校验客户端回传的 Refresh Token，返回可撤销的 claims。
 
-    为什么不能像早期版本那样「不解签直接取 jti」：
-    撤销表按 jti 主键检索、不校验归属，任意提交他人令牌就能把别人的
-    登录状态提前作废。因此这里必须满足全部条件才允许撤销：
+    安全策略（2026-10 加固，对应安全审计要求）：
 
-    1. 能验签通过（签名无效的一律拒绝，防止改 ``sub`` 伪造归属）；
-       唯独 ``ExpiredSignatureError`` 放行——过期令牌的合法持有者
-       同样有「立刻失效」的需求，此时才退化为不验签读取 claims；
-    2. ``typ`` 必须是 ``refresh``；
-    3. ``sub`` 必须等于当前登录用户（归属校验）。
+    1. **任何路径都不允许 ``verify_signature=False``**。早期版本在
+       ``ExpiredSignatureError`` 后降级为不验签解码——那等于把「未经签名
+       验证的 claims」写入撤销表，违反纵深防御原则（当时恰好被 PyJWT
+       「先验签后查 exp」的求值顺序挡着未能利用，但这是隐式依赖，不能留）；
+    2. 过期 Refresh Token **继续验证签名**，仅按安全策略关闭过期检查
+       （``options={"verify_exp": False}``）——签名、算法白名单与必需
+       声明照常校验，只有「服务端签发但已过期」的令牌才允许登记撤销；
+    3. ``typ`` 必须是 ``refresh``；
+    4. ``sub`` 必须等于当前登录用户（归属校验，防越权撤销他人令牌）；
+    5. ``jti`` 必须存在、``exp`` 必须为整数（撤销表按 exp 登记过期时间）。
 
     返回 None 表示拒绝撤销该令牌。
     """
     try:
-        claims = jwt.decode(refresh_token, _secret(), algorithms=["HS256"])
-    except jwt.ExpiredSignatureError:
-        try:
-            claims = jwt.decode(refresh_token,
-                                options={"verify_signature": False})
-        except jwt.PyJWTError:
-            return None
+        claims = jwt.decode(
+            refresh_token, _secret(), algorithms=["HS256"],
+            options={
+                "require": ["exp", "iat", "sub", "jti", "typ"],
+                "verify_exp": False,          # 过期可撤销，但签名必须有效
+            },
+        )
     except jwt.PyJWTError:
+        # 签名无效 / 算法不在白名单 / 缺必需声明 / 格式错误：一律拒绝
         return None
 
     if not isinstance(claims, dict):
@@ -439,7 +490,8 @@ def find_or_create_wx_user(openid: str, unionid: str = "", nickname: str = "",
 
 
 __all__ = [
-    "AuthError", "code2session", "find_or_create_wx_user", "issue_tokens",
-    "logout_refresh_claims", "purge_expired_revocations", "refresh_access_token",
-    "revoke_all_for_user", "revoke_token", "verify_bearer", "wx_login_required",
+    "AuthError", "claim_token", "code2session", "find_or_create_wx_user",
+    "issue_tokens", "logout_refresh_claims", "purge_expired_revocations",
+    "refresh_access_token", "revoke_all_for_user", "revoke_token",
+    "verify_bearer", "wx_login_required",
 ]

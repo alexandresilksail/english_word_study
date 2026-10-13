@@ -3,7 +3,7 @@
   <!-- 品牌区 -->
   <view class="brand">
     <image class="ill ill-hero" src="/images/home.png" mode="aspectFit" />
-    <view class="brand-title gradient-text">英语单词学习</view>
+    <view class="brand-title gradient-text">PolyGo</view>
     <view class="brand-sub">2000 核心词 · 四种测试模式 · 学习进度全记录</view>
   </view>
 
