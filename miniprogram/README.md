@@ -1,6 +1,6 @@
-# 微信小程序导入运行教程
+# PolyGo 微信小程序导入运行教程
 
-`miniprogram/` 是 English Word Study V6.0 的原生微信小程序（WXML / WXSS / JS，无框架依赖）。
+`miniprogram/` 是 **PolyGo** 的原生微信小程序（WXML / WXSS / JS，无框架依赖）。
 本教程带你从零把它跑起来，并说明发布前必须完成的配置。
 
 ## 1. 环境准备

@@ -1,9 +1,15 @@
 {
-  "description": "English Word Study 微信小程序（V6.1）",
+  "description": "PolyGo 微信小程序（V6.2）",
   "packOptions": {
     "ignore": [
-      { "type": "folder", "value": "images/optimize.py" },
-      { "type": "file", "value": "README.md" }
+      {
+        "type": "folder",
+        "value": "images/optimize.py"
+      },
+      {
+        "type": "file",
+        "value": "README.md"
+      }
     ],
     "include": []
   },
@@ -19,6 +25,6 @@
   "compileType": "miniprogram",
   "libVersion": "3.4.10",
   "appid": "touristappid",
-  "projectname": "english-word-study-miniprogram",
+  "projectname": "polygo",
   "condition": {}
 }

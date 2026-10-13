@@ -1,11 +1,11 @@
 # 微信小程序 API v1（`/api/wx/v1`）
 
-> 面向「English Word Study」微信小程序的原生 JSON API，与 Web 端
+> 面向「PolyGo」微信小程序的原生 JSON API，与 Web 端
 > （`/api/v1`，Flask-Login Session 认证）**完全独立**：
 > Web 继续用 Session Cookie，小程序用 **Bearer Token（标准 JWT）**。
 >
 > 实现：`wx_api.py`（蓝图）+ `wx_auth.py`（JWT 认证层）+ `wx_quiz_state.py`（出题状态令牌）
-> 测试：`tests/test_wx_api.py`（72 项）+ `tests/integration_miniprogram.py`（端到端 HTTP 联调 75 项）
+> 测试：`tests/test_wx_api.py`（72 项）+ `tests/test_jwt_logout_security.py`（JWT 登出/刷新安全 36 项）+ `tests/integration_miniprogram.py`（端到端 HTTP 联调 75 项）
 
 ## 1. 通用约定
 
