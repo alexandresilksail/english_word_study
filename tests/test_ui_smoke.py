@@ -70,6 +70,14 @@ def main():
     check("登录页引入 v4.css 设计系统", "css/v4.css" in body)
     check("登录页提供忘记密码入口", "/forgot-password" in body)
 
+    # 隐私政策 / 用户协议：需可访问、无模板错误，且以 PolyGo 指称小程序
+    for path in ["/privacy", "/terms"]:
+        r = c.get(path)
+        check(f"GET {path} → 200", r.status_code == 200, r.status_code)
+        if r.status_code == 200:
+            html = r.get_data(as_text=True)
+            check(f"{path} 以 PolyGo 指称小程序", "PolyGo" in html)
+
     # ---------------------------------------------------------- 注册并登录
     print("\n[2] 注册 / 登录")
     r = c.post("/register", data={"email": EMAIL, "username": "冒烟测试",

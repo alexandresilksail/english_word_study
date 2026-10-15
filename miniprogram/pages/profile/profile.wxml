@@ -92,7 +92,7 @@
   <view class="card">
     <view class="row-between">
       <text class="subtitle">版本</text>
-      <text class="muted">V6.0 小程序版</text>
+      <text class="muted">PolyGo · V6.2</text>
     </view>
     <view class="row-between" style="margin-top: 16rpx;">
       <text class="subtitle">数据同步</text>

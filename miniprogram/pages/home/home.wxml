@@ -19,6 +19,7 @@
     <view class="card hero">
       <view class="row-between">
         <view class="flex-1">
+          <view class="hero-brand">PolyGo</view>
           <view class="hero-greet">{{ greeting }}，{{ nickname }}</view>
           <view class="subtitle">坚持第 {{ streak }} 天 · 等级 Lv.{{ level }}</view>
         </view>

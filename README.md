@@ -36,7 +36,7 @@ Assessment → Learner Model → Learning Path → Learning → Practice
 | **V6.0.2** | **Learner Model**：`LearnerProfile`（六维等级 + 母语/目标语 + 弱项 + 偏好）与 `Assessment` 快照 | ✅ 已落地 |
 | **V6.0.3** | **AI Learning Path**：规则引擎 + 可选 AI 推荐，产出每日个性化计划（弱项专项 / CEFR 单元 / 间隔复习） | ✅ 已落地 |
 | **V6.0.4** | **Adaptive Review**：综合弱项优先级 + 逾期程度重排到期复习队列 | ✅ 已落地 |
-| **V6.1** | **微信小程序**：原生小程序（10 页面全功能）+ 独立 JWT 认证 API（`/api/wx/v1`，22 接口） | ✅ 已落地 |
+| **V6.1** | **微信小程序 PolyGo**：原生小程序（11 页面全功能）+ 独立 JWT 认证 API（`/api/wx/v1`，22 接口） | ✅ 已落地 |
 | V6.0.5 | AI Tutor 2.0：读取 LearnerProfile，新增 Hint / Correct Me / Role Play / Review Mistakes | 🚧 待开发 |
 | V6.0.6 | AI Conversation：场景对话，按 CEFR 控难度 | 🚧 待开发 |
 | V6.0.7 | Speaking Coach：六维语音分析（Mock 可切换真实 STT） | 🚧 待开发 |
@@ -50,7 +50,7 @@ Assessment → Learner Model → Learning Path → Learning → Practice
 练习表现（正确率 / 连对 / 练习次数）+ 课时小测 + **单元测试（权威）**。
 `Mastered` 需要「练习到位 **且** 有测验佐证」，杜绝靠刷练习量刷出「已掌握」。
 
-### V6.1 微信小程序
+### V6.1 微信小程序（产品名 PolyGo）
 `miniprogram/` 是与网站并行的原生微信小程序（WXML/WXSS/JS，零框架依赖、零假数据）：
 
 - **认证**：Web 继续 Flask-Login Session；小程序用独立 Bearer Token
@@ -62,7 +62,9 @@ Assessment → Learner Model → Learning Path → Learning → Practice
 - **功能**：登录/绑定、首页概览、词库浏览搜索、单词详情（真实音频）、
   测试中心（4 模式 × 6 范围）、测试结果、收藏、错题本、进度统计、个人中心。
 - **测试**：`tests/test_wx_api.py` 72 项 + `tests/integration_miniprogram.py`
-  真实 HTTP 全链路 75 项，全量套件 395/395 通过。
+  真实 HTTP 全链路 75 项 + `tests/test_wx_security_audit.py` 27 项 +
+  `tests/test_jwt_logout_security.py` 36 项 + `tests/test_polygo_brand.py` 17 项，
+  全量套件 479/479 通过。
 
 详见 [docs/api-wx-v1.md](docs/api-wx-v1.md)（API 文档）、
 [miniprogram/README.md](miniprogram/README.md)（导入运行教程）、

@@ -42,3 +42,13 @@
   padding: 24rpx 48rpx;
   line-height: 1.6;
 }
+
+/* 文档头：产品名 + 文档标题 */
+.doc-head { padding: 36rpx 28rpx 32rpx; text-align: center; }
+.doc-brand {
+  font-size: 40rpx; font-weight: 700; letter-spacing: 4rpx;
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.doc-title { font-size: 30rpx; font-weight: 600; margin-top: 10rpx; color: #1f2937; }
+.doc-sub { font-size: 22rpx; color: #6b7280; margin-top: 8rpx; }

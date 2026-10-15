@@ -7,6 +7,10 @@
 .hero .subtitle { color: rgba(255, 255, 255, 0.85); }
 .hero .muted { color: rgba(255, 255, 255, 0.85); }
 .hero-greet { font-size: 36rpx; font-weight: 700; margin-bottom: 8rpx; }
+.hero-brand {
+  font-size: 24rpx; font-weight: 600; letter-spacing: 6rpx;
+  color: rgba(255, 255, 255, 0.92); margin-bottom: 6rpx;
+}
 
 .goal {
   margin-top: 28rpx;
